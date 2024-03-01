@@ -1,25 +1,39 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
+      animation: {
+        'fadeIn': 'fadeIn 0.5s ease-in-out',
+        'float': 'float 6s ease-in-out infinite',
+        'float-slow': 'float 8s ease-in-out infinite',
+        'float-delayed': 'float 6s ease-in-out infinite 2s',
+        'float-slow-delayed': 'float 8s ease-in-out infinite 4s',
+        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+      },
       keyframes: {
-        toggleOn: {
-          '0%': { transform: 'translateX(4px)' },
-          '60%': { transform: 'translateX(32px) scale(1.1)' },
-          '100%': { transform: 'translateX(32px) scale(1)' },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        toggleOff: {
-          '0%': { transform: 'translateX(32px)' },
-          '60%': { transform: 'translateX(4px) scale(1.1)' },
-          '100%': { transform: 'translateX(4px) scale(1)' },
+        float: {
+          '0%, 100%': { transform: 'translateY(0) scale(1)' },
+          '50%': { transform: 'translateY(-20px) scale(1.05)' },
+        },
+        ping: {
+          '75%, 100%': {
+            transform: 'scale(2)',
+            opacity: '0',
+          },
         },
       },
-      animation: {
-        toggleOn: 'toggleOn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-        toggleOff: 'toggleOff 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+      transitionDelay: {
+        '1000': '1000ms',
+        '2000': '2000ms',
       },
     },
   },
   plugins: [],
-};
+}

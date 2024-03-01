@@ -6,63 +6,89 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log.*
+log/
+logs/
+*.logs
 
 # Dependencies
-node_modules
-dist
-dist-ssr
-*.local
+node_modules/
+.pnp
+.pnp.js
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
 
-#Ignoring the folders containing the data files
+# Build outputs
+dist/
+dist-ssr/
+*.local
+/build/
+/out/
+.next/
+.nuxt/
+.output/
+
+# Project specific
 backend/media/
 backend/notes/
 test.pdf
 backend/staticfiles/
 
-# Credentials
+# Credentials and sensitive data
 credentials/
 *.json
+*.key
+*.pem
+*.cert
+*.crt
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Build directories
-/build/
-/dist/
-/out/
+*.swp
+*.swo
+*~
 
 # Cache directories
 .cache/
 .temp/
 .tmp/
+.npm/
+.eslintcache
+.stylelintcache
+.prettiercache
 
 # Coverage directory used by testing tools
 /coverage/
+*.lcov
+.nyc_output/
 
-# Optional: Package manager locks (uncomment if you want to ignore)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
-# Optional: OS generated files
-Thumbs.db
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 ehthumbs.db
+Thumbs.db
 Desktop.ini
+$RECYCLE.BIN/
 
 # Python specific
 __pycache__/
@@ -85,6 +111,13 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
 
 # Virtual Environment
 venv/
@@ -93,7 +126,41 @@ ENV/
 .env/
 .venv/
 pythonenv*/
+.python-version
 
 # Jupyter Notebook
 .ipynb_checkpoints
 .qodo
+*.ipynb
+.ipynb
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# IDE specific files
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# System Files
+.directory
+*~
+*.swp
+*.swo
+*#
