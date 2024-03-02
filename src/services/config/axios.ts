@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { redirectToAuth } from '../../utils/routing';
 
 // Extend AxiosRequestConfig to include `_retry`
 declare module 'axios' {
@@ -52,7 +53,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem('access_token');
-        window.location.href = '/login';
+        redirectToAuth();
         return Promise.reject(refreshError);
       }
     }
