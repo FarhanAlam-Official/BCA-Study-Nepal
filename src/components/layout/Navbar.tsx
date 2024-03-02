@@ -16,11 +16,13 @@ import {
   Calculator,
   Clock,
   CheckSquare,
-  Edit,
   Calendar,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBar from './SearchBar';
+import { useAuth } from '../../hooks/useAuth';
 
 interface NavItem {
   name: string;
@@ -49,7 +51,6 @@ const navigation: NavItem[] = [
       { name: 'GPA Calculator', href: '/tools/gpa-calculator', icon: Calculator },
       { name: 'Pomodoro Timer', href: '/tools/pomodoro', icon: Clock },
       { name: 'Todo List', href: '/tools/todo', icon: CheckSquare },
-      { name: 'Note Taking', href: '/tools/notes', icon: Edit },
       { name: 'Deadline Tracker', href: '/tools/deadlines', icon: Calendar },
     ]
   },
@@ -88,7 +89,7 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
             onClick={() => mobile && setIsOpen(!isOpen)}
             className={`group flex items-center transition-all duration-200 ${
               mobile
-                ? 'px-4 py-2 text-base font-medium w-full'
+                ? 'px-4 py-2 text-sm font-medium w-full'
                 : 'inline-flex items-center px-1 pt-1 text-sm font-medium'
             } ${
               hasActiveChild 
@@ -147,7 +148,7 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
                       >
                         <div className="flex items-center group">
                           <child.icon 
-                            className={`h-4 w-4 mr-2 transition-all duration-200 ${
+                            className={`h-5 w-5 mr-2 transition-all duration-200 ${
                               isChildActive
                                 ? 'text-indigo-700 stroke-[2]'
                                 : 'text-gray-500 group-hover:text-indigo-700 group-hover:stroke-[2]'
@@ -180,7 +181,7 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
         to={item.href}
         className={`group flex items-center transition-all duration-200 ${
           mobile
-            ? 'px-4 py-2 text-base font-medium w-full'
+            ? 'px-4 py-2 text-sm font-medium w-full'
             : 'inline-flex items-center px-1 pt-1 text-sm font-medium'
         } ${
           isActive 
@@ -210,16 +211,45 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
 const Logo = () => (
   <div>
     <Link to="/" className="flex-shrink-0 flex items-center group">
-      <GraduationCap className="h-8 w-8 text-indigo-600 group-hover:text-black-700" />
-      <span className="ml-2 text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
-        BCA Study Nepal
+      <GraduationCap className="h-9 w-9 text-indigo-600 group-hover:text-black-700" />
+      <span className="ml-2 text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+        BCA
       </span>
     </Link>
   </div>
 );
 
+// Define a User interface for better type safety
+interface User {
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  profile_picture?: string;
+}
+
+// Add this utility function for user initials
+const getUserInitials = (user: User | null) => {
+  if (!user) return '??';
+  
+  const firstName = user.first_name || '';
+  const lastName = user.last_name || '';
+  
+  // Handle cases where either name could be empty
+  if (!firstName && !lastName) return user.username?.substring(0, 2).toUpperCase() || '??';
+  if (!firstName) return lastName.substring(0, 2).toUpperCase();
+  if (!lastName) return firstName.substring(0, 2).toUpperCase();
+  
+  // Default case: first letter of first name + first letter of last name
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+};
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <motion.nav
@@ -243,10 +273,55 @@ export default function Navbar() {
           </div>
 
           {/* Right section - Search and Mobile Menu */}
-          <div className="flex items-center">
-            <div className="hidden sm:flex sm:items-center sm:ml-6">
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex sm:items-center sm:ml-28 sm:flex-1 sm:max-w-[400px]">
               <SearchBar />
             </div>
+            
+            {/* Auth Buttons or User Profile */}
+            {isAuthenticated ? (
+              <div className="hidden sm:flex sm:items-center">
+                <Link
+                  to="/profile"
+                  className="flex items-center text-gray-700 hover:text-indigo-600 focus:outline-none group"
+                >
+                  {user?.profile_picture ? (
+                    <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-indigo-100 shadow-sm transition-all duration-200 group-hover:border-indigo-300 group-hover:shadow-md transform group-hover:scale-105">
+                      <img
+                        src={user.profile_picture}
+                        alt={user.username}
+                        className="h-full w-full object-cover transition-transform duration-200 will-change-transform"
+                        loading="eager"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-2 border-indigo-100 shadow-sm transition-all duration-200 group-hover:border-indigo-300 group-hover:shadow-md transform group-hover:scale-105">
+                      <span className="text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        {getUserInitials(user)}
+                      </span>
+                    </div>
+                  )}
+                  <span className="ml-2 text-sm font-medium">{user?.username || 'User'}</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="hidden sm:flex sm:items-center sm:ml-6">
+                <motion.div 
+                  whileHover={{ scale: 1.02 }} 
+                  whileTap={{ scale: 0.98 }}
+                  className="relative group"
+                >
+                  <Link
+                    to="/auth"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200 hover:shadow-md"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </Link>
+                  <div className="absolute inset-0 -z-10 bg-indigo-600/20 blur-md group-hover:bg-indigo-700/20 transition-all duration-200 rounded-lg" />
+                </motion.div>
+              </div>
+            )}
 
             {/* Mobile menu button */}
             <div className="flex items-center sm:hidden">
@@ -301,6 +376,74 @@ export default function Navbar() {
             >
               <SearchBar />
             </motion.div>
+            <div className="px-4 pb-4 pt-2 flex flex-col gap-3">
+              {isAuthenticated ? (
+                <>
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Link
+                      to="/profile"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-indigo-600 bg-white border border-indigo-600 rounded-lg shadow-sm hover:bg-indigo-50 transition-all duration-200"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {user?.profile_picture ? (
+                        <div className="h-6 w-6 rounded-full overflow-hidden border border-indigo-100 shadow-sm">
+                          <img
+                            src={user.profile_picture}
+                            alt={user.username}
+                            className="h-full w-full object-cover will-change-transform"
+                            loading="eager"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border border-indigo-100">
+                          <span className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            {getUserInitials(user)}
+                          </span>
+                        </div>
+                      )}
+                      <span>Profile</span>
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </motion.div>
+                </>
+              ) : (
+                <>
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Link
+                      to="/auth"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <LogIn className="h-5 w-5" />
+                      <span>Login</span>
+                    </Link>
+                  </motion.div>
+                </>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
