@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import imageOptimization from './utils/imageOptimization';
+import { initRouteChecker } from './utils/routeChecker';
+
+// Initialize route checking to fix any URL issues
+initRouteChecker();
 
 // Use a more performant approach by getting the root element once
 const rootElement = document.getElementById('root');
@@ -35,7 +39,9 @@ if (rootElement) {
       </StrictMode>
     );
   } else {
-    root.render(<App />);
+    root.render(
+      <App />
+    );
   }
   
   // Remove loading indicator after React has mounted
