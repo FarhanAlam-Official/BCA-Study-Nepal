@@ -105,12 +105,44 @@ def extract_college_favicon(url):
                 '/apple-touch-icon.png',
             ]
 
+            # Step 3: Try WordPress theme locations
+            wordpress_locations = [
+                '/wp-content/themes/{domain}/img/favicon.ico',
+                '/wp-content/themes/{domain}/img/favicon.png',
+                '/wp-content/themes/{domain}/images/favicon.ico',
+                '/wp-content/themes/{domain}/images/favicon.png',
+                '/wp-content/themes/{domain}/img/{domain}_ico.png',
+                '/wp-content/themes/{domain}/images/{domain}_ico.png',
+                '/wp-content/uploads/favicon.ico',
+                '/wp-content/uploads/favicon.png',
+            ]
+
+            # Try common locations first
             for location in common_locations:
                 favicon_url = f"{domain_url}{location}"
                 logger.debug(f"Trying common location: {favicon_url}")
                 if check_favicon_url(favicon_url):
                     logger.info(f"Found favicon at common location: {favicon_url}")
                     return favicon_url
+
+            # Then try WordPress theme locations with domain variations
+            domain_name = parsed_url.netloc.split('.')[0]  # Get first part of domain
+            theme_variations = [
+                domain_name,
+                domain_name.replace('-', '_'),
+                domain_name.replace('_', '-'),
+                f"{domain_name}-institute",
+                f"{domain_name}-college",
+                f"{domain_name}-institute-of-management"
+            ]
+
+            for theme_name in theme_variations:
+                for location in wordpress_locations:
+                    favicon_url = f"{domain_url}{location.format(domain=theme_name)}"
+                    logger.debug(f"Trying WordPress theme location: {favicon_url}")
+                    if check_favicon_url(favicon_url):
+                        logger.info(f"Found favicon at WordPress theme location: {favicon_url}")
+                        return favicon_url
 
         # If we get here, we've tried all variants and found nothing
         logger.warning(f"No valid favicon found for {original_url} after trying all variants")
