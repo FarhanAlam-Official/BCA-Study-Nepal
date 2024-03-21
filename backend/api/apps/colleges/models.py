@@ -44,7 +44,7 @@ class College(models.Model):
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    location = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, default='Nepal')
     website = models.URLField()
     email = models.EmailField()
     
@@ -66,7 +66,7 @@ class College(models.Model):
             ('CLOSED', 'Closed'),
             ('COMING_SOON', 'Coming Soon')
         ],
-        default='CLOSED'
+        default='OPEN'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
