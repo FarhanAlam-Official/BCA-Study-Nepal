@@ -79,6 +79,8 @@ requests>=2.32.3
 requests-oauthlib>=2.0.0
 rsa>=4.9
 wheel>=0.45.1
+requests==2.31.0
+beautifulsoup4==4.12.2 
 
 # Note: The following packages from original requirements.txt are not currently used:
 # - black, flake8, isort (development tools)
