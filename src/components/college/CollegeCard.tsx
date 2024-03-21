@@ -245,19 +245,19 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
           </div>
 
           {/* Programs */}
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-2">
-              {(college.programs || []).slice(0, 3).map((program, index) => (
+          <div className="mb-4 h-[52px] overflow-hidden">
+            <div className="flex flex-wrap gap-1.5">
+              {(college.programs || []).slice(0, 4).map((program, index) => (
                 <span
                   key={index}
-                  className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-lg border border-indigo-100/50 transition-colors duration-300 group-hover:bg-indigo-100"
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 transition-colors duration-300 group-hover:bg-indigo-100 whitespace-nowrap"
                 >
                   {program}
                 </span>
               ))}
-              {(college.programs?.length || 0) > 3 && (
-                <span className="bg-purple-50 text-purple-700 text-xs px-2.5 py-1 rounded-lg border border-purple-100/50 transition-colors duration-300 group-hover:bg-purple-100">
-                  +{college.programs.length - 3} more
+              {(college.programs || []).length > 4 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 transition-colors duration-300 group-hover:bg-indigo-100 whitespace-nowrap">
+                  +{(college.programs || []).length - 4} more
                 </span>
               )}
             </div>
