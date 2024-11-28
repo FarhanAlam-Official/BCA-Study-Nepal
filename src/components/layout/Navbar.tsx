@@ -21,7 +21,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <GraduationCap className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">PU Portal</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">BCA Study Nepal</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {navigation.map((item) => (
