@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, School, BriefcaseIcon, Menu, X, Home } from 'lucide-react';
+import { BookOpen, GraduationCap, School, BriefcaseIcon, Menu, X, Home, Mail } from 'lucide-react';
 import SearchBar from './SearchBar';
 
 const navigation = [
@@ -9,8 +9,8 @@ const navigation = [
   { name: 'Syllabus', href: '/syllabus', icon: GraduationCap },
   { name: 'Colleges', href: '/colleges', icon: School },
   { name: 'Career', href: '/career', icon: BriefcaseIcon },
+  { name: 'Contact', href: '/contact', icon: Mail },
 ];
-
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
