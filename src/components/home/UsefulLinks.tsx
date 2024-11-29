@@ -1,4 +1,3 @@
-import React from 'react';
 import { ExternalLink, BookOpen, GraduationCap, Book, Briefcase } from 'lucide-react';
 
 const links = [
