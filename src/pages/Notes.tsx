@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Search, Filter, BookOpen } from 'lucide-react';
 import { notes } from '../data/notes';
 
@@ -8,7 +8,7 @@ export default function Notes() {
 
   const filteredNotes = notes.filter(note => {
     const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         note.subject.toLowerCase().includes(searchTerm.toLowerCase());
+                        note.subject.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSemester = selectedSemester === 'all' || note.semester === selectedSemester;
     return matchesSearch && matchesSemester;
   });
