@@ -1,4 +1,3 @@
-import React from 'react';
 import { Calendar, MapPin, Clock, ExternalLink } from 'lucide-react';
 import { events } from '../../data/events';
 
@@ -92,5 +91,6 @@ export default function Events() {
         </div>
       </div>
     </div>
-  );
+  ); 
+  //Later to be implemented if needed
 }

@@ -1,6 +1,6 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Linkedin, Mail, GraduationCap } from 'lucide-react';
+import { SiFacebook, SiX as SiTwitter, SiLinkedin, SiMinutemailer } from 'react-icons/si'; // Simple Icons
+import { GraduationCap } from 'lucide-react'; // Retain non-brand icons from Lucide
 
 const navigation = {
   main: [
@@ -11,10 +11,10 @@ const navigation = {
     { name: 'Contact', href: '/contact' },
   ],
   social: [
-    { name: 'Facebook', href: '#', icon: Facebook },
-    { name: 'Twitter', href: '#', icon: Twitter },
-    { name: 'LinkedIn', href: '#', icon: Linkedin },
-    { name: 'Email', href: '#', icon: Mail },
+    { name: 'Facebook', href: '#', icon: SiFacebook },
+    { name: 'Twitter', href: '#', icon: SiTwitter },
+    { name: 'LinkedIn', href: '#', icon: SiLinkedin },
+    { name: 'Email', href: '#', icon: SiMinutemailer },
   ],
 };
 

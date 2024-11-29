@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, School, BriefcaseIcon, Menu, X, Home } from 'lucide-react';
 import SearchBar from './SearchBar';

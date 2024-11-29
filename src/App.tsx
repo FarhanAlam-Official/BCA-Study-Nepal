@@ -1,11 +1,10 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Hero from './components/home/Hero';
 import Features from './components/home/Features';
 import QuestionPapers from './components/home/QuestionPapers';
-import Events from './components/home/Events';
+// import Events from './components/home/Events';
 import Notes from './pages/Notes';
 import Colleges from './pages/Colleges';
 import Career from './pages/Career';
@@ -15,7 +14,7 @@ function HomePage() {
     <>
       <Hero />
       <Features />
-      <Events />
+      {/* <Events />  */} {/*Later to be implemendted if necessary */}
       <QuestionPapers />
     </>
   );

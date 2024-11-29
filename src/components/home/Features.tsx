@@ -1,4 +1,3 @@
-import React from 'react';
 import { BookOpen, GraduationCap, School, BriefcaseIcon } from 'lucide-react';
 
 const features = [
