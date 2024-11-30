@@ -6,7 +6,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-secret-key-here')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'R6Rjyi2_hIfG-1ivMDJEeAcGLxvRRfj3-tP1Tzj6SY2YpbOW0mlpZH3OPGsHY1Oq18s')
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
@@ -63,6 +63,9 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', '$eUAboM5puadmin'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
