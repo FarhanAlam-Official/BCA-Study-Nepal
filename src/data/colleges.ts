@@ -1,4 +1,4 @@
-import { College } from '../types';
+import { College } from '../services/types';
 
 export const colleges: College[] = [
   {
