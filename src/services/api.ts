@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { College, Note, QuestionPaper, AuthResponse, Event } from './types/types';
 
 const API_URL = 'http://localhost:8000/api';
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -31,24 +32,31 @@ api.interceptors.response.use(
 );
 
 export const collegeService = {
-  getAll: () => api.get('/colleges/'),
-  getById: (id: string) => api.get(`/colleges/${id}/`),
-  create: (data: any) => api.post('/colleges/', data),
-  update: (id: string, data: any) => api.put(`/colleges/${id}/`, data),
-  delete: (id: string) => api.delete(`/colleges/${id}/`),
+  getAll: (): Promise<AxiosResponse<College[]>> => api.get('/colleges/'),
+  getById: (id: string): Promise<AxiosResponse<College>> =>
+    api.get(`/colleges/${id}/`),
+  create: (data: College): Promise<AxiosResponse<College>> =>
+    api.post('/colleges/', data),
+  update: (id: string, data: Partial<College>): Promise<AxiosResponse<College>> =>
+    api.put(`/colleges/${id}/`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/colleges/${id}/`),
 };
 
 export const noteService = {
-  getAll: () => api.get('/notes/'),
-  getBySemester: (semester: number) => api.get(`/notes/by_semester/?semester=${semester}`),
-  create: (data: FormData) => api.post('/notes/', data),
-  delete: (id: string) => api.delete(`/notes/${id}/`),
-  download: async (fileUrl: string) => {
+  getAll: (): Promise<AxiosResponse<Note[]>> => api.get('/notes/'),
+  getBySemester: (semester: number): Promise<AxiosResponse<Note[]>> =>
+    api.get(`/notes/by_semester/?semester=${semester}`),
+  create: (data: FormData): Promise<AxiosResponse<Note>> =>
+    api.post('/notes/', data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/notes/${id}/`),
+  download: async (fileUrl: string): Promise<void> => {
     try {
-      const response = await axios.get(fileUrl, {
-        responseType: 'blob',
+      const response = await axios.get(fileUrl, { responseType: 'blob' });
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
       });
-      const blob = new Blob([response.data], { type: response.headers['content-type'] });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -65,14 +73,15 @@ export const noteService = {
 };
 
 export const questionPaperService = {
-  getAll: () => api.get('/question-papers/'),
-  getByYear: (year: number) => api.get(`/question-papers/by_year/?year=${year}`),
-  download: async (fileUrl: string) => {
+  getAll: (): Promise<AxiosResponse<QuestionPaper[]>> => api.get('/question-papers/'),
+  getByYear: (year: number): Promise<AxiosResponse<QuestionPaper[]>> =>
+    api.get(`/question-papers/by_year/?year=${year}`),
+  download: async (fileUrl: string): Promise<void> => {
     try {
-      const response = await axios.get(fileUrl, {
-        responseType: 'blob',
+      const response = await axios.get(fileUrl, { responseType: 'blob' });
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
       });
-      const blob = new Blob([response.data], { type: response.headers['content-type'] });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -89,14 +98,15 @@ export const questionPaperService = {
 };
 
 export const eventService = {
-  getAll: () => api.get('/events/'),
-  register: (id: string) => api.post(`/events/${id}/register/`),
+  getAll: (): Promise<AxiosResponse<Event[]>> => api.get('/events/'),
+  register: (id: string): Promise<AxiosResponse<void>> =>
+    api.post(`/events/${id}/register/`),
 };
 
 export const authService = {
-  login: (username: string, password: string) => 
+  login: (username: string, password: string): Promise<AxiosResponse<AuthResponse>> =>
     api.post('/token/', { username, password }),
-  refreshToken: (refresh: string) => 
+  refreshToken: (refresh: string): Promise<AxiosResponse<AuthResponse>> =>
     api.post('/token/refresh/', { refresh }),
 };
 

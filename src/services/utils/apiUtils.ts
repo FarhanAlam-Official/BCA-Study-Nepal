@@ -1,4 +1,6 @@
-export const safeRequest = async <T>(requestFn: () => Promise<any>): Promise<T> => {
+export const safeRequest = async <T>(
+    requestFn: () => Promise<{ data: T }>
+  ): Promise<T> => {
     try {
       const response = await requestFn();
       return response.data;
@@ -25,3 +27,4 @@ export const safeRequest = async <T>(requestFn: () => Promise<any>): Promise<T> 
       throw error;
     }
   };
+  
