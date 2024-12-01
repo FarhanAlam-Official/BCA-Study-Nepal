@@ -1,16 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FileText, Download, AlertCircle } from 'lucide-react';
-import { questionPaperService } from '../../services/api';
+import { questionPaperService } from '../../services/api/questionPaperService';
 import LoadingSpinner from '../common/LoadingSpinner';
-
-interface QuestionPaper {
-  id: string;
-  subject: string;
-  year: number;
-  semester: number;
-  file: string;
-  upload_date: string;
-}
+import { QuestionPaper } from '../../services/types';
 
 const QuestionPaperList: React.FC = () => {
   const [papers, setPapers] = useState<QuestionPaper[]>([]);
@@ -18,26 +10,25 @@ const QuestionPaperList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 
-  useEffect(() => {
-    fetchPapers();
-  }, [selectedYear]);
-
-  const fetchPapers = async () => {
+  const fetchPapers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = selectedYear === 'all'
+      const data = selectedYear === 'all'
         ? await questionPaperService.getAll()
         : await questionPaperService.getByYear(Number(selectedYear));
-      setPapers(response.data);
+      setPapers(data);
     } catch (err) {
       setError('Failed to load question papers. Please try again later.');
       console.error('Error fetching question papers:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedYear]);
 
+  React.useEffect(() => {
+    fetchPapers();
+  }, [fetchPapers]);
   const handleDownload = async (paper: QuestionPaper) => {
     try {
       await questionPaperService.download(paper.file);

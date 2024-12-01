@@ -1,18 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { BookOpen, Download, AlertCircle } from 'lucide-react';
-import { noteService } from '../../services/api';
+import { noteService } from '../../services/api/noteService';
 import LoadingSpinner from '../common/LoadingSpinner';
-
-interface Note {
-  id: string;
-  title: string;
-  subject: string;
-  semester: number;
-  file: string;
-  description: string;
-  upload_date: string;
-  is_verified: boolean;
-}
+import { Note } from '../../services/types';
 
 const NotesList: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -20,25 +10,25 @@ const NotesList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedSemester, setSelectedSemester] = useState<number | 'all'>('all');
 
-  useEffect(() => {
-    fetchNotes();
-  }, [selectedSemester]);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = selectedSemester === 'all' 
+      const data = selectedSemester === 'all'
         ? await noteService.getAll()
         : await noteService.getBySemester(Number(selectedSemester));
-      setNotes(response.data);
+      setNotes(data);
     } catch (err) {
       setError('Failed to load notes. Please try again later.');
       console.error('Error fetching notes:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedSemester]);
+
+  React.useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
 
   const handleDownload = async (note: Note) => {
     try {
