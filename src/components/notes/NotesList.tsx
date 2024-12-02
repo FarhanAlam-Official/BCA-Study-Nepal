@@ -1,34 +1,22 @@
-import React, { useState, useCallback } from 'react';
-import { BookOpen, Download, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen } from 'lucide-react';
+import { useData } from '../../services/hooks/useData';
 import { noteService } from '../../services/api/noteService';
 import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorDisplay from '../common/ErrorDisplay';
+import DataCard from '../common/DataCard';
 import { Note } from '../../services/types';
 
 const NotesList: React.FC = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedSemester, setSelectedSemester] = useState<number | 'all'>('all');
 
-  const fetchNotes = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = selectedSemester === 'all'
-        ? await noteService.getAll()
-        : await noteService.getBySemester(Number(selectedSemester));
-      setNotes(data);
-    } catch (err) {
-      setError('Failed to load notes. Please try again later.');
-      console.error('Error fetching notes:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedSemester]);
-
-  React.useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+  const { data: notes, loading, error, refetch } = useData<Note[]>({
+    fetchFn: () =>
+      selectedSemester === 'all'
+        ? noteService.getAll()
+        : noteService.getBySemester(Number(selectedSemester)),
+    dependencies: [selectedSemester],
+  });
 
   const handleDownload = async (note: Note) => {
     try {
@@ -48,19 +36,7 @@ const NotesList: React.FC = () => {
   }
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center px-4">
-        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Notes</h3>
-        <p className="text-gray-500">{error}</p>
-        <button
-          onClick={fetchNotes}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Try Again
-        </button>
-      </div>
-    );
+    return <ErrorDisplay message={error} onRetry={refetch} />;
   }
 
   return (
@@ -81,7 +57,7 @@ const NotesList: React.FC = () => {
         </select>
       </div>
 
-      {notes.length === 0 ? (
+      {!notes?.length ? (
         <div className="text-center py-12">
           <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No notes found</h3>
@@ -94,54 +70,26 @@ const NotesList: React.FC = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {notes.map((note) => (
-            <div
+            <DataCard
               key={note.id}
-              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-12 w-12 bg-indigo-100 rounded-md flex items-center justify-center">
-                      <BookOpen className="h-6 w-6 text-indigo-600" />
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-medium text-gray-900">{note.title}</h3>
-                    <p className="text-sm text-gray-500">
-                      {note.subject} • Semester {note.semester}
-                    </p>
-                  </div>
-                </div>
-                
-                {note.description && (
-                  <p className="mt-3 text-sm text-gray-600">{note.description}</p>
-                )}
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
-                    Uploaded: {new Date(note.upload_date).toLocaleDateString()}
-                  </span>
-                  {note.is_verified && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Verified
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => handleDownload(note)}
-                  className="mt-4 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Notes
-                </button>
-              </div>
-            </div>
+              title={note.title}
+              subtitle={`${note.subject} • Semester ${note.semester}`}
+              description={note.description}
+              icon={<BookOpen className="h-6 w-6 text-indigo-600" />}
+              metadata={[
+                {
+                  label: 'Uploaded',
+                  value: new Date(note.upload_date).toLocaleDateString(),
+                },
+              ]}
+              tags={note.is_verified ? ['Verified'] : []}
+              onDownload={() => handleDownload(note)}
+            />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
 export default NotesList;

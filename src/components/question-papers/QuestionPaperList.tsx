@@ -1,34 +1,23 @@
-import React, { useState, useCallback } from 'react';
-import { FileText, Download, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText } from 'lucide-react';
+import { useData } from '../../services/hooks/useData';
 import { questionPaperService } from '../../services/api/questionPaperService';
 import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorDisplay from '../common/ErrorDisplay';
+import DataCard from '../common/DataCard';
 import { QuestionPaper } from '../../services/types';
 
 const QuestionPaperList: React.FC = () => {
-  const [papers, setPapers] = useState<QuestionPaper[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 
-  const fetchPapers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = selectedYear === 'all'
-        ? await questionPaperService.getAll()
-        : await questionPaperService.getByYear(Number(selectedYear));
-      setPapers(data);
-    } catch (err) {
-      setError('Failed to load question papers. Please try again later.');
-      console.error('Error fetching question papers:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedYear]);
+  const { data: papers, loading, error, refetch } = useData<QuestionPaper[]>({
+    fetchFn: () =>
+      selectedYear === 'all'
+        ? questionPaperService.getAll()
+        : questionPaperService.getByYear(Number(selectedYear)),
+    dependencies: [selectedYear],
+  });
 
-  React.useEffect(() => {
-    fetchPapers();
-  }, [fetchPapers]);
   const handleDownload = async (paper: QuestionPaper) => {
     try {
       await questionPaperService.download(paper.file);
@@ -52,19 +41,7 @@ const QuestionPaperList: React.FC = () => {
   }
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center px-4">
-        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Question Papers</h3>
-        <p className="text-gray-500">{error}</p>
-        <button
-          onClick={fetchPapers}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Try Again
-        </button>
-      </div>
-    );
+    return <ErrorDisplay message={error} onRetry={refetch} />;
   }
 
   return (
@@ -85,7 +62,7 @@ const QuestionPaperList: React.FC = () => {
         </select>
       </div>
 
-      {papers.length === 0 ? (
+      {!papers?.length ? (
         <div className="text-center py-12">
           <FileText className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No question papers found</h3>
@@ -98,45 +75,24 @@ const QuestionPaperList: React.FC = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {papers.map((paper) => (
-            <div
+            <DataCard
               key={paper.id}
-              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-12 w-12 bg-indigo-100 rounded-md flex items-center justify-center">
-                      <FileText className="h-6 w-6 text-indigo-600" />
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-medium text-gray-900">{paper.subject}</h3>
-                    <p className="text-sm text-gray-500">
-                      Year {paper.year} • Semester {paper.semester}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
-                    Uploaded: {new Date(paper.upload_date).toLocaleDateString()}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => handleDownload(paper)}
-                  className="mt-4 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Paper
-                </button>
-              </div>
-            </div>
+              title={paper.subject}
+              subtitle={`Year ${paper.year} • Semester ${paper.semester}`}
+              icon={<FileText className="h-6 w-6 text-indigo-600" />}
+              metadata={[
+                {
+                  label: 'Uploaded',
+                  value: new Date(paper.upload_date).toLocaleDateString(),
+                },
+              ]}
+              onDownload={() => handleDownload(paper)}
+            />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
 export default QuestionPaperList;
