@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 
+#Ignoring the folders containing the data files
 backend/media/
 backend/notes/
 
