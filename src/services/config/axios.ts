@@ -1,7 +1,17 @@
-import axios from 'axios';
-import { refreshToken } from '../auth/authService.ts';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
-// Use import.meta.env for Vite environment variables
+// Extend AxiosRequestConfig to include `_retry`
+declare module 'axios' {
+  export interface InternalAxiosRequestConfig extends AxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
+interface ErrorResponse {
+  detail?: string;
+  [key: string]: unknown; // Allow additional fields in the response
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const api = axios.create({
@@ -23,30 +33,33 @@ api.interceptors.request.use((config) => {
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (error: AxiosError<ErrorResponse>) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const message = `Too many requests. Please try again ${
+        retryAfter ? `in ${retryAfter} seconds` : 'later'
+      }.`;
+      return Promise.reject(new Error(message));
+    }
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refresh = localStorage.getItem('refresh_token');
-      if (refresh) {
-        try {
-          const { access } = await refreshToken(refresh);
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${access}`;
-          }
-          return api(originalRequest);
-        } catch (refreshError) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          window.location.href = '/login';
-          return Promise.reject(refreshError);
-        }
+      try {
+        // Handle token refresh here if needed
+        return api(originalRequest);
+      } catch (refreshError) {
+        localStorage.removeItem('access_token');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error);
+    // Handle other errors
+    const errorMessage = error.response?.data?.detail || error.message || 'An unknown error occurred.';
+    return Promise.reject(new Error(errorMessage));
   }
 );
 

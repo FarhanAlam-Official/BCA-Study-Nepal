@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FileText } from 'lucide-react';
 import { useData } from '../../services/hooks/useData';
 import { questionPaperService } from '../../services/api/questionPaperService';
@@ -10,12 +10,15 @@ import { QuestionPaper } from '../../services/types';
 const QuestionPaperList: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
 
+  const fetchPapers = useCallback(() => {
+    return selectedYear === 'all'
+      ? questionPaperService.getAll()
+      : questionPaperService.getByYear(Number(selectedYear));
+  }, [selectedYear]);
+
   const { data: papers, loading, error, refetch } = useData<QuestionPaper[]>({
-    fetchFn: () =>
-      selectedYear === 'all'
-        ? questionPaperService.getAll()
-        : questionPaperService.getByYear(Number(selectedYear)),
-    dependencies: [selectedYear],
+    fetchFn: fetchPapers,
+    dependencies: [selectedYear]
   });
 
   const handleDownload = async (paper: QuestionPaper) => {
