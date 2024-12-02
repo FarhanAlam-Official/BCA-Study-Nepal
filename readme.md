@@ -104,4 +104,4 @@
     <li><strong>Email :</strong> <a href="mailto:istaqalam930@gmail.com">istaqalam930@gmail.com</a></li>
 </ul>
 
-<p align="center">Made with ❤️ by <a href="https://github.com/FarhanAlam-Official">Farhan Alam</a></p>
+<p align="center">Made with ❤️ by <a href="https://github.com/FarhanAlam-Official">Farhan Alam and team</a></p>
