@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 from dotenv import load_dotenv
 import os
 
@@ -170,6 +171,12 @@ REST_FRAMEWORK = {
         'user': '1000/day'
     }
 }
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
 
 # Security Settings
 if not DEBUG:
