@@ -20,7 +20,7 @@ schema_view = get_schema_view(
 
 router = DefaultRouter()
 router.register(r'colleges', CollegeViewSet)
-router.register(r'notes', NoteViewSet)
+router.register(r'notes', NoteViewSet, basename='note')  # Add 'basename' here
 router.register(r'events', EventViewSet)
 router.register(r'question-papers', QuestionPaperViewSet)
 

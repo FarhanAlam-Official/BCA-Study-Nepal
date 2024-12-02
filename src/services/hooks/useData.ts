@@ -1,18 +1,26 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback } from 'react';
 import { AxiosError } from 'axios';
+
+// Define the expected structure of error responses
+interface ErrorResponse {
+  message?: string; // Optional message field for error details
+  [key: string]: unknown; // Allow additional fields in the error response
+}
 
 interface UseDataOptions<T> {
   fetchFn: () => Promise<T>;
   onSuccess?: (data: T) => void;
-  onError?: (error: AxiosError) => void;
-  dependencies?: unknown[];
+  onError?: (error: AxiosError<ErrorResponse>) => void;
+  dependencies?: unknown[]; // Dependencies for the effect
 }
 
-type ErrorResponse = {
-  message?: string;
-};
-
-export function useData<T>({ fetchFn, onSuccess, onError, dependencies = [] }: UseDataOptions<T>) {
+export function useData<T>({
+  fetchFn,
+  onSuccess,
+  onError,
+  dependencies = [],
+}: UseDataOptions<T>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,18 +34,17 @@ export function useData<T>({ fetchFn, onSuccess, onError, dependencies = [] }: U
       onSuccess?.(result);
     } catch (err) {
       const error = err as AxiosError<ErrorResponse>;
-      const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+      const errorMessage = error.response?.data?.message || error.message || 'Unknown error occurred.';
       setError(errorMessage);
       onError?.(error);
     } finally {
       setLoading(false);
     }
-  }, [fetchFn, onError, onSuccess]);
+  }, [fetchFn, onSuccess, onError, ...(dependencies || [])]);
 
   useEffect(() => {
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData, ...(dependencies || [])]); // Flatten dependencies array
+  }, [fetchData]); // Depend only on fetchData
 
   return { data, loading, error, refetch: fetchData };
 }
