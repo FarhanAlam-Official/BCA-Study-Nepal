@@ -12,6 +12,8 @@ import Career from './pages/Career';
 import Contact from './pages/Contact';
 import NotesList from './components/notes/NotesList';
 import NoteDetail from './components/notes/NoteDetail';
+import PDFViewer from './components/notes/PDFViewer';
+
 
 function HomePage() {
   return (
@@ -23,6 +25,22 @@ function HomePage() {
       <UsefulLinks />
     </>
   );
+}
+
+// function PDFViewerWrapper() {
+//   const { pdfUrl } = useParams();
+//   const navigate = useNavigate();
+  
+//   return (
+//     <PDFViewer 
+//       fileUrl={decodeURIComponent(pdfUrl || '')}
+//       onClose={() => navigate(-1)}
+//     />
+//   );
+// }
+
+function PDFViewerWrapper() {
+  return <PDFViewer />;
 }
 
 function App() {
@@ -38,6 +56,8 @@ function App() {
             <Route path="/colleges" element={<Colleges />} />
             <Route path="/career" element={<Career />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/" element={<NotesList />} />
+            <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
           </Routes>
         </main>
         <Footer />
