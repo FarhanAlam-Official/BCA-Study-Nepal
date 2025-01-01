@@ -5,7 +5,7 @@ from drf_yasg import openapi
 from rest_framework import permissions
 from .views import (
     CollegeViewSet, NoteViewSet,
-    EventViewSet, QuestionPaperViewSet
+    EventViewSet, QuestionPaperViewSet,search
 )
 
 schema_view = get_schema_view(
@@ -28,4 +28,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0)),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
+    path('search/', search, name='search'),
 ]
