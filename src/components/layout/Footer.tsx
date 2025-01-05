@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { SiFacebook, SiX as SiTwitter, SiLinkedin, SiMinutemailer, SiGithub, SiInstagram } from 'react-icons/si';
 import { GraduationCap } from 'lucide-react';
 
-// Expanded navigation with categories
 const navigation = {
   solutions: [
     { name: 'Notes', href: '/notes' },
@@ -24,12 +23,12 @@ const navigation = {
     { name: 'Privacy Policy', href: '/privacy' },
   ],
   social: [
-    { name: 'Facebook', href: '#', icon: SiFacebook },
-    { name: 'Twitter', href: '#', icon: SiTwitter },
-    { name: 'LinkedIn', href: '#', icon: SiLinkedin },
-    { name: 'Instagram', href: '#', icon: SiInstagram },
-    { name: 'GitHub', href: '#', icon: SiGithub },
-    { name: 'Email', href: '#', icon: SiMinutemailer },
+    { name: 'Facebook', href: '#', icon: SiFacebook, color: '#1877F2' },
+    { name: 'Twitter', href: '#', icon: SiTwitter, color: '#1DA1F2' },
+    { name: 'LinkedIn', href: '#', icon: SiLinkedin, color: '#0A66C2' },
+    { name: 'Instagram', href: '#', icon: SiInstagram, color: '#E4405F' },
+    { name: 'GitHub', href: '#', icon: SiGithub, color: '#181717' },
+    { name: 'Email', href: '#', icon: SiMinutemailer, color: '#EA4335' },
   ],
 };
 
@@ -37,21 +36,26 @@ interface FooterItem {
   name: string;
   href: string;
   icon?: React.ComponentType;
+  color?: string;
 }
 
 const FooterSection = memo(({ title, items }: { title: string; items: FooterItem[] }) => (
-  <div className="lg:w-1/4 md:w-1/2 w-full px-4 mb-8 lg:mb-0">
-    <h2 className="font-semibold text-gray-900 tracking-wider text-sm mb-3">
+  <div className="lg:w-1/4 md:w-1/2 w-full px-6">
+    <h2 className="font-bold text-gray-900 tracking-wider text-sm mb-5 relative inline-block">
       {title}
+      <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full" />
     </h2>
-    <ul className="list-none mb-4">
+    <ul className="space-y-3">
       {items.map((item) => (
-        <li key={item.name} className="mb-2">
+        <li key={item.name}>
           <Link
             to={item.href}
-            className="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm"
+            className="text-gray-600 hover:text-indigo-600 transition-all duration-300 relative group text-sm font-medium"
           >
-            {item.name}
+            <span className="relative inline-block">
+              {item.name}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full" />
+            </span>
           </Link>
         </li>
       ))}
@@ -61,28 +65,29 @@ const FooterSection = memo(({ title, items }: { title: string; items: FooterItem
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50">
+    <footer className="relative bg-gradient-to-b from-gray-50 to-white">
       {/* Newsletter Section */}
-      <div className="bg-indigo-600">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
-          <div className="px-6 py-6 lg:px-8">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-90" />
+        <div className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+          <div className="relative rounded-2xl bg-white/10 backdrop-blur-lg shadow-xl p-8">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Stay Updated with PU Portal
               </h2>
-              <p className="mt-4 text-lg text-indigo-100">
+              <p className="mt-4 text-lg text-white/90">
                 Subscribe to our newsletter for the latest updates, study materials, and opportunities.
               </p>
-              <div className="mt-6 flex max-w-md mx-auto gap-x-4">
+              <div className="mt-8 flex max-w-md mx-auto gap-x-4">
                 <input
                   type="email"
                   required
-                  className="min-w-0 flex-auto rounded-md border-0 bg-white/10 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-white/75 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm sm:leading-6"
+                  className="min-w-0 flex-auto rounded-xl border-0 bg-white/10 px-4 py-3 text-white shadow-sm ring-1 ring-inset ring-white/20 placeholder:text-white/60 focus:ring-2 focus:ring-white sm:text-sm sm:leading-6 transition-all duration-300"
                   placeholder="Enter your email"
                 />
                 <button
                   type="submit"
-                  className="flex-none rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  className="flex-none rounded-xl bg-white px-6 py-2.5 text-sm font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all duration-300 hover:scale-105"
                 >
                   Subscribe
                 </button>
@@ -96,12 +101,17 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
         <div className="flex flex-wrap -mx-4">
           {/* Logo Section */}
-          <div className="lg:w-1/4 md:w-1/2 w-full px-4 mb-8 lg:mb-0">
-            <div className="flex items-center">
-              <GraduationCap className="h-10 w-10 text-indigo-600" />
-              <span className="ml-3 text-xl font-bold text-gray-900">PU Portal</span>
+          <div className="lg:w-1/4 md:w-1/2 w-full px-6 mb-8 lg:mb-0">
+            <div className="flex items-center group">
+              <div className="relative">
+                <GraduationCap className="h-10 w-10 text-indigo-600 transition-transform duration-300 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-indigo-600/20 blur-lg rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+              <span className="ml-3 text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                PU Portal
+              </span>
             </div>
-            <p className="mt-4 text-sm text-gray-600 pr-4">
+            <p className="mt-4 text-sm text-gray-600 leading-relaxed pr-4">
               Your comprehensive resource for BCA studies at Pokhara University. Excellence in education, guidance for the future.
             </p>
           </div>
@@ -113,23 +123,28 @@ export default function Footer() {
         </div>
 
         {/* Social Links & Copyright */}
-        <div className="mt-12 border-t border-gray-200 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex space-x-6 mb-4 md:mb-0">
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex gap-6">
               {navigation.social.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-400 hover:text-indigo-600 transition-colors duration-200"
+                  className="group relative"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <span className="sr-only">{item.name}</span>
-                  <item.icon className="h-6 w-6" aria-hidden="true" />
+                  <item.icon 
+                    className={`h-6 w-6 text-gray-400 transition-all duration-300 group-hover:scale-110 hover:text-[${item.color}]`}
+                  />
+                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {item.name}
+                  </span>
                 </a>
               ))}
             </div>
-            <p className="text-base text-gray-400">
+            <p className="text-sm text-gray-500">
               &copy; {new Date().getFullYear()} PU Portal. All rights reserved.
             </p>
           </div>
