@@ -3,9 +3,10 @@ from .models import College, Note, Event, QuestionPaper
 
 @admin.register(College)
 class CollegeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'location', 'rating', 'created_at')
-    search_fields = ('name', 'location')
-    list_filter = ('rating',)
+    list_display = ['name', 'location', 'affiliation', 'rating', 'is_featured']
+    list_filter = ['is_active', 'is_featured', 'institution_type', 'city', 'state']
+    search_fields = ['name', 'description', 'location']
+    prepopulated_fields = {'slug': ('name',)}
 
 @admin.register(Note)
 class NoteAdmin(admin.ModelAdmin):

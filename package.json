@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
+    "@types/lodash": "^4.17.14",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.8",
     "framer-motion": "^11.15.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.462.0",
     "pdfjs-dist": "^3.11.174",
     "react": "^18.3.1",

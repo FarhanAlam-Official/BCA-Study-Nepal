@@ -10,12 +10,27 @@ from .serializers import (
 )
 from .throttling import DownloadRateThrottle, CustomAnonRateThrottle
 from rest_framework.permissions import AllowAny
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 class CollegeViewSet(viewsets.ModelViewSet):
-    queryset = College.objects.all()
+    queryset = College.objects.filter(is_active=True)
     serializer_class = CollegeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    throttle_classes = [CustomAnonRateThrottle]
+    permission_classes=[AllowAny]
+    lookup_field = 'slug'  # Change from id to slug
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    
+    filterset_fields = {
+        'rating': ['gte', 'lte'],
+        'institution_type': ['exact'],
+        'city': ['exact'],
+        'state': ['exact'],
+        'is_featured': ['exact'],
+        'affiliation': ['exact'],
+    }
+    
+    search_fields = ['name', 'description', 'courses_offered']
+    ordering_fields = ['rating', 'name', 'established_year']
 
 class NoteViewSet(viewsets.ModelViewSet):
     serializer_class = NoteSerializer
