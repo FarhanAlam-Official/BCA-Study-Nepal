@@ -1,30 +1,34 @@
 import { motion } from 'framer-motion';
-import { CollegeProvider } from '../context/CollegeContext';
 import CollegeList from '../colleges/CollegeList';
-// import AnimatedPageHeader from '../components/common/AnimatedPageHeader';
+import AnimatedPageHeader from '../components/common/AnimatedPageHeader';
+import { GraduationCap, Building2, Award } from 'lucide-react';
 
 export default function Colleges() {
   return (
-    <CollegeProvider>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-12"
-        >
-          <h2 className="text-4xl font-extrabold text-gray-900 font-poppins">
-            BCA Colleges
-          </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover top-rated colleges offering BCA programs. Compare, explore, and find your perfect educational institution.
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white">
+      <AnimatedPageHeader
+        title="BCA Colleges"
+        subtitle="Find Your Perfect College"
+        description="Discover top-rated colleges offering BCA programs. Compare, explore, and find your perfect educational institution with comprehensive information about courses, facilities, and more."
+        buttonText="Explore Colleges"
+        onButtonClick={() => document.getElementById('collegeList')?.scrollIntoView({ behavior: 'smooth' })}
+        icons={[
+          <GraduationCap size="100%" />,
+          <Building2 size="100%" />,
+          <Award size="100%" />
+        ]}
+      />
 
-        {/* Main content */}
-        <main>
-          <CollegeList />
-        </main>
-      </div>
-    </CollegeProvider>
+      {/* Main content */}
+      <motion.main
+        id="collegeList"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="relative z-10 py-12"
+      >
+        <CollegeList />
+      </motion.main>
+    </div>
   );
 }
