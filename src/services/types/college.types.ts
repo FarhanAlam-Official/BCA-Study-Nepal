@@ -1,10 +1,10 @@
 export interface College {
-    id: string;
+    id: number;
     name: string;
     location: string;
     contact: string;
     affiliation: string;
-    rating: number;
+    rating: number | string;
     image: string;
     created_at: string;
     updated_at: string;

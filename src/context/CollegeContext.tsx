@@ -13,15 +13,12 @@ export const CollegeProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       setLoading(true);
       const response = await collegeService.getAll();
-      const collegesWithDates = response.map(college => ({
-        ...college,
-        id: college.id.toString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })) as College[];
-      setColleges(collegesWithDates);
+      // Check if response is an array
+      const collegesData = Array.isArray(response) ? response : [response];
+      setColleges(collegesData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch colleges');
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }

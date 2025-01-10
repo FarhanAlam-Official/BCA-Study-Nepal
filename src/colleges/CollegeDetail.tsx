@@ -20,9 +20,8 @@ export default function CollegeDetail() {
                 const response = await collegeService.getById(id!);
                 setCollege({
                     ...response,
-                    id: response.id.toString(),
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
+                    id: Number(response.id),
+                    rating: Number(response.rating)
                 } as College);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch college details');
@@ -64,7 +63,7 @@ export default function CollegeDetail() {
                             <h1 className="text-3xl font-bold">{college.name}</h1>
                             <div className="flex items-center mt-2">
                                 <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                                <span className="ml-2 text-lg">{college.rating.toFixed(1)}</span>
+                                <span className="ml-2 text-lg">{Number(college.rating).toFixed(1)}</span>
                             </div>
                         </div>
                     </div>

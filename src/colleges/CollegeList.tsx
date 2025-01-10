@@ -14,7 +14,11 @@ export default function CollegeList() {
         fetchColleges();
     }, [fetchColleges]);
 
+    console.log('Raw colleges data:', colleges);
+    console.log('First college:', colleges[0]);
+
     const filteredColleges = colleges.filter((college: College) => {
+        console.log('Filtering college:', college);
         let matches = true;
 
         if (filters.search) {
@@ -29,20 +33,9 @@ export default function CollegeList() {
         return matches;
     });
 
-    console.log('Loading state:', loading);
-    console.log('Colleges:', colleges);
-
-    if (loading) {
-        return <LoadingSpinner />;
-    }
-
-    if (error) {
-        return <div className="text-red-500">{error}</div>;
-    }
-
-    if (!colleges.length) {
-        return <div>No colleges found</div>;
-    }
+    if (loading) return <LoadingSpinner />;
+    if (error) return <div className="text-red-500">{error}</div>;
+    if (!colleges.length) return <div>No colleges found</div>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -54,12 +47,13 @@ export default function CollegeList() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
             >
-                {filteredColleges.map((college: College, index: number) => (
-                    <CollegeCard key={college.id} college={college} index={index} />
-                ))}
-                {filteredColleges.length === 0 && (
-                    <div className="col-span-2 text-center py-12 text-gray-500">
-                        No colleges found matching your criteria
+                {filteredColleges.length > 0 ? (
+                    filteredColleges.map((college: College, index: number) => (
+                        <CollegeCard key={college.id} college={college} index={index} />
+                    ))
+                ) : (
+                    <div className="col-span-2 text-center py-12">
+                        No colleges match your search criteria
                     </div>
                 )}
             </motion.div>
