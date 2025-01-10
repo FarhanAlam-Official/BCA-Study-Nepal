@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Building2, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { College } from '../services/types/college.types';
 
 interface CollegeCardProps {
@@ -9,6 +9,8 @@ interface CollegeCardProps {
 }
 
 export default function CollegeCard({ college, index }: CollegeCardProps) {
+    const navigate = useNavigate();
+    
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -21,7 +23,7 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                 <div className="relative flex-shrink-0 w-full sm:w-48 h-48">
                     <img
                         className="absolute inset-0 w-full h-full object-cover"
-                        src={college.image}
+                        src={college.image || '/placeholder.jpg'}
                         alt={college.name}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-20 transition-opacity duration-300 hover:bg-opacity-10" />
@@ -35,7 +37,7 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                         <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-lg">
                             <Star className="h-5 w-5 text-yellow-400 fill-current" />
                             <span className="ml-1 font-medium text-yellow-700">
-                                {college.rating.toFixed(1)}
+                                {Number(college.rating || 0).toFixed(1)}
                             </span>
                         </div>
                     </div>
@@ -57,15 +59,14 @@ export default function CollegeCard({ college, index }: CollegeCardProps) {
                         </div>
                     </div>
 
-                    <Link to={`/colleges/${college.id}`}>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="mt-6 w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-300 font-medium text-sm"
-                        >
-                            View Details
-                        </motion.button>
-                    </Link>
+                    <motion.button
+                        onClick={() => navigate(`/colleges/${college.id}`)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="mt-6 w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-300 font-medium text-sm"
+                    >
+                        View Details
+                    </motion.button>
                 </div>
             </div>
         </motion.div>

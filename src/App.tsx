@@ -13,6 +13,7 @@ import Contact from './pages/Contact';
 import NotesList from './components/notes/NotesList';
 import NoteDetail from './components/notes/NoteDetail';
 import PDFViewer from './components/notes/PDFViewer';
+import CollegeDetail from './colleges/CollegeDetail';
 
 
 function HomePage() {
@@ -58,6 +59,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/" element={<NotesList />} />
             <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
+            <Route path="/colleges/:id" element={<CollegeDetail />} />
           </Routes>
         </main>
         <Footer />
