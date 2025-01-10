@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, ArrowRight, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedPageHeader from '../components/common/AnimatedPageHeader';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -23,26 +24,43 @@ export default function Contact() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Enhanced animation variants
+  // Add these variants inside the Contact component
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
+        staggerChildren: 0.1
       }
     }
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
+      opacity: 1,
       y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
+  const contentVariants = {
+    collapsed: {
+      height: 0,
+      opacity: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeInOut"
+      }
+    },
+    expanded: {
+      height: "auto",
       opacity: 1,
       transition: {
-        type: "spring",
-        stiffness: 100,
+        duration: 0.4,
+        ease: "easeInOut"
       }
     }
   };
@@ -82,120 +100,62 @@ export default function Contact() {
     }
   };
 
-  const faqVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
-
-  const faqContentVariants = {
-    collapsed: { 
-      height: 0,
-      opacity: 0,
-      transition: {
-        duration: 0.4,
-        ease: "easeInOut"
-      }
-    },
-    expanded: { 
-      height: "auto",
-      opacity: 1,
-      transition: {
-        duration: 0.4,
-        ease: "easeInOut"
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* First Section - Full Viewport Height */}
-      <div className="h-screen flex flex-col justify-center">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
-          {/* Hero Section */}
-          <motion.div 
-            variants={itemVariants}
-            className="text-center mb-20"
-          >
-            <motion.h1 
-              className="text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              Let's Start a Conversation
-            </motion.h1>
-            <motion.p 
-              className="text-xl text-gray-600 max-w-2xl mx-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              Have a question or want to work together? We'd love to hear from you.
-            </motion.p>
-          </motion.div>
+      <AnimatedPageHeader
+        title="Let's Start a Conversation"
+        description="Have a question or want to work together? We'd love to hear from you."
+        icons={[<Mail size="100%" />, <Phone size="100%" />, <MapPin size="100%" />]}
+      />
 
-          {/* Contact Methods Grid */}
-          <motion.div 
-            variants={itemVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            {[
-              {
-                icon: Phone,
-                title: "Call Us",
-                description: "Mon-Fri from 8am to 5pm",
-                action: "+977-1-234567",
-                color: "from-blue-500 to-cyan-400"
-              },
-              {
-                icon: Mail,
-                title: "Email Us",
-                description: "We'll respond within 24 hours",
-                action: "contact@example.com",
-                color: "from-purple-500 to-pink-500"
-              },
-              {
-                icon: MapPin,
-                title: "Visit Us",
-                description: "Come say hello at our office",
-                action: "Pokhara-30, Kaski, Nepal",
-                color: "from-amber-500 to-orange-400"
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                className="relative group"
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 200 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl blur-xl"
-                  style={{ background: `linear-gradient(to right, var(--tw-gradient-${item.color}))` }}
-                />
-                <div className="relative bg-white p-8 rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300">
-                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${item.color} text-white mb-4`}>
-                    <item.icon size={24} />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
-                  <a href="#" className="inline-flex items-center text-indigo-600 hover:text-indigo-700">
-                    {item.action}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
+      {/* Contact Methods Grid */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: Phone,
+              title: "Call Us",
+              description: "Mon-Fri from 8am to 5pm",
+              action: "+977-1-234567",
+              color: "from-blue-500 to-cyan-400"
+            },
+            {
+              icon: Mail,
+              title: "Email Us",
+              description: "We'll respond within 24 hours",
+              action: "contact@example.com",
+              color: "from-purple-500 to-pink-500"
+            },
+            {
+              icon: MapPin,
+              title: "Visit Us",
+              description: "Come say hello at our office",
+              action: "Pokhara-30, Kaski, Nepal",
+              color: "from-amber-500 to-orange-400"
+            }
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              className="relative group"
+              whileHover={{ y: -5 }}
+              transition={{ type: "spring", stiffness: 200 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl blur-xl"
+                style={{ background: `linear-gradient(to right, var(--tw-gradient-${item.color}))` }}
+              />
+              <div className="relative bg-white p-8 rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300">
+                <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${item.color} text-white mb-4`}>
+                  <item.icon size={24} />
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                <p className="text-gray-600 mb-4">{item.description}</p>
+                <a href="#" className="inline-flex items-center text-indigo-600 hover:text-indigo-700">
+                  {item.action}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
 
@@ -315,20 +275,22 @@ export default function Contact() {
             </motion.div>
           </div>
 
-          {/* FAQ Section - Updated */}
+          {/* Updated FAQ Section */}
           <motion.div
-            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
             className="mt-32 mb-20"
           >
             <motion.h2 
+              variants={itemVariants}
               className="text-4xl font-bold text-center mb-4"
-              variants={faqVariants}
             >
               Frequently Asked Questions
             </motion.h2>
             <motion.p 
+              variants={itemVariants}
               className="text-gray-600 text-center mb-12 max-w-2xl mx-auto"
-              variants={faqVariants}
             >
               Got questions? We've got answers! Check out our most commonly asked questions below.
             </motion.p>
@@ -336,50 +298,70 @@ export default function Contact() {
             <div className="max-w-3xl mx-auto space-y-4">
               {faqs.map((faq, index) => (
                 <motion.div
-                  key={index}
+                  key={`faq-${index}`}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  layout
                   className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100"
-                  variants={faqVariants}
-                  whileHover={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
                 >
-                  <motion.button
-                    className="w-full p-6 text-left flex justify-between items-center group"
-                    onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                  >
-                    <span className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
-                      {faq.q}
-                    </span>
-                    <motion.div
-                      animate={{ 
-                        rotate: expandedFaq === index ? 90 : 0,
-                        backgroundColor: expandedFaq === index ? 'rgb(99 102 241)' : 'rgb(243 244 246)'
-                      }}
-                      transition={{ duration: 0.2 }}
-                      className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-600"
-                    >
-                      <ArrowRight className={`h-4 w-4 transition-colors duration-200 ${
-                        expandedFaq === index ? 'text-white' : 'text-gray-500 group-hover:text-white'
-                      }`} />
-                    </motion.div>
-                  </motion.button>
-                  
                   <motion.div
-                    initial="collapsed"
-                    animate={expandedFaq === index ? "expanded" : "collapsed"}
-                    variants={faqContentVariants}
-                    className="overflow-hidden"
+                    className="relative"
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30
+                    }}
                   >
-                    <motion.div 
-                      className="p-6 pt-0 text-gray-600 bg-gradient-to-b from-white to-gray-50"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3, delay: 0.1 }}
+                    <button
+                      onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                      className="w-full p-6 text-left flex justify-between items-center group"
                     >
-                      <div className="prose prose-sm max-w-none">
-                        {faq.a}
-                      </div>
-                    </motion.div>
+                      <span className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+                        {faq.q}
+                      </span>
+                      <motion.div
+                        animate={{ 
+                          rotate: expandedFaq === index ? 90 : 0,
+                          backgroundColor: expandedFaq === index ? 'rgb(99 102 241)' : 'rgb(243 244 246)'
+                        }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-violet-600"
+                      >
+                        <ArrowRight className={`h-4 w-4 transition-colors duration-200 ${
+                          expandedFaq === index 
+                            ? 'text-white' 
+                            : 'text-gray-500 group-hover:text-white/90'
+                        }`} />
+                      </motion.div>
+                    </button>
                   </motion.div>
+
+                  <AnimatePresence initial={false}>
+                    {expandedFaq === index && (
+                      <motion.div
+                        key={`content-${index}`}
+                        initial="collapsed"
+                        animate="expanded"
+                        exit="collapsed"
+                        variants={contentVariants}
+                        className="overflow-hidden"
+                      >
+                        <motion.div 
+                          className="p-6 pt-0 text-gray-600 bg-gradient-to-b from-white to-gray-50"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="prose prose-sm max-w-none">
+                            {faq.a}
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               ))}
             </div>
