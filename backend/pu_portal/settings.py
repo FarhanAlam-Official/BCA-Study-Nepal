@@ -126,6 +126,15 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# Get base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# Google Drive Settings
+GOOGLE_DRIVE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'credentials.json')
+GOOGLE_DRIVE_FOLDER_ID = '1X3GN51Q9qawspMhdEuPIbrpCx9aIG1SA'  # Optional: specific folder in Drive
+
+
 # REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -145,7 +154,7 @@ REST_FRAMEWORK = {
         'user': '1000/minute',
         'download': '30/minute',
     },
-    'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler.custom_exception_handler',
 }
 
 # File Upload Settings
