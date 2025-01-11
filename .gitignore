@@ -16,6 +16,11 @@ dist-ssr
 #Ignoring the folders containing the data files
 backend/media/
 backend/notes/
+test.pdf
+
+# Credentials
+credentials/
+*.json
 
 # Editor directories and files
 .vscode/*
