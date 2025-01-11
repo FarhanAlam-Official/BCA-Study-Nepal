@@ -12,6 +12,11 @@ from .throttling import DownloadRateThrottle, CustomAnonRateThrottle
 from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
+from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.contrib.auth.models import User
 
 class CollegeViewSet(viewsets.ModelViewSet):
     queryset = College.objects.filter(is_active=True)
@@ -77,13 +82,86 @@ class EventViewSet(viewsets.ModelViewSet):
 class QuestionPaperViewSet(viewsets.ModelViewSet):
     queryset = QuestionPaper.objects.all()
     serializer_class = QuestionPaperSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    throttle_classes = [CustomAnonRateThrottle]
+    permission_classes = [permissions.AllowAny]
+    parser_classes = (MultiPartParser, FormParser)
 
-    @action(detail=True, methods=['get'], throttle_classes=[DownloadRateThrottle])
+    def create(self, request, *args, **kwargs):
+        try:
+            print("Files:", request.FILES)  # Debug print
+            print("Data:", request.data)    # Debug print
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            print("Error:", str(e))  # Debug print
+            raise
+
+    def perform_create(self, serializer):
+        try:
+            # Get or create a test user (for development only)
+            user, created = User.objects.get_or_create(
+                username='testuser',
+                defaults={'email': 'test@example.com'}
+            )
+            if created:
+                user.set_password('testpass123')
+                user.save()
+
+            file_obj = self.request.FILES.get('file')
+            if file_obj:
+                instance = serializer.save(
+                    uploaded_by=user,  # Use the test user
+                    status='PENDING'
+                )
+                instance.upload_file(file_obj)
+                instance.save()
+            else:
+                serializer.save(
+                    uploaded_by=user,  # Use the test user
+                    status='PENDING'
+                )
+        except Exception as e:
+            print("Error in perform_create:", str(e))
+            raise
+
+    @action(detail=True, methods=['get'])
     def download(self, request, pk=None):
         paper = self.get_object()
-        return Response({'file_url': paper.file.url})
+        paper.increment_download_count()
+        return Response({
+            'file_url': paper.file_url,
+            'filename': f"{paper.subject.code}_{paper.year}_SEM{paper.semester}.pdf"
+        })
+
+    @action(detail=True, methods=['post'])
+    def verify(self, request, pk=None):
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only staff can verify papers'}, 
+                status=403
+            )
+            
+        paper = self.get_object()
+        paper.status = 'VERIFIED'
+        paper.verified_by = request.user
+        paper.verified_date = timezone.now()
+        paper.save()
+        
+        return Response({'status': 'verified'})
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only staff can reject papers'}, 
+                status=403
+            )
+            
+        paper = self.get_object()
+        paper.status = 'REJECTED'
+        paper.verified_by = request.user
+        paper.verified_date = timezone.now()
+        paper.save()
+        
+        return Response({'status': 'rejected'})
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -127,6 +205,20 @@ def search(request):
             'url': f'/colleges/{college.id}',
             'description': f"Location: {college.location}, Affiliation: {college.affiliation}"
         } for college in colleges])
+
+        # Search Question Papers
+        papers = QuestionPaper.objects.filter(
+            Q(subject__name__icontains=query) |
+            Q(subject__code__icontains=query) |
+            Q(notes__icontains=query)
+        ).select_related('subject')[:5]
+        
+        results.extend([{
+            'title': f"{paper.subject.code} - {paper.year}",
+            'type': 'question_paper',
+            'url': f'/question-papers/{paper.id}',
+            'description': f"Subject: {paper.subject.name}, Year: {paper.year}, Sem: {paper.semester}"
+        } for paper in papers])
 
         return Response(results)
         
