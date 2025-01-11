@@ -29,7 +29,8 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(QuestionPaper)
 class QuestionPaperAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'year', 'semester', 'upload_date')
-    list_filter = ('year', 'semester')
-    search_fields = ('subject',)
-    date_hierarchy = 'upload_date'
+    list_display = ['subject', 'year', 'semester', 'created_at', 'status']
+    list_filter = ['year', 'semester', 'status']
+    search_fields = ['subject__name', 'subject__code']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['drive_file_id', 'drive_file_url', 'created_at', 'updated_at']
