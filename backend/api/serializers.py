@@ -60,6 +60,42 @@ class EventSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class QuestionPaperSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(write_only=True, required=False)
+    file_url = serializers.URLField(required=False)
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    subject_code = serializers.CharField(source='subject.code', read_only=True)
+    uploaded_by_name = serializers.CharField(source='uploaded_by.username', read_only=True)
+    verified_by_name = serializers.CharField(source='verified_by.username', read_only=True)
+    program_name = serializers.CharField(source='subject.program.name', read_only=True)
+
     class Meta:
         model = QuestionPaper
-        fields = '__all__'
+        fields = [
+            'id', 'subject', 'subject_name', 'subject_code', 'program_name',
+            'year', 'semester', 'exam_type', 'status', 'file', 'file_url',
+            'storage_type',
+            'full_marks', 'pass_marks', 'duration_hours',
+            'uploaded_by_name', 'verified_by_name',
+            'upload_date', 'verified_date',
+            'view_count', 'download_count',
+            'notes', 'tags'
+        ]
+        read_only_fields = [
+            'status', 'uploaded_by_name', 'verified_by_name',
+            'verified_date', 'view_count', 'download_count'
+        ]
+
+    def validate(self, data):
+        if not self.instance:  # Only for creation
+            if 'file' not in self.context['request'].FILES and 'file_url' not in data:
+                raise serializers.ValidationError('Either file or file_url must be provided')
+        return data
+
+    def create(self, validated_data):
+        file_obj = self.context['request'].FILES.get('file')
+        if file_obj:
+            instance = super().create(validated_data)
+            instance.upload_file(file_obj, validated_data.get('storage_type', 'LOCAL'))
+            instance.save()
+            return instance
+        return super().create(validated_data)
