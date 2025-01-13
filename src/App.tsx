@@ -14,6 +14,7 @@ import NotesList from './components/notes/NotesList';
 import NoteDetail from './components/notes/NoteDetail';
 import PDFViewer from './components/notes/PDFViewer';
 import CollegeDetail from './colleges/CollegeDetail';
+import QuestionPaperList from './components/question-papers/QuestionPaperList';
 
 
 function HomePage() {
@@ -60,6 +61,8 @@ function App() {
             <Route path="/" element={<NotesList />} />
             <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
             <Route path="/colleges/:id" element={<CollegeDetail />} />
+            <Route path="question-papers" element={<QuestionPaperList />} />
+            {/* <Route path="syllabus" element={<Syllabus />} /> */}
           </Routes>
         </main>
         <Footer />
