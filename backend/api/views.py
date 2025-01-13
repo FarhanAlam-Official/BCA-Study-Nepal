@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import College, Note, Event, QuestionPaper
+from .models import College, Note, Event, QuestionPaper, Program, Subject
 from .serializers import (
     CollegeSerializer, NoteSerializer, EventSerializer,
-    QuestionPaperSerializer, UserSerializer
+    QuestionPaperSerializer, UserSerializer, ProgramSerializer, SubjectSerializer
 )
 from .throttling import DownloadRateThrottle, CustomAnonRateThrottle
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -81,16 +81,61 @@ class EventViewSet(viewsets.ModelViewSet):
 
 class QuestionPaperViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = QuestionPaper.objects.all()
     serializer_class = QuestionPaperSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    
+    filterset_fields = {
+        'year': ['exact', 'gte', 'lte'],
+        'semester': ['exact'],
+        'subject__program': ['exact'],
+        'subject__code': ['exact', 'icontains'],
+        'status': ['exact'],
+    }
+    
+    search_fields = ['subject__name', 'subject__code', 'notes']
+    ordering_fields = ['year', 'semester', 'created_at', 'download_count']
+    ordering = ['-created_at']
 
     def get_queryset(self):
-        queryset = QuestionPaper.objects.all()
-        # Add filters based on query parameters
-        subject = self.request.query_params.get('subject', None)
-        if subject:
-            queryset = queryset.filter(subject__name=subject)
+        queryset = QuestionPaper.objects.select_related(
+            'subject', 
+            'subject__program', 
+            'uploaded_by'
+        ).all()
+
+        program_id = self.request.query_params.get('program')
+        if program_id:
+            queryset = queryset.filter(subject__program_id=program_id)
+
         return queryset
+
+    @action(detail=False, methods=['get'])
+    def by_program(self, request):
+        """Get question papers grouped by program"""
+        program_id = request.query_params.get('program_id')
+        if not program_id:
+            raise ValidationError('Program ID is required')
+
+        papers = self.get_queryset().filter(
+            subject__program_id=program_id
+        ).order_by('semester', 'subject__name', '-year')
+
+        # Group by semester
+        semesters = {}
+        for paper in papers:
+            if paper.semester not in semesters:
+                semesters[paper.semester] = []
+            semesters[paper.semester].append(self.get_serializer(paper).data)
+
+        return Response({
+            'semesters': [
+                {
+                    'semester': sem,
+                    'papers': papers
+                }
+                for sem, papers in sorted(semesters.items())
+            ]
+        })
 
     def create(self, request, *args, **kwargs):
         try:
@@ -232,3 +277,43 @@ def search(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return Response({"error": str(e)}, status=500)
+
+# Add new viewsets for Programs and Subjects
+class ProgramViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Program.objects.filter(is_active=True).order_by('name')
+    serializer_class = ProgramSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'description']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def subjects(self, request, pk=None):
+        """Get subjects for a specific program grouped by semester"""
+        program = self.get_object()
+        subjects = Subject.objects.filter(
+            program=program,
+            is_active=True
+        ).order_by('semester', 'name')
+
+        # Group subjects by semester
+        semesters = {}
+        for subject in subjects:
+            if subject.semester not in semesters:
+                semesters[subject.semester] = []
+            semesters[subject.semester].append(SubjectSerializer(subject).data)
+
+        return Response({
+            'program': ProgramSerializer(program).data,
+            'semesters': [
+                {
+                    'semester': sem,
+                    'subjects': subj_list
+                }
+                for sem, subj_list in sorted(semesters.items())
+            ]
+        })
