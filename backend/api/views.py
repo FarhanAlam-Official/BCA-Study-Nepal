@@ -9,7 +9,7 @@ from .serializers import (
     QuestionPaperSerializer, UserSerializer
 )
 from .throttling import DownloadRateThrottle, CustomAnonRateThrottle
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
@@ -80,10 +80,17 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response({'status': 'registered for event'})
 
 class QuestionPaperViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = QuestionPaper.objects.all()
     serializer_class = QuestionPaperSerializer
-    permission_classes = [permissions.AllowAny]
-    parser_classes = (MultiPartParser, FormParser)
+
+    def get_queryset(self):
+        queryset = QuestionPaper.objects.all()
+        # Add filters based on query parameters
+        subject = self.request.query_params.get('subject', None)
+        if subject:
+            queryset = queryset.filter(subject__name=subject)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         try:
