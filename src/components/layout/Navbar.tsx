@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   GraduationCap,
@@ -9,6 +9,9 @@ import {
   X,
   Home,
   Mail,
+  ChevronDown,
+  FileText,
+  FileQuestion,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBar from './SearchBar';
@@ -17,11 +20,20 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  children?: NavItem[];
 }
 
 const navigation: NavItem[] = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Notes', href: '/notes', icon: BookOpen },
+  { 
+    name: 'Resources', 
+    href: '#', 
+    icon: BookOpen,
+    children: [
+      { name: 'Notes', href: '/notes', icon: FileText },
+      { name: 'Question Papers', href: '/question-papers', icon: FileQuestion },
+    ]
+  },
   { name: 'Syllabus', href: '/syllabus', icon: GraduationCap },
   { name: 'Colleges', href: '/colleges', icon: School },
   { name: 'Career', href: '/career', icon: BriefcaseIcon },
@@ -33,26 +45,149 @@ interface NavLinkProps {
   mobile?: boolean;
 }
 
-const NavLink = ({ item, mobile = false }: NavLinkProps) => (
-  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-    <Link
-      key={item.name}
-      to={item.href}
-      className={`group flex items-center transition-colors duration-200 ${
-        mobile
-          ? 'px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 w-full'
-          : 'inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900'
-      }`}
+const NavLink = ({ item, mobile = false }: NavLinkProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  
+  // Check if current path matches item or any of its children
+  const isActive = item.href === location.pathname || 
+                  item.children?.some(child => child.href === location.pathname);
+
+  // Check if any child is active (for dropdown)
+  const hasActiveChild = item.children?.some(child => child.href === location.pathname);
+
+  if (item.children) {
+    return (
+      <div className="relative">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative"
+          onMouseEnter={() => !mobile && setIsOpen(true)}
+          onMouseLeave={() => !mobile && setIsOpen(false)}
+        >
+          <button
+            onClick={() => mobile && setIsOpen(!isOpen)}
+            className={`group flex items-center transition-all duration-200 ${
+              mobile
+                ? 'px-4 py-2 text-base font-medium w-full'
+                : 'inline-flex items-center px-1 pt-1 text-sm font-medium'
+            } ${
+              hasActiveChild 
+                ? 'text-indigo-600 bg-indigo-50/50' 
+                : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            <item.icon
+              className={`${
+                mobile ? 'h-6 w-6 mr-3' : 'h-5 w-5 mr-2'
+              } ${
+                hasActiveChild 
+                  ? 'text-indigo-600 stroke-[2]' 
+                  : 'text-gray-500 group-hover:text-indigo-700 group-hover:stroke-[2]'
+              } transition-all duration-200`}
+            />
+            {item.name}
+            <ChevronDown 
+              className={`ml-1 h-4 w-4 transition-all duration-300 ${
+                isOpen || hasActiveChild ? 'rotate-180 text-indigo-600' : 'text-gray-500'
+              } group-hover:text-indigo-700`} 
+            />
+          </button>
+
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className={`${
+                  mobile 
+                    ? 'mt-0 ml-6' 
+                    : 'absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 overflow-hidden'
+                }`}
+              >
+                {item.children.map((child, index) => {
+                  const isChildActive = child.href === location.pathname;
+                  
+                  return (
+                    <motion.div
+                      key={child.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Link
+                        to={child.href}
+                        className={`block px-4 py-2 text-sm transition-all duration-200 ${
+                          isChildActive
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                        }`}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <div className="flex items-center group">
+                          <child.icon 
+                            className={`h-4 w-4 mr-2 transition-all duration-200 ${
+                              isChildActive
+                                ? 'text-indigo-700 stroke-[2]'
+                                : 'text-gray-500 group-hover:text-indigo-700 group-hover:stroke-[2]'
+                            }`}
+                          />
+                          <span className={`group-hover:translate-x-1 transition-transform duration-200 ${
+                            isChildActive ? 'font-medium' : ''
+                          }`}>
+                            {child.name}
+                          </span>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div 
+      whileHover={{ scale: 1.05 }} 
+      whileTap={{ scale: 0.95 }}
     >
-      <item.icon
-        className={`${
-          mobile ? 'h-6 w-6 mr-3' : 'h-5 w-5 mr-2'
-        } text-gray-500 group-hover:text-indigo-700 group-hover:stroke-[2] transition-colors duration-200`}
-      />
-      {item.name}
-    </Link>
-  </motion.div>
-);
+      <Link
+        to={item.href}
+        className={`group flex items-center transition-all duration-200 ${
+          mobile
+            ? 'px-4 py-2 text-base font-medium w-full'
+            : 'inline-flex items-center px-1 pt-1 text-sm font-medium'
+        } ${
+          isActive 
+            ? 'text-indigo-600 bg-indigo-50/50' 
+            : 'text-gray-500 hover:text-gray-900'
+        }`}
+      >
+        <item.icon
+          className={`${
+            mobile ? 'h-6 w-6 mr-3' : 'h-5 w-5 mr-2'
+          } ${
+            isActive 
+              ? 'text-indigo-600 stroke-[2]' 
+              : 'text-gray-500 group-hover:text-indigo-700 group-hover:stroke-[2]'
+          } transition-all duration-200`}
+        />
+        <span className={`group-hover:translate-x-1 transition-transform duration-200 ${
+          isActive ? 'font-medium' : ''
+        }`}>
+          {item.name}
+        </span>
+      </Link>
+    </motion.div>
+  );
+};
 
 const Logo = () => (
   <div>
