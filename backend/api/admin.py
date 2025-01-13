@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import College, Note, Event, QuestionPaper
+from .models import College, Note, Event, QuestionPaper, Program, Subject
 
 @admin.register(College)
 class CollegeAdmin(admin.ModelAdmin):
@@ -34,3 +34,16 @@ class QuestionPaperAdmin(admin.ModelAdmin):
     search_fields = ['subject__name', 'subject__code']
     date_hierarchy = 'created_at'
     readonly_fields = ['drive_file_id', 'drive_file_url', 'created_at', 'updated_at']
+
+@admin.register(Program)
+class ProgramAdmin(admin.ModelAdmin):
+    list_display = ('name', 'duration_years', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'description')
+    prepopulated_fields = {'slug': ('name',)}
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'program', 'semester', 'is_active')
+    list_filter = ('program', 'semester', 'is_active')
+    search_fields = ('code', 'name')
