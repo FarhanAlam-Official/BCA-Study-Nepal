@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import College, Note, Event, QuestionPaper
+from .models import College, Note, Event, QuestionPaper, Subject
+from django.utils import timezone
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,43 +60,129 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = '__all__'
 
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id', 'name', 'code']
+
 class QuestionPaperSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(write_only=True, required=False)
-    file_url = serializers.URLField(required=False)
-    subject_name = serializers.CharField(source='subject.name', read_only=True)
-    subject_code = serializers.CharField(source='subject.code', read_only=True)
-    uploaded_by_name = serializers.CharField(source='uploaded_by.username', read_only=True)
-    verified_by_name = serializers.CharField(source='verified_by.username', read_only=True)
-    program_name = serializers.CharField(source='subject.program.name', read_only=True)
+    subject = SubjectSerializer(read_only=True)
+    uploaded_by = serializers.SerializerMethodField()
+    verified_by = serializers.SerializerMethodField()
+    status_display = serializers.SerializerMethodField()
+    download_url = serializers.SerializerMethodField()
+    created_at_formatted = serializers.SerializerMethodField()
+    verified_date_formatted = serializers.SerializerMethodField()
 
     class Meta:
         model = QuestionPaper
         fields = [
-            'id', 'subject', 'subject_name', 'subject_code', 'program_name',
-            'year', 'semester', 'exam_type', 'status', 'file', 'file_url',
-            'storage_type',
-            'full_marks', 'pass_marks', 'duration_hours',
-            'uploaded_by_name', 'verified_by_name',
-            'upload_date', 'verified_date',
-            'view_count', 'download_count',
-            'notes', 'tags'
+            # Basic Information
+            'id',
+            'subject',
+            'year',
+            'semester',
+            
+            # Status Information
+            'status',
+            'status_display',
+            'notes',
+            
+            # File & Download Information
+            'download_count',
+            'file_url',
+            'download_url',
+            
+            # User Information
+            'uploaded_by',
+            'verified_by',
+            
+            # Timestamps
+            'created_at',
+            'created_at_formatted',
+            'verified_date',
+            'verified_date_formatted',
         ]
+        
         read_only_fields = [
-            'status', 'uploaded_by_name', 'verified_by_name',
-            'verified_date', 'view_count', 'download_count'
+            # System-managed fields
+            'download_count', 
+            'verified_by', 
+            'verified_date', 
+            'status',
+            'file_url'
         ]
+
+    def get_uploaded_by(self, obj):
+        if obj.uploaded_by:
+            return {
+                'id': obj.uploaded_by.id,
+                'username': obj.uploaded_by.username,
+                'email': obj.uploaded_by.email if self.context['request'].user.is_staff else None
+            }
+        return None
+
+    def get_verified_by(self, obj):
+        if obj.verified_by:
+            return {
+                'id': obj.verified_by.id,
+                'username': obj.verified_by.username
+            }
+        return None
+
+    def get_status_display(self, obj):
+        return {
+            'PENDING': 'Pending Verification',
+            'VERIFIED': 'Verified',
+            'REJECTED': 'Rejected'
+        }.get(obj.status, obj.status)
+
+    def get_download_url(self, obj):
+        request = self.context.get('request')
+        if request and obj.status == 'VERIFIED':
+            return request.build_absolute_uri(
+                f'/api/question-papers/{obj.id}/download/'
+            )
+        return None
+
+    def get_created_at_formatted(self, obj):
+        return obj.created_at.strftime("%B %d, %Y")
+
+    def get_verified_date_formatted(self, obj):
+        if obj.verified_date:
+            return obj.verified_date.strftime("%B %d, %Y")
+        return None
 
     def validate(self, data):
-        if not self.instance:  # Only for creation
-            if 'file' not in self.context['request'].FILES and 'file_url' not in data:
-                raise serializers.ValidationError('Either file or file_url must be provided')
+        """
+        Custom validation for the question paper.
+        """
+        # Validate year
+        current_year = timezone.now().year
+        if data.get('year') and (data['year'] < 1900 or data['year'] > current_year):
+            raise serializers.ValidationError({
+                'year': f'Year must be between 1900 and {current_year}'
+            })
+
+        # Validate semester
+        if data.get('semester') and (data['semester'] < 1 or data['semester'] > 8):
+            raise serializers.ValidationError({
+                'semester': 'Semester must be between 1 and 8'
+            })
+
         return data
 
-    def create(self, validated_data):
-        file_obj = self.context['request'].FILES.get('file')
-        if file_obj:
-            instance = super().create(validated_data)
-            instance.upload_file(file_obj, validated_data.get('storage_type', 'LOCAL'))
-            instance.save()
-            return instance
-        return super().create(validated_data)
+    def to_representation(self, instance):
+        """
+        Customize the output representation based on user permissions
+        """
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        
+        # Remove sensitive information for non-staff users
+        if not request or not request.user.is_staff:
+            if data.get('uploaded_by'):
+                data['uploaded_by'].pop('email', None)
+            data.pop('notes', None)
+
+        return data
