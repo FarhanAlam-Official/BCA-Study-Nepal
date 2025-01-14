@@ -7,6 +7,7 @@ import QuestionPapers from './components/home/QuestionPapers';
 // import Events from './components/home/Events';
 import UsefulLinks from './components/home/UsefulLinks';
 import Notes from './pages/Notes';
+import Syllabus from './pages/Syllabus';
 import Colleges from './pages/Colleges';
 import Career from './pages/Career';
 import Contact from './pages/Contact';
@@ -32,6 +33,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/notes" element={<Notes />} />
+            <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/colleges" element={<Colleges />} />
             <Route path="/career" element={<Career />} />
             <Route path="/contact" element={<Contact />} />
