@@ -1,33 +1,23 @@
 import api from '../config/axios';
-import { QuestionPaper } from '../types';
+import { Program, ProgramSubjectsResponse } from '../types/questionpapers.types';
 
 export const questionPaperService = {
-  getAll: async (): Promise<QuestionPaper[]> => {
-    const response = await api.get('/question-papers/');
-    return response.data;
-  },
-  
-  getByYear: async (year: number): Promise<QuestionPaper[]> => {
-    const response = await api.get(`/question-papers/by_year/?year=${year}`);
-    return response.data;
-  },
-  
-  download: async (fileUrl: string): Promise<void> => {
+  getPrograms: async (): Promise<Program[]> => {
     try {
-      const response = await api.get(fileUrl, { responseType: 'blob' });
-      const blob = new Blob([response.data], { 
-        type: response.headers['content-type'] || 'application/octet-stream' 
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileUrl.split('/').pop() || 'download');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      const response = await api.get('/programs/');
+      return response.data;
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error('Error fetching programs:', error);
+      return [];
+    }
+  },
+
+  getByProgram: async (programId: number): Promise<ProgramSubjectsResponse> => {
+    try {
+      const response = await api.get(`/programs/${programId}/subjects/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
       throw error;
     }
   }
