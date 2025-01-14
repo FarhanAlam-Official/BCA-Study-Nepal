@@ -1,9 +1,16 @@
 import api from '../config/axios';
 import { Note } from '../types';
 
+interface NotesResponse {
+  results: Note[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+
 export const noteService = {
-  getAll: async (): Promise<Note[]> => {
-    const response = await api.get('/notes/');
+  getAll: async (params?: URLSearchParams): Promise<NotesResponse> => {
+    const response = await api.get(`/notes/${params ? `?${params.toString()}` : ''}`);
     return response.data;
   },
   

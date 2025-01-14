@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 // Extend AxiosRequestConfig to include `_retry`
 declare module 'axios' {
