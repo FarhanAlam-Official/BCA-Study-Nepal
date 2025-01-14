@@ -15,6 +15,7 @@ import PDFViewer from './components/notes/PDFViewer';
 import CollegeDetail from './colleges/CollegeDetail';
 import QuestionPaperList from './components/question-papers/QuestionPaperList';
 import Syllabus from './pages/Syllabus';
+import GPACalculator from './components/tools/GPACalculator';
 
 
 function HomePage() {
@@ -61,7 +62,8 @@ function App() {
             <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
             <Route path="/colleges/:id" element={<CollegeDetail />} />
             <Route path="question-papers" element={<QuestionPaperList />} />
-            <Route path="syllabus" element={<Syllabus />} />
+            <Route path="/syllabus" element={<Syllabus />} />
+            <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
           </Routes>
         </main>
         <Footer />

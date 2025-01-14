@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 
 interface Course {
   title: string;
@@ -11,6 +12,13 @@ interface Course {
 interface Semester {
   name: string;
   courses: Course[];
+}
+
+interface Program {
+  name: string;
+  code: string;
+  description: string;
+  semesters: Semester[];
 }
 
 const syllabusData: Semester[] = [
@@ -330,63 +338,197 @@ const syllabusData: Semester[] = [
 
 ];
 
+const programsData: Program[] = [
+  {
+    name: "Bachelor of Computer Applications",
+    code: "BCA",
+    description: "Four-year undergraduate program focusing on computer applications and software development.",
+    semesters: syllabusData
+  },
+  {
+    name: "Bachelor of Business Administration",
+    code: "BBA",
+    description: "Four-year undergraduate program focusing on business management and administration.",
+    semesters: []
+  }
+];
+
 const Syllabus: React.FC = () => {
-  const [activeSemester, setActiveSemester] = useState<string>(syllabusData[0].name);
+  const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
+  const [activeSemester, setActiveSemester] = useState<string | null>(null);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1
+    }
+  };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-center mb-8 text-blue-600">
-        BCA Syllabus - Pokhara University
-      </h1>
-      
-      <div className="flex  justify-center space-x-8 mb-6">
-        {syllabusData.map((semester) => (
-          <button
-            key={semester.name}
-            className={`px-4 py-2 rounded-md text-white ${
-              activeSemester === semester.name
-                ? "bg-blue-800"
-                : "bg-blue-400 hover:bg-blue-800"
-            }`}
-            onClick={() => setActiveSemester(semester.name)}
-          >
-            {semester.name}
-          </button>
-        ))}
-      </div>
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <motion.h1 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600"
+      >
+        Academic Programs - Pokhara University
+      </motion.h1>
 
-      <div className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {syllabusData
-          .find((semester) => semester.name === activeSemester)
-          ?.courses.map((course) => (
-            <div
-              key={course.title}
-              className="p-4 bg-white shadow-md rounded-lg border border-gray-200"
+      {!selectedProgram ? (
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto px-4"
+        >
+          {programsData.map((program) => (
+            <motion.div
+              key={program.code}
+              variants={itemVariants}
+              whileHover={{ 
+                scale: 1.03,
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+              }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white p-8 rounded-2xl shadow-lg cursor-pointer border-2 border-transparent hover:border-indigo-400 transition-all duration-300 backdrop-blur-sm bg-opacity-90"
+              onClick={() => setSelectedProgram(program.code)}
             >
-              <h2 className="text-xl font-semibold text-blue-700">{course.title}</h2>
-              <p className="text-gray-600 mt-2">{course.description}</p>
-              <p className="text-black mt-4">
-                <strong>Credit Hours:</strong> {course.creditHours}
-              </p>
-              <div className="mt-4">
-                <h3 className="text-blue-600 font-semibold">Textbooks:</h3>
-                <ul className="list-disc list-inside text-gray-600">
-                  {course.textbooks.map((textbook, index) => (
-                    <li key={index}>{textbook}</li>
-                  ))}
-                </ul>
+              <div className="flex items-center mb-4">
+                <span className="text-3xl font-bold text-indigo-600 mr-4">{program.code}</span>
+                <div className="h-8 w-0.5 bg-gray-200 mr-4"></div>
+                <h3 className="text-xl text-gray-800 font-medium">{program.name}</h3>
               </div>
-              <div className="mt-2">
-                <h3 className="text-blue-600 font-semibold">Reference Books:</h3>
-                <ul className="list-disc list-inside text-gray-600">
-                  {course.references.map((reference, index) => (
-                    <li key={index}>{reference}</li>
-                  ))}
-                </ul>
+              <p className="text-gray-600 leading-relaxed">{program.description}</p>
+              <div className="mt-6 flex justify-end">
+                <span className="text-indigo-500 font-medium">View Syllabus →</span>
               </div>
-            </div>
+            </motion.div>
           ))}
-      </div>
+        </motion.div>
+      ) : !activeSemester ? (
+        <>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-8 px-6 py-2 text-indigo-600 hover:text-indigo-800 flex items-center font-medium"
+            onClick={() => setSelectedProgram(null)}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Programs
+          </motion.button>
+
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto px-4"
+          >
+            {programsData
+              .find(p => p.code === selectedProgram)
+              ?.semesters.map((semester, index) => (
+                <motion.div
+                  key={semester.name}
+                  variants={itemVariants}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white p-6 rounded-xl shadow-md cursor-pointer text-center hover:bg-gradient-to-br hover:from-indigo-50 hover:to-purple-50 transition-all duration-300"
+                  onClick={() => setActiveSemester(semester.name)}
+                >
+                  <div className="text-4xl font-bold text-indigo-600 mb-2">{index + 1}</div>
+                  <h3 className="text-lg font-semibold text-gray-800">{semester.name}</h3>
+                  <p className="text-sm text-gray-500 mt-2">{semester.courses.length} Courses</p>
+                </motion.div>
+              ))}
+          </motion.div>
+        </>
+      ) : (
+        <>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-8 px-6 py-2 text-indigo-600 hover:text-indigo-800 flex items-center font-medium"
+            onClick={() => setActiveSemester(null)}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Semesters
+          </motion.button>
+
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4"
+          >
+            {programsData
+              .find(p => p.code === selectedProgram)
+              ?.semesters
+              .find(s => s.name === activeSemester)
+              ?.courses.map((course) => (
+                <motion.div
+                  key={course.title}
+                  variants={itemVariants}
+                  whileHover={{ 
+                    scale: 1.02,
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                  }}
+                  className="p-6 bg-white shadow-lg rounded-xl border border-gray-100 hover:border-indigo-300 transition-all duration-300"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl font-semibold text-gray-800">{course.title}</h2>
+                    <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                      {course.creditHours} Credits
+                    </span>
+                  </div>
+                  <p className="text-gray-600 mb-6">{course.description}</p>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-indigo-600 font-semibold mb-2">Textbooks</h3>
+                      <ul className="space-y-2">
+                        {course.textbooks.map((textbook, index) => (
+                          <li key={index} className="text-gray-600 text-sm flex items-start">
+                            <span className="text-indigo-400 mr-2">•</span>
+                            {textbook}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-indigo-600 font-semibold mb-2">Reference Books</h3>
+                      <ul className="space-y-2">
+                        {course.references.map((reference, index) => (
+                          <li key={index} className="text-gray-600 text-sm flex items-start">
+                            <span className="text-indigo-400 mr-2">•</span>
+                            {reference}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+          </motion.div>
+        </>
+      )}
     </div>
   );
 };

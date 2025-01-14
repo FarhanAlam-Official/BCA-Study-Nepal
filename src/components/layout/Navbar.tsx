@@ -12,6 +12,12 @@ import {
   ChevronDown,
   FileText,
   FileQuestion,
+  WrenchIcon,
+  Calculator,
+  Clock,
+  CheckSquare,
+  Edit,
+  Calendar,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBar from './SearchBar';
@@ -32,9 +38,21 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Notes', href: '/notes', icon: FileText },
       { name: 'Question Papers', href: '/question-papers', icon: FileQuestion },
+      { name: 'Syllabus', href: '/syllabus', icon: GraduationCap },
     ]
   },
-  { name: 'Syllabus', href: '/syllabus', icon: GraduationCap },
+  {
+    name: 'Tools',
+    href: '#',
+    icon: WrenchIcon,
+    children: [
+      { name: 'GPA Calculator', href: '/tools/gpa-calculator', icon: Calculator },
+      { name: 'Pomodoro Timer', href: '/tools/pomodoro', icon: Clock },
+      { name: 'Todo List', href: '/tools/todo', icon: CheckSquare },
+      { name: 'Note Taking', href: '/tools/notes', icon: Edit },
+      { name: 'Deadline Tracker', href: '/tools/deadlines', icon: Calendar },
+    ]
+  },
   { name: 'Colleges', href: '/colleges', icon: School },
   { name: 'Career', href: '/career', icon: BriefcaseIcon },
   { name: 'Contact', href: '/contact', icon: Mail },
