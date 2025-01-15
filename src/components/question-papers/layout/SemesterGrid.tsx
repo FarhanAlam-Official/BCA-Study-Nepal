@@ -34,24 +34,27 @@ const SemesterGrid: React.FC<SemesterGridProps> = ({
     fetchSubjectCounts();
   }, [selectedProgram.id]);
 
-  // Generate array of 8 semesters
   const semesters = Array.from({ length: 8 }, (_, i) => i + 1);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      className="space-y-6"
     >
-      {semesters.map((semester) => (
-        <SemesterCard
-          key={semester}
-          semester={semester}
-          subjectCount={subjectCounts[semester] || 0}
-          isSelected={selectedSemester === semester}
-          onSelect={() => onSemesterSelect(semester)}
-        />
-      ))}
+      <motion.div 
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      >
+        {semesters.map((semester) => (
+          <SemesterCard
+            key={semester}
+            semester={semester}
+            subjectCount={subjectCounts[semester] || 0}
+            isSelected={selectedSemester === semester}
+            onSelect={() => onSemesterSelect(semester)}
+          />
+        ))}
+      </motion.div>
     </motion.div>
   );
 };

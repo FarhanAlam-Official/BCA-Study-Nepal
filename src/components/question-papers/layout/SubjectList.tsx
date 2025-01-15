@@ -1,19 +1,25 @@
 import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Subject } from '../../../services/types/questionpapers.types';
-import { Book, ChevronRight, GraduationCap } from 'lucide-react';
-import { questionPaperService } from '../../../services/api/questionPaperService';
+import SubjectCard from '../ui/SubjectCard';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import ErrorDisplay from '../../common/ErrorDisplay';
+import { Book } from 'lucide-react';
+import { questionPaperService } from '../../../services/api/questionPaperService';
 
 interface SubjectListProps {
   programId: number;
   semester: number;
   isVisible: boolean;
-  onBack: () => void;
+  programName: string;
 }
 
-const SubjectList: React.FC<SubjectListProps> = ({ programId, semester, isVisible, onBack }) => {
+const SubjectList: React.FC<SubjectListProps> = ({
+  programId,
+  semester,
+  isVisible,
+  programName,
+}) => {
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -41,19 +47,26 @@ const SubjectList: React.FC<SubjectListProps> = ({ programId, semester, isVisibl
   }, [programId, fetchSubjects]);
 
   const containerVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { staggerChildren: 0.1 }
-    },
-    exit: { opacity: 0, x: -20 }
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-    hover: { scale: 1.02, transition: { duration: 0.2 } }
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
   };
 
   if (!isVisible) return null;
@@ -64,65 +77,58 @@ const SubjectList: React.FC<SubjectListProps> = ({ programId, semester, isVisibl
     <motion.div
       initial="hidden"
       animate="visible"
-      exit="exit"
       variants={containerVariants}
-      className="space-y-6"
+      className="space-y-8"
     >
+      {/* Header Section */}
       <motion.div 
-        className="flex items-center gap-4"
         variants={itemVariants}
+        className="text-center space-y-2"
       >
-        <button
-          onClick={onBack}
-          className="p-2 rounded-lg hover:bg-gray-100/80 transition-all duration-200 active:scale-95"
-        >
-          <ChevronRight className="w-5 h-5 transform rotate-180" />
-        </button>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-50 rounded-lg">
-            <GraduationCap className="w-6 h-6 text-indigo-600" />
-          </div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Semester {semester} Subjects
-          </h2>
-        </div>
+        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-black-500 to-indigo-600">
+          {programName} - Semester {semester}
+        </h2>
+        <p className="text-gray-600">
+          {subjects.length} {subjects.length === 1 ? 'Subject' : 'Subjects'} Available
+        </p>
       </motion.div>
 
+      {/* Subjects Grid */}
       <motion.div 
-        className="grid gap-4"
         variants={containerVariants}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8"
       >
-        {subjects.length === 0 ? (
-          <motion.p 
-            variants={itemVariants}
-            className="text-center text-gray-500 py-8"
-          >
-            No subjects found for this semester.
-          </motion.p>
-        ) : (
-          subjects.map((subject: Subject) => (
+        {subjects.length > 0 ? (
+          subjects.map((subject) => (
             <motion.div
               key={subject.id}
               variants={itemVariants}
-              whileHover="hover"
-              className="p-4 bg-white rounded-xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all duration-200"
+              className="h-full"
             >
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-indigo-50 rounded-lg flex-shrink-0">
-                  <Book className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 mb-1">{subject.name}</h4>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500">Code: {subject.code}</span>
-                    <span className="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      {subject.credit_hours} Credits
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <SubjectCard 
+                subject={subject} 
+                questionPapers={[]}
+                onDownload={(paper) => window.open(paper.drive_file_url, '_blank')}
+              />
             </motion.div>
           ))
+        ) : (
+          <motion.div 
+            variants={itemVariants}
+            className="col-span-full text-center py-12 bg-white/80 rounded-xl border border-gray-100"
+          >
+            <div className="max-w-sm mx-auto space-y-4">
+              <div className="p-3 bg-indigo-50 rounded-full w-fit mx-auto">
+                <Book className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                No Subjects Found
+              </h3>
+              <p className="text-gray-500">
+                There are no subjects available for this semester yet.
+              </p>
+            </div>
+          </motion.div>
         )}
       </motion.div>
     </motion.div>

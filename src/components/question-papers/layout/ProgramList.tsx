@@ -45,20 +45,31 @@ const ProgramList: React.FC<ProgramListProps> = ({ onProgramSelect }) => {
   if (error) return <ErrorDisplay message={error} onRetry={fetchPrograms} />;
 
   return (
-    <motion.div 
-      className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      {programs.map((program) => (
-        <ProgramCard
-          key={program.id}
-          {...program}
-          isSelected={selectedProgram === program.id}
-          onSelect={handleSelect}
-        />
-      ))}
-    </motion.div>
+    <div className="container mx-auto px-4 py-8">
+      <motion.div 
+        className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {programs.map((program) => (
+          <motion.div
+            key={program.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <ProgramCard
+              {...program}
+              isSelected={selectedProgram === program.id}
+              onSelect={handleSelect}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
   );
 };
 
