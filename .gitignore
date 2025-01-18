@@ -17,6 +17,7 @@ dist-ssr
 backend/media/
 backend/notes/
 test.pdf
+backend/staticfiles/
 
 # Credentials
 credentials/
