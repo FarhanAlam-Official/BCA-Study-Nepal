@@ -11,6 +11,11 @@ export interface Program {
     id: number;
     code: string;
     name: string;
+    questionPapers?: Array<{
+      id: number;
+      status: string;
+      file?: string;
+    }>;
     program: number;  // Program ID
     semester: number;
     credit_hours: number;
@@ -18,11 +23,11 @@ export interface Program {
   }
   
   export interface QuestionPaper {
-    id: string;  // UUID
+    id: string;
     subject: Subject;
     year: number;
     semester: number;
-    drive_file_url: string;
+    file: string;
     status: 'PENDING' | 'VERIFIED' | 'REJECTED';
     view_count: number;
     download_count: number;

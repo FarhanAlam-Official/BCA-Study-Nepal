@@ -1,5 +1,8 @@
 import api from '../config/axios';
 import { Program, ProgramSubjectsResponse } from '../types/questionpapers.types';
+// import axios from 'axios';
+import { QuestionPaper } from '../types/questionpapers.types';
+import axios from '../config/axios';
 
 export const questionPaperService = {
   getPrograms: async (): Promise<Program[]> => {
@@ -20,5 +23,19 @@ export const questionPaperService = {
       console.error('Error fetching subjects:', error);
       throw error;
     }
-  }
+  },
+
+  getSubjectPapers: async (subjectId: number): Promise<QuestionPaper[]> => {
+    try {
+      const response = await axios.get(`/question-papers/by_subject/`, {
+        params: {
+          subject_id: subjectId
+        }
+      });
+      return response.data || [];
+    } catch (error) {
+      console.error(`Failed to fetch papers for subject ${subjectId}:`, error);
+      return [];
+    }
+  },
 };
