@@ -6,6 +6,7 @@ import LoadingSpinner from '../../common/LoadingSpinner';
 import ErrorDisplay from '../../common/ErrorDisplay';
 import { Book } from 'lucide-react';
 import { questionPaperService } from '../../../services/api/questionPaperService';
+import { QuestionPaper } from '../../../services/types/questionpapers.types';
 
 interface SubjectListProps {
   programId: number;
@@ -69,6 +70,15 @@ const SubjectList: React.FC<SubjectListProps> = ({
     }
   };
 
+  const handleSubjectClick = (subject: Subject) => {
+    if (subject.questionPapers && subject.questionPapers.length > 0) {
+      const verifiedPaper = subject.questionPapers.find(paper => paper.status === 'VERIFIED' && paper.file);
+      if (verifiedPaper?.file) {
+        window.open(verifiedPaper.file, '_blank');
+      }
+    }
+  };
+
   if (!isVisible) return null;
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorDisplay message={error} onRetry={fetchSubjects} />;
@@ -103,29 +113,34 @@ const SubjectList: React.FC<SubjectListProps> = ({
             <motion.div
               key={subject.id}
               variants={itemVariants}
-              className="h-full"
+              className="h-full cursor-pointer"
+              onClick={() => handleSubjectClick(subject)}
             >
               <SubjectCard 
                 subject={subject} 
-                questionPapers={[]}
-                onDownload={(paper) => window.open(paper.drive_file_url, '_blank')}
+                questionPapers={(subject.questionPapers || []) as unknown as QuestionPaper[]}
+                onDownload={(paper: QuestionPaper) => {
+                  if (paper.status === 'VERIFIED' && paper.file) {
+                    window.open(paper.file, '_blank');
+                  }
+                }}
               />
             </motion.div>
           ))
         ) : (
           <motion.div 
             variants={itemVariants}
-            className="col-span-full text-center py-12 bg-white/80 rounded-xl border border-gray-100"
+            className="col-span-full text-center py-12 bg-white/80 rounded-xl border border-gray-100 shadow-sm"
           >
             <div className="max-w-sm mx-auto space-y-4">
               <div className="p-3 bg-indigo-50 rounded-full w-fit mx-auto">
                 <Book className="w-6 h-6 text-indigo-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
-                No Subjects Found
+                No Subjects Available
               </h3>
               <p className="text-gray-500">
-                There are no subjects available for this semester yet.
+                We're currently working on adding subjects for this semester. Please check back later.
               </p>
             </div>
           </motion.div>

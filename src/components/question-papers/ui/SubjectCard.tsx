@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Download, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Subject, QuestionPaper } from '../../../services/types/questionpapers.types';
 
 interface SubjectCardProps {
@@ -14,16 +15,27 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
   questionPapers,
   onDownload 
 }) => {
+  const navigate = useNavigate();
   const subjectPapers = questionPapers.filter(paper => paper.subject.id === subject.id);
+
+  const handleViewAllPapers = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    navigate(`/subjects/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
+  };
+
+  const handleCardClick = () => {
+    navigate(`/subjects/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
+  };
 
   return (
     <motion.div
+      onClick={handleCardClick}
       whileHover={{ scale: 1.01 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white/80 hover:bg-gradient-to-br hover:from-indigo-50/90 hover:via-purple-50/90 hover:to-indigo-50/90 
                  rounded-xl border border-transparent hover:border-indigo-100 shadow-lg hover:shadow-indigo-500/10
-                 transition-all duration-300 overflow-hidden group h-full"
+                 transition-all duration-300 overflow-hidden group h-full cursor-pointer"
     >
       {/* Subject Header */}
       <div className="p-5 border-b border-gray-100/80">
@@ -71,11 +83,14 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
                   <Eye className="w-4 h-4" />
                   <span>{paper.view_count}</span>
                 </div>
-                {paper.status === 'VERIFIED' && paper.drive_file_url && (
+                {paper.status === 'VERIFIED' && paper.file && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => onDownload?.(paper)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDownload?.(paper);
+                    }}
                     className="p-2 rounded-lg hover:bg-indigo-100/80 text-indigo-600 transition-colors"
                     title="Download"
                   >
@@ -102,17 +117,15 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
           </div>
         ))}
 
-        {/* Empty State */}
-        {subjectPapers.length === 0 && (
-          <div className="p-8 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100/50 text-indigo-600 mb-4">
-              <FileText className="w-6 h-6" />
-            </div>
-            <p className="text-gray-500 font-medium">
-              No question papers available yet
-            </p>
-          </div>
-        )}
+        <div className="p-4 text-center border-t border-gray-100/80">
+          <button
+            onClick={handleViewAllPapers}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            View All Papers
+            <Eye className="ml-2 w-4 h-4" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
