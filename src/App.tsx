@@ -11,11 +11,13 @@ import Colleges from './pages/Colleges';
 import Career from './pages/Career';
 import Contact from './pages/Contact';
 import NotesList from './components/notes/NotesList';
-import PDFViewer from './components/notes/PDFViewer';
+// import PDFViewer from './components/notes/PDFViewer';
 import CollegeDetail from './colleges/CollegeDetail';
 import QuestionPaperList from './components/question-papers/QuestionPaperList';
 import Syllabus from './pages/Syllabus';
 import GPACalculator from './components/tools/GPACalculator';
+import SubjectPapersPage from './components/question-papers/QuestionPapersPage';
+import PDFViewerWrapper from './components/common/PDFViewerWrapper';
 
 
 function HomePage() {
@@ -30,21 +32,6 @@ function HomePage() {
   );
 }
 
-// function PDFViewerWrapper() {
-//   const { pdfUrl } = useParams();
-//   const navigate = useNavigate();
-  
-//   return (
-//     <PDFViewer 
-//       fileUrl={decodeURIComponent(pdfUrl || '')}
-//       onClose={() => navigate(-1)}
-//     />
-//   );
-// }
-
-function PDFViewerWrapper() {
-  return <PDFViewer />;
-}
 
 function App() {
   return (
@@ -64,6 +51,10 @@ function App() {
             <Route path="question-papers" element={<QuestionPaperList />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
+            <Route 
+              path="/subjects/:subjectId/:subjectName/papers" 
+              element={<SubjectPapersPage />} 
+            />
           </Routes>
         </main>
         <Footer />
