@@ -20,15 +20,46 @@ const navigation = {
     { name: 'About', href: '/about' },
     { name: 'Blog', href: '/blog' },
     { name: 'Team', href: '/team' },
+    { name: 'Terms of Service', href: '/terms' },
     { name: 'Privacy Policy', href: '/privacy' },
   ],
   social: [
-    { name: 'Facebook', href: '#', icon: SiFacebook, color: '#1877F2' },
-    { name: 'Twitter', href: '#', icon: SiTwitter, color: '#1DA1F2' },
-    { name: 'LinkedIn', href: '#', icon: SiLinkedin, color: '#0A66C2' },
-    { name: 'Instagram', href: '#', icon: SiInstagram, color: '#E4405F' },
-    { name: 'GitHub', href: '#', icon: SiGithub, color: '#181717' },
-    { name: 'Email', href: '#', icon: SiMinutemailer, color: '#EA4335' },
+    {
+      name: 'Facebook',
+      href: 'https://facebook.com/puportal',
+      icon: SiFacebook,
+      color: '#1877F2'
+    },
+    {
+      name: 'Twitter',
+      href: 'https://twitter.com/puportal',
+      icon: SiTwitter,
+      color: '#1DA1F2'
+    },
+    {
+      name: 'LinkedIn',
+      href: 'https://linkedin.com/company/puportal',
+      icon: SiLinkedin,
+      color: '#0A66C2'
+    },
+    {
+      name: 'Instagram',
+      href: 'https://instagram.com/puportal',
+      icon: SiInstagram,
+      color: '#E4405F'
+    },
+    {
+      name: 'GitHub',
+      href: 'https://github.com/puportal',
+      icon: SiGithub,
+      color: '#181717'
+    },
+    {
+      name: 'Email',
+      href: 'mailto:contact@puportal.edu.np',
+      icon: SiMinutemailer,
+      color: '#EA4335'
+    },
   ],
 };
 
@@ -64,6 +95,12 @@ const FooterSection = memo(({ title, items }: { title: string; items: FooterItem
 ));
 
 export default function Footer() {
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Add newsletter subscription logic here
+    console.log('Newsletter subscription submitted');
+  };
+
   return (
     <footer className="relative bg-gradient-to-b from-gray-50 to-white">
       {/* Newsletter Section */}
@@ -78,7 +115,7 @@ export default function Footer() {
               <p className="mt-4 text-lg text-white/90">
                 Subscribe to our newsletter for the latest updates, study materials, and opportunities.
               </p>
-              <div className="mt-8 flex max-w-md mx-auto gap-x-4">
+              <form onSubmit={handleSubscribe} className="mt-8 flex max-w-md mx-auto gap-x-4">
                 <input
                   type="email"
                   required
@@ -91,7 +128,7 @@ export default function Footer() {
                 >
                   Subscribe
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -133,10 +170,11 @@ export default function Footer() {
                   className="group relative"
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={{ '--hover-color': item.color } as React.CSSProperties}
                 >
                   <span className="sr-only">{item.name}</span>
                   <item.icon 
-                    className={`h-6 w-6 text-gray-400 transition-all duration-300 group-hover:scale-110 hover:text-[${item.color}]`}
+                    className="h-6 w-6 text-gray-400 transition-all duration-300 group-hover:scale-110 group-hover:[color:var(--hover-color)]"
                   />
                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {item.name}
@@ -144,9 +182,20 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-            <p className="text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} PU Portal. All rights reserved.
-            </p>
+            <div className="flex flex-col items-center gap-2 text-sm text-gray-500">
+              <p>&copy; {new Date().getFullYear()} PU Portal. All rights reserved.</p>
+              <p className="text-gray-600">
+                Made with <span className="text-red-500">❤️</span> by{' '}
+                <a
+                  href="https://github.com/FarhanAlam-Official"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 hover:text-indigo-800 transition-colors duration-300"
+                >
+                  Farhan Alam
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
