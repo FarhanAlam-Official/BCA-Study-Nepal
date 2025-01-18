@@ -1,14 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, FileExtensionValidator
 from django.utils.text import slugify
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
-from .utils.google_drive import GoogleDriveStorage
-import io
 import uuid
-from django.conf import settings
 from django.core.exceptions import ValidationError
 
 
@@ -241,19 +235,9 @@ class QuestionPaper(models.Model):
 
     # File Fields
     file = models.FileField(
-        upload_to='question_papers/',
+        upload_to='question_papers/%Y/%m/',
         help_text='Upload PDF files only',
-        null=True,
-        blank=True
-    )
-    drive_file_id = models.CharField(
-        max_length=255,
-        blank=True,
-        default=''
-    )
-    drive_file_url = models.URLField(
-        blank=True,
-        default=''
+        validators=[FileExtensionValidator(['pdf'])]
     )
 
     # Meta Information
@@ -309,42 +293,14 @@ class QuestionPaper(models.Model):
 
     def save(self, *args, **kwargs):
         if self.file:
-            try:
-                # Upload to Google Drive using settings
-                drive_storage = GoogleDriveStorage()
-                filename = f"{self.subject.code}_{self.year}_SEM{self.semester}.pdf"
-                
-                # Upload the file to Google Drive
-                result = drive_storage.upload_file(
-                    self.file, 
-                    filename,
-                    folder_id=settings.GOOGLE_DRIVE_FOLDER_ID  # Use from settings
-                )
-                
-                if not result or 'file_id' not in result or 'web_view_link' not in result:
-                    raise ValueError("Failed to upload file to Google Drive")
-                
-                self.drive_file_id = result['file_id']
-                self.drive_file_url = result['web_view_link']
-                
-            except Exception as e:
-                raise ValidationError(f"File upload failed: {str(e)}")
-        
+            if not self.file.name.endswith('.pdf'):
+                raise ValidationError('Only PDF files are allowed.')
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        # Delete from Google Drive if exists
-        if self.drive_file_id:
-            try:
-                drive_storage = GoogleDriveStorage()
-                drive_storage.delete_file(self.drive_file_id)
-            except Exception as e:
-                print(f"Error deleting file from Google Drive: {str(e)}")
-        
         # Delete local file
         if self.file:
             self.file.delete(save=False)
-        
         super().delete(*args, **kwargs)
 
     @property
@@ -360,5 +316,5 @@ class QuestionPaper(models.Model):
         self.save(update_fields=['download_count'])
 
     def get_file_url(self):
-        """Returns the appropriate URL for file access"""
-        return self.drive_file_url if self.drive_file_url else self.file.url
+        """Returns the URL for file access"""
+        return self.file.url if self.file else None

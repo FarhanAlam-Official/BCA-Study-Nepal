@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'drf_yasg',
     'api',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -92,6 +93,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Add this line
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -128,12 +130,6 @@ CORS_ALLOW_HEADERS = [
 
 # Get base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Google Drive Settings
-GOOGLE_DRIVE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'credentials.json')
-GOOGLE_DRIVE_FOLDER_ID = '1X3GN51Q9qawspMhdEuPIbrpCx9aIG1SA'  # Optional: specific folder in Drive
-
 
 # REST Framework Settings
 REST_FRAMEWORK = {

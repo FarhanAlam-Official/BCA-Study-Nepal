@@ -76,15 +76,23 @@ class SubjectSerializer(serializers.ModelSerializer):
         ]
 
 class QuestionPaperSerializer(serializers.ModelSerializer):
-    subject = SubjectSerializer(read_only=True)
-    program = serializers.SerializerMethodField()
-    
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    file_url = serializers.SerializerMethodField()
+
     class Meta:
         model = QuestionPaper
         fields = [
-            'id', 'subject', 'program', 'year', 'semester',
-            'status', 'file_url', 'download_count', 'created_at'
+            'id', 'subject', 'subject_name', 'year', 'semester', 
+            'status', 'file', 'file_url', 'view_count', 'download_count',
+            'created_at', 'updated_at'
         ]
+
+    def get_file_url(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+        return None
     
     def get_program(self, obj):
         return {

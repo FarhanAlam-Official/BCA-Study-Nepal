@@ -1,22 +1,21 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import College, Note, Event, QuestionPaper, Program, Subject
 from .serializers import (
     CollegeSerializer, NoteSerializer, EventSerializer,
-    QuestionPaperSerializer, UserSerializer, ProgramSerializer, SubjectSerializer
+    QuestionPaperSerializer, ProgramSerializer, SubjectSerializer
 )
 from .throttling import DownloadRateThrottle, CustomAnonRateThrottle
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
-from rest_framework.parsers import MultiPartParser, FormParser
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib.auth.models import User
+from django.http import FileResponse
+import os
 
 class CollegeViewSet(viewsets.ModelViewSet):
     queryset = College.objects.filter(is_active=True)
@@ -60,7 +59,6 @@ class NoteViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Ensure that the uploaded note is associated with the current user
         serializer.save(uploaded_by=self.request.user)
-
     @action(detail=True, methods=['get'], throttle_classes=[DownloadRateThrottle])
     def download(self, request, pk=None):
         # Download action for the note
@@ -80,11 +78,13 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response({'status': 'registered for event'})
 
 class QuestionPaperViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    queryset = QuestionPaper.objects.all()
+    permission_classes = [AllowAny]
     serializer_class = QuestionPaperSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     
     filterset_fields = {
+        'subject': ['exact'],
         'year': ['exact', 'gte', 'lte'],
         'semester': ['exact'],
         'subject__program': ['exact'],
@@ -97,58 +97,13 @@ class QuestionPaperViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        queryset = QuestionPaper.objects.select_related(
+        return QuestionPaper.objects.select_related(
             'subject', 
-            'subject__program', 
-            'uploaded_by'
+            'subject__program'
         ).all()
-
-        program_id = self.request.query_params.get('program')
-        if program_id:
-            queryset = queryset.filter(subject__program_id=program_id)
-
-        return queryset
-
-    @action(detail=False, methods=['get'])
-    def by_program(self, request):
-        """Get question papers grouped by program"""
-        program_id = request.query_params.get('program_id')
-        if not program_id:
-            raise ValidationError('Program ID is required')
-
-        papers = self.get_queryset().filter(
-            subject__program_id=program_id
-        ).order_by('semester', 'subject__name', '-year')
-
-        # Group by semester
-        semesters = {}
-        for paper in papers:
-            if paper.semester not in semesters:
-                semesters[paper.semester] = []
-            semesters[paper.semester].append(self.get_serializer(paper).data)
-
-        return Response({
-            'semesters': [
-                {
-                    'semester': sem,
-                    'papers': papers
-                }
-                for sem, papers in sorted(semesters.items())
-            ]
-        })
-
-    def create(self, request, *args, **kwargs):
-        try:
-            print("Files:", request.FILES)  # Debug print
-            print("Data:", request.data)    # Debug print
-            return super().create(request, *args, **kwargs)
-        except Exception as e:
-            print("Error:", str(e))  # Debug print
-            raise
 
     def perform_create(self, serializer):
         try:
-            # Get or create a test user (for development only)
             user, created = User.objects.get_or_create(
                 username='testuser',
                 defaults={'email': 'test@example.com'}
@@ -158,30 +113,39 @@ class QuestionPaperViewSet(viewsets.ModelViewSet):
                 user.save()
 
             file_obj = self.request.FILES.get('file')
-            if file_obj:
-                instance = serializer.save(
-                    uploaded_by=user,  # Use the test user
-                    status='PENDING'
-                )
-                instance.upload_file(file_obj)
-                instance.save()
-            else:
-                serializer.save(
-                    uploaded_by=user,  # Use the test user
-                    status='PENDING'
-                )
+            serializer.save(
+                uploaded_by=user,
+                status='PENDING',
+                file=file_obj
+            )
         except Exception as e:
             print("Error in perform_create:", str(e))
             raise
 
     @action(detail=True, methods=['get'])
     def download(self, request, pk=None):
-        paper = self.get_object()
-        paper.increment_download_count()
-        return Response({
-            'file_url': paper.file_url,
-            'filename': f"{paper.subject.code}_{paper.year}_SEM{paper.semester}.pdf"
-        })
+        question_paper = self.get_object()
+        if question_paper.file:
+            question_paper.download_count += 1
+            question_paper.save()
+            return FileResponse(
+                question_paper.file.open('rb'),
+                as_attachment=True,
+                filename=os.path.basename(question_paper.file.name)
+            )
+        return Response({'error': 'File not found'}, status=404)
+
+    @action(detail=True, methods=['get'])
+    def view(self, request, pk=None):
+        question_paper = self.get_object()
+        if question_paper.file:
+            question_paper.view_count += 1
+            question_paper.save()
+            return FileResponse(
+                question_paper.file.open('rb'),
+                content_type='application/pdf'
+            )
+        return Response({'error': 'File not found'}, status=404)
 
     @action(detail=True, methods=['post'])
     def verify(self, request, pk=None):
@@ -214,6 +178,16 @@ class QuestionPaperViewSet(viewsets.ModelViewSet):
         paper.save()
         
         return Response({'status': 'rejected'})
+
+    @action(detail=False, methods=['get'])
+    def by_subject(self, request):
+        subject_id = request.query_params.get('subject_id')
+        if not subject_id:
+            return Response({'error': 'subject_id is required'}, status=400)
+            
+        papers = self.get_queryset().filter(subject_id=subject_id)
+        serializer = self.get_serializer(papers, many=True)
+        return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

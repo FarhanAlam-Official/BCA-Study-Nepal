@@ -29,11 +29,12 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(QuestionPaper)
 class QuestionPaperAdmin(admin.ModelAdmin):
-    list_display = ['subject', 'year', 'semester', 'created_at', 'status']
-    list_filter = ['year', 'semester', 'status']
+    readonly_fields = ['created_at', 'updated_at', 'view_count', 'download_count']
+    
+    list_display = ['subject', 'year', 'semester', 'status', 'view_count', 'download_count']
+    list_filter = ['status', 'year', 'semester', 'subject__program']
     search_fields = ['subject__name', 'subject__code']
     date_hierarchy = 'created_at'
-    readonly_fields = ['drive_file_id', 'drive_file_url', 'created_at', 'updated_at']
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
