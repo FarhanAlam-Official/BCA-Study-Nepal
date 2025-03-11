@@ -1,3 +1,17 @@
+"""
+TODO: This file has been split into separate files under views/ directory:
+- auth.py: Google OAuth views
+- password.py: Password management views
+- profile.py: User profile views
+- registration.py: User registration views
+- otp.py: OTP-based registration views
+
+This file can be safely deleted after verifying that all functionality works correctly with the new structure.
+Keep this file as a reference until then.
+
+Original file below:
+"""
+
 from rest_framework import viewsets, status, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
