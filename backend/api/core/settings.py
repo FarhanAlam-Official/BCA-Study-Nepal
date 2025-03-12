@@ -13,9 +13,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'R6Rjyi2_hIfG-1ivMDJEeAcGLxvRRfj3-tP1Tzj6SY2YpbOW0mlpZH3OPGsHY1Oq18s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+# ALLOWED_HOSTS configuration
+if DEBUG:
+    ALLOWED_HOSTS = [
+        'localhost',
+        '127.0.0.1',
+        '[::1]',  # IPv6 localhost
+        '*',  # Allow all hosts in development
+    ]
+else:
+    # In production, use environment variable or default to specific hosts
+    ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'bcastudynepal.com').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -222,6 +232,9 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = None
 
+# Frontend URL configuration
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
@@ -242,9 +255,10 @@ CORS_ALLOW_HEADERS = [
 
 # Add specific allowed origins for more security
 CORS_ALLOWED_ORIGINS = [
+    FRONTEND_URL,  # Use the FRONTEND_URL setting
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://your-production-domain.com",
+    "https://bcastudynepal.com",
 ]
 
 # CSRF settings
@@ -253,14 +267,10 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
+    FRONTEND_URL,  # Use the FRONTEND_URL setting
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-
-# Frontend URL configuration
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
 # Google OAuth Settings
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
@@ -271,3 +281,15 @@ GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/users/google/callback'
 GOOGLE_OAUTH2_SCOPES = [
     'https://www.googleapis.com/auth/gmail.send',
 ]
+
+# Credentials directory for storing tokens
+CREDENTIALS_DIR = BASE_DIR / 'credentials'
+CREDENTIALS_DIR.mkdir(exist_ok=True)
+GMAIL_TOKEN_PATH = CREDENTIALS_DIR / 'gmail_token.json'
+
+# Enable credentials migration
+ENABLE_CREDENTIALS_MIGRATION = True
+
+# TODO: After confirming JSON format works (around [12th April 2025 + 1 week]),
+# remove the old gmail_token.pickle file from backend/ directory
+# and update oauth2.py to only use JSON format
