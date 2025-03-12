@@ -388,7 +388,7 @@ class AuthService {
   async resetPassword(uidb64: string, token: string, newPassword: string) {
     try {
       const response = await axios.post(`${API_URL}/api/users/password-reset/confirm/`, {
-        uidb64,
+        uid: uidb64,
         token,
         new_password: newPassword,
         confirm_password: newPassword
