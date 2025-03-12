@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import api_root, health_check
+from api.apps.core.views import search
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -10,6 +11,18 @@ from rest_framework_simplejwt.views import (
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="BCA Study Nepal API",
+        default_version='v1',
+        description="API documentation for BCA Study Nepal",
+    ),
+    public=True,
+    permission_classes=[AllowAny],
+)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -19,6 +32,10 @@ def health_check(request):
 urlpatterns = [
     path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
+    
+    # API Documentation
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
     # SimpleJWT authentication endpoints
     path('api/users/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -30,6 +47,9 @@ urlpatterns = [
     path('api/notes/', include('api.apps.notes.urls')),
     path('api/resources/', include('api.apps.resources.urls')),
     path('api/colleges/', include('api.apps.colleges.urls')),
+    
+    # Search endpoint
+    path('api/search/', search, name='search'),
     
     # Additional Google OAuth callback route (both with and without trailing slash)
     path('api/auth/google/callback', include('api.apps.users.oauth_urls')),
