@@ -34,6 +34,7 @@ backend/media/
 backend/notes/
 test.pdf
 backend/staticfiles/
+-files
 
 # Credentials and sensitive data
 credentials/
@@ -164,3 +165,49 @@ local.properties
 *.swp
 *.swo
 *#
+
+# Environment
+.env
+.env.*
+venv/
+env/
+
+# Database
+*.sqlite3
+*.db
+
+# Config files (except base)
+backend/config/*.py
+!backend/config/base.py
+backend/config/local_settings.py
+backend/config/production.py
+backend/config/development.py
+backend/config/staging.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Media and Static files
+media/
+static/
+!static/.gitkeep
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Credentials
+backend/credentials/
+*.pickle
+*.key
+*.pem
