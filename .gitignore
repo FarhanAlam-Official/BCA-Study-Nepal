@@ -175,10 +175,13 @@ env/
 
 # Database
 *.sqlite3
+*.sqlite
 *.db
+backend/db.sqlite3
 
 # Config files (except base and examples)
 backend/config/*.py
+backend/config/settings/*.py
 !backend/config/base.py
 !backend/config/*.example
 backend/config/local_settings.py
