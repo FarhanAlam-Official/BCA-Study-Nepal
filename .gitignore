@@ -169,6 +169,7 @@ local.properties
 # Environment
 .env
 .env.*
+!.env.example
 venv/
 env/
 
@@ -176,9 +177,10 @@ env/
 *.sqlite3
 *.db
 
-# Config files (except base)
+# Config files (except base and examples)
 backend/config/*.py
 !backend/config/base.py
+!backend/config/*.example
 backend/config/local_settings.py
 backend/config/production.py
 backend/config/development.py
