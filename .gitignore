@@ -169,7 +169,6 @@ local.properties
 # Environment
 .env
 .env.*
-!.env.example
 venv/
 env/
 
@@ -216,3 +215,6 @@ backend/credentials/
 *.pickle
 *.key
 *.pem
+
+# Future plans
+future-plans
