@@ -18,11 +18,11 @@ import { AuthProvider } from './context/AuthContext';
 
 // Lazy load components
 const Notes = lazy(() => import('./pages/Notes'));
-const Colleges = lazy(() => import('./pages/Colleges'));
+const CollegePage = lazy(() => import('./pages/CollegePage'));
 const Career = lazy(() => import('./pages/Career'));
 const Contact = lazy(() => import('./pages/Contact'));
 // import PDFViewer from './components/notes/PDFViewer';
-const CollegeDetail = lazy(() => import('./colleges/CollegeDetail'));
+const CollegeDetail = lazy(() => import('./components/college/CollegeDetail'));
 const QuestionPaperList = lazy(() => import('./components/question-papers/QuestionPaperList'));
 const Syllabus = lazy(() => import('./pages/Syllabus'));
 const GPACalculator = lazy(() => import('./components/tools/GPACalculator'));
@@ -57,10 +57,10 @@ function AppContent() {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<HomePage />} />
-              <Route path="/colleges" element={<Colleges />} />
+              <Route path="/colleges" element={<CollegePage />} />
+              <Route path="/colleges/:id" element={<CollegeDetail />} />
               <Route path="/career" element={<Career />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/colleges/:id" element={<CollegeDetail />} />
               <Route path="/syllabus" element={<Syllabus />} />
               <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
               <Route path="/tools/pomodoro" element={<Pomodoro />} />
