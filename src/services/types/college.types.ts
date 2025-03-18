@@ -68,6 +68,7 @@ export interface CollegeFilters {
     state?: string;
     courses?: string[];
     is_featured?: boolean;
+    accreditation?: string;
 }
 
 export interface CollegeContextType {
