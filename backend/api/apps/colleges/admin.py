@@ -3,10 +3,10 @@ from .models import College, CollegeFavorite
 
 @admin.register(College)
 class CollegeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'established_year', 'primary_contact', 'email', 'created_at')
+    list_display = ('name', 'established_year', 'primary_contact', 'email', 'created_at', 'views_count')
     list_filter = ('established_year', 'created_at', 'admission_status', 'is_featured')
     search_fields = ('name', 'description', 'location', 'primary_contact', 'email')
-    readonly_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
+    readonly_fields = ('created_at', 'updated_at', 'created_by', 'updated_by', 'views_count')
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'description', 'established_year', 'admission_status', 'is_featured')
@@ -22,7 +22,11 @@ class CollegeAdmin(admin.ModelAdmin):
             )
         }),
         ('Additional Information', {
-            'fields': ('programs', 'facilities', 'rating', 'views_count')
+            'fields': ('programs', 'facilities', 'rating')
+        }),
+        ('Statistics', {
+            'fields': ('views_count',),
+            'classes': ('collapse',)
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at', 'created_by', 'updated_by'),
