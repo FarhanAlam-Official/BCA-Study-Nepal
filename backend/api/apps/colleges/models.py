@@ -54,11 +54,17 @@ class College(models.Model):
     tertiary_contact = models.CharField(max_length=20, blank=True, null=True)
     
     established_year = models.IntegerField(null=True, blank=True)
-    programs = models.JSONField(default=list)
-    facilities = models.JSONField(default=list)
+    programs = models.JSONField(
+        default=list,
+        help_text="List of programs offered by the college"
+    )
+    facilities = models.JSONField(
+        default=list,
+        help_text="List of facilities available at the college"
+    )
     is_featured = models.BooleanField(default=False)
     rating = models.FloatField(default=0.0)
-    views_count = models.IntegerField(default=0)
+    views_count = models.IntegerField(default=0, editable=False)
     admission_status = models.CharField(
         max_length=20,
         choices=[
@@ -86,7 +92,6 @@ class College(models.Model):
         decimal_places=2,
         default=0.0
     )
-    views_count = models.IntegerField(default=0)
     
     # Timestamps and user tracking
     created_by = models.ForeignKey(
@@ -121,8 +126,32 @@ class College(models.Model):
         # Ensure programs and facilities are lists
         if self.programs is None:
             self.programs = []
+        elif isinstance(self.programs, str):
+            # Handle case where programs might be passed as a string
+            try:
+                self.programs = json.loads(self.programs)
+            except json.JSONDecodeError:
+                self.programs = [self.programs]
+        
+        if not isinstance(self.programs, list):
+            self.programs = list(self.programs)
+            
+        # Normalize program names
+        self.programs = [str(p).strip() for p in self.programs if p]
+        
         if self.facilities is None:
             self.facilities = []
+        elif isinstance(self.facilities, str):
+            try:
+                self.facilities = json.loads(self.facilities)
+            except json.JSONDecodeError:
+                self.facilities = [self.facilities]
+                
+        if not isinstance(self.facilities, list):
+            self.facilities = list(self.facilities)
+            
+        # Normalize facility names
+        self.facilities = [str(f).strip() for f in self.facilities if f]
         
         # Extract favicon from website URL if available and no other logo sources exist
         if self.website and not (self.logo or self.logo_url or self.extracted_favicon):
@@ -166,6 +195,11 @@ class College(models.Model):
         if self.cover_image_url:
             return self.cover_image_url
         return None
+
+    def increment_view_count(self):
+        """Safely increment the view count"""
+        self.views_count = models.F('views_count') + 1
+        self.save(update_fields=['views_count'])
 
     class Meta:
         ordering = ['-created_at']
