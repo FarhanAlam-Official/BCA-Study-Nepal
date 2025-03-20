@@ -5,6 +5,12 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db.models import Q
 from .models import College, CollegeFavorite
 from .serializers import CollegeSerializer, CollegeFavoriteSerializer
+import logging
+import operator
+from functools import reduce
+from django.db import connection
+
+logger = logging.getLogger(__name__)
 
 class CollegeViewSet(viewsets.ModelViewSet):
     serializer_class = CollegeSerializer
@@ -29,8 +35,23 @@ class CollegeViewSet(viewsets.ModelViewSet):
 
         programs = self.request.query_params.get('programs')
         if programs:
-            program_list = programs.split(',')
-            queryset = queryset.filter(programs__contains=program_list)
+            program_list = [p.strip() for p in programs.split(',')]
+            logger.debug(f"Filtering by programs: {program_list}")
+            
+            # Use raw SQL for JSON array containment check
+            if connection.vendor == 'sqlite':
+                # SQLite approach: Use JSON_EACH to unnest the array and check values
+                program_conditions = []
+                for program in program_list:
+                    program_conditions.append(
+                        Q(programs__regex=f'.*"{program}".*')  # Match exact program name in JSON array
+                    )
+                queryset = queryset.filter(reduce(operator.or_, program_conditions))
+            else:
+                # PostgreSQL approach: Use native JSON containment
+                queryset = queryset.filter(programs__contains=program_list)
+            
+            logger.debug(f"Filtered queryset count: {queryset.count()}")
 
         admission_status = self.request.query_params.get('admission_status')
         if admission_status:
@@ -42,8 +63,22 @@ class CollegeViewSet(viewsets.ModelViewSet):
 
         facilities = self.request.query_params.get('facilities')
         if facilities:
-            facility_list = facilities.split(',')
-            queryset = queryset.filter(facilities__contains=facility_list)
+            facility_list = [f.strip() for f in facilities.split(',')]
+            logger.debug(f"Filtering by facilities: {facility_list}")
+            
+            if connection.vendor == 'sqlite':
+                # SQLite approach: Use JSON_EACH to unnest the array and check values
+                facility_conditions = []
+                for facility in facility_list:
+                    facility_conditions.append(
+                        Q(facilities__regex=f'.*"{facility}".*')  # Match exact facility name in JSON array
+                    )
+                queryset = queryset.filter(reduce(operator.or_, facility_conditions))
+            else:
+                # PostgreSQL approach: Use native JSON containment
+                queryset = queryset.filter(facilities__contains=facility_list)
+            
+            logger.debug(f"Filtered queryset count: {queryset.count()}")
 
         featured = self.request.query_params.get('featured')
         if featured and featured.lower() == 'true':
@@ -61,8 +96,16 @@ class CollegeViewSet(viewsets.ModelViewSet):
         sort_by = self.request.query_params.get('sort_by', 'name')
         sort_order = self.request.query_params.get('sort_order', 'asc')
         
-        if sort_by in ['name', 'rating', 'created_at', 'views_count']:
-            ordering = f"{'-' if sort_order == 'desc' else ''}{sort_by}"
+        valid_sort_fields = {
+            'name': 'name',
+            'rating': 'rating',
+            'created_at': 'created_at',
+            'views_count': 'views_count',
+            'established_year': 'established_year'
+        }
+        
+        if sort_by in valid_sort_fields:
+            ordering = f"{'-' if sort_order == 'desc' else ''}{valid_sort_fields[sort_by]}"
             queryset = queryset.order_by(ordering)
 
         return queryset.distinct()
@@ -130,6 +173,5 @@ class CollegeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'])
     def increment_view(self, request, id=None):
         college = self.get_object()
-        college.views_count += 1
-        college.save()
+        college.increment_view_count()
         return Response({"status": "success"}) 
