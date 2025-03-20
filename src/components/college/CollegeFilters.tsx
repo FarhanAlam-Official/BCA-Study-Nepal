@@ -1,3 +1,8 @@
+/**
+ * CollegeFilters component provides filtering and sorting functionality for colleges
+ * Includes filters for location, programs, admission status, rating, and more
+ */
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,32 +18,43 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { collegeApi } from './collegeApi';
 import { CollegeFilters as CollegeFiltersType } from './college';
 import { Combobox } from '@headlessui/react';
+import { toast } from 'react-hot-toast';
 
 interface CollegeFiltersProps {
   onFilterChange: (filters: CollegeFiltersType) => void;
 }
 
+/**
+ * Sort option configuration type
+ */
 type SortOption = {
   value: string;
   label: string;
-  sortBy: 'rating' | 'established_year' | 'view_count' | 'name';
+  sortBy: 'rating' | 'established_year' | 'views_count' | 'name';
 };
 
+/**
+ * Available sort options for colleges
+ */
 const sortOptions: SortOption[] = [
   { value: 'rating', label: 'Rating', sortBy: 'rating' },
-  { value: 'popular', label: 'Popularity', sortBy: 'view_count' },
+  { value: 'popular', label: 'Popularity', sortBy: 'views_count' },
   { value: 'year', label: 'Year', sortBy: 'established_year' },
   { value: 'name', label: 'Name', sortBy: 'name' },
 ];
 
 export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
+  // UI state
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showSortOptions, setShowSortOptions] = useState(false);
+  const [isHovered, setIsHovered] = useState<string | null>(null);
+  
+  // Filter options state
   const [locations, setLocations] = useState<string[]>([]);
   const [programs, setPrograms] = useState<string[]>([]);
   const [programQuery, setProgramQuery] = useState('');
-  const [isHovered, setIsHovered] = useState<string | null>(null);
-  const [showSortOptions, setShowSortOptions] = useState(false);
   
+  // Selected filters state
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
   const [selectedAdmissionStatus, setSelectedAdmissionStatus] = useState<string>();
@@ -48,7 +64,9 @@ export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
   const [selectedSort, setSelectedSort] = useState<SortOption>(sortOptions[0]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Fetch filter options
+  /**
+   * Fetch filter options (locations and programs) on component mount
+   */
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
@@ -59,14 +77,19 @@ export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
         setLocations(locationsData);
         setPrograms(programsData);
       } catch (error) {
-        console.error('Error fetching filter options:', error);
+        toast.error('Failed to load filter options. Please try again later.');
+        if (import.meta.env.DEV) {
+          console.error('Error fetching filter options:', error);
+        }
       }
     };
 
     fetchFilterOptions();
   }, []);
 
-  // Update filters when any selection changes
+  /**
+   * Update parent component when any filter changes
+   */
   useEffect(() => {
     onFilterChange({
       location: selectedLocation,
@@ -90,6 +113,9 @@ export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
     onFilterChange
   ]);
 
+  /**
+   * Reset all filters to their default values
+   */
   const clearAllFilters = () => {
     setSelectedLocation(undefined);
     setSelectedPrograms([]);
@@ -101,6 +127,9 @@ export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
     setSortOrder('desc');
   };
 
+  /**
+   * Toggle sort order between ascending and descending
+   */
   const toggleSortOrder = () => {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
   };
@@ -403,8 +432,18 @@ export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
                         onChange={(event) => setProgramQuery(event.target.value)}
                         placeholder="Search programs..."
                         displayValue={(selected: string[]) => selected.join(', ')}
+                        onFocus={(e) => {
+                          // Ensure the input is focused and options are visible
+                          e.target.parentElement?.querySelector('[role="listbox"]')?.setAttribute('tabindex', '0');
+                        }}
                       />
-                      <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Combobox.Options 
+                        className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        onMouseEnter={(e) => {
+                          // Enable scrolling when mouse enters the options container
+                          e.currentTarget.focus();
+                        }}
+                      >
                         {programs
                           .filter((program) =>
                             program.toLowerCase().includes(programQuery.toLowerCase())
@@ -419,20 +458,7 @@ export const CollegeFilters = ({ onFilterChange }: CollegeFiltersProps) => {
                                 }`
                               }
                             >
-                              {({ selected }) => (
-                                <div className="flex items-center">
-                                  <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                    {program}
-                                  </span>
-                                  {selected && (
-                                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
-                                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                              {program}
                             </Combobox.Option>
                           ))}
                       </Combobox.Options>
