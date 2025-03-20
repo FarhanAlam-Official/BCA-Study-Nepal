@@ -6,6 +6,7 @@ class CollegeSerializer(serializers.ModelSerializer):
     is_favorite = serializers.SerializerMethodField()
     display_logo = serializers.SerializerMethodField()
     display_cover = serializers.SerializerMethodField()
+    views_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = College
@@ -18,6 +19,7 @@ class CollegeSerializer(serializers.ModelSerializer):
             'rating', 'views_count', 'admission_status',
             'created_at', 'updated_at', 'is_favorite'
         ]
+        read_only_fields = ['views_count']
 
     def get_contact_numbers(self, obj):
         return {
@@ -31,7 +33,8 @@ class CollegeSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return CollegeFavorite.objects.filter(
                 college=obj,
-                user=request.user
+                user=request.user,
+                is_deleted=False
             ).exists()
         return False
 
