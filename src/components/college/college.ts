@@ -1,19 +1,25 @@
+/**
+ * Type definitions and validation schemas for college-related data structures
+ */
+
 import { z } from 'zod';
 
-// College Types
+/**
+ * Represents a college entity with all its properties
+ */
 export interface College {
   id: string;
   name: string;
   description: string;
   location: string;
   website: string;
-  logo?: string;
-  logo_url?: string;
-  extracted_favicon?: string;
-  display_logo?: string;
-  cover_image?: string;
-  cover_image_url?: string;
-  display_cover?: string;
+  logo?: string;                 // Original logo URL
+  logo_url?: string;            // Processed logo URL
+  extracted_favicon?: string;    // Favicon extracted from website
+  display_logo?: string;        // URL to use for display (prioritized from available options)
+  cover_image?: string;         // Original cover image URL
+  cover_image_url?: string;     // Processed cover image URL
+  display_cover?: string;       // URL to use for display (prioritized from available options)
   email: string;
   contact_numbers: {
     primary?: string;
@@ -32,14 +38,20 @@ export interface College {
   updated_at: string;
 }
 
+/**
+ * Represents a favorite college relationship between a user and a college
+ */
 export interface CollegeFavorite {
   id: string;
   user: string;
-  college: College | string;
+  college: College | string;  // Can be either a College object or college ID
   created_at: string;
 }
 
-// Validation Schemas
+/**
+ * Zod validation schema for College data
+ * Ensures all required fields are present and in correct format
+ */
 export const CollegeSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -70,6 +82,9 @@ export const CollegeSchema = z.object({
   updated_at: z.string()
 });
 
+/**
+ * Zod validation schema for CollegeFavorite data
+ */
 export const CollegeFavoriteSchema = z.object({
   id: z.string(),
   user: z.string(),
@@ -77,7 +92,9 @@ export const CollegeFavoriteSchema = z.object({
   created_at: z.string()
 });
 
-// API Response Types
+/**
+ * Generic interface for paginated API responses
+ */
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
@@ -85,21 +102,26 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
+/**
+ * Response type for toggle favorite operation
+ */
 export interface ToggleFavoriteResponse {
   status: 'college favorited' | 'college unfavorited';
   message: string;
 }
 
-// Filter Types
+/**
+ * Interface for college filtering options
+ */
 export interface CollegeFilters {
-  search?: string;
-  location?: string;
-  programs?: string[];
-  admission_status?: string;
-  rating_min?: number;
-  facilities?: string[];
-  showFeatured?: boolean;
-  showFavorites?: boolean;
-  sortBy?: 'rating' | 'established_year' | 'name' | 'view_count';
-  sortOrder?: 'asc' | 'desc';
+  search?: string;              // Search term for college name/description
+  location?: string;            // Filter by location
+  programs?: string[];         // Filter by available programs
+  admission_status?: string;    // Filter by admission status
+  rating_min?: number;         // Minimum rating filter
+  facilities?: string[];       // Filter by available facilities
+  showFeatured?: boolean;      // Show only featured colleges
+  showFavorites?: boolean;     // Show only favorited colleges
+  sortBy?: 'rating' | 'established_year' | 'name' | 'views_count';  // Sort field
+  sortOrder?: 'asc' | 'desc';  // Sort direction
 } 
