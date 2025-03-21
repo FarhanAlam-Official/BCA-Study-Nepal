@@ -1,3 +1,8 @@
+/**
+ * CollegeDetail component displays detailed information about a specific college
+ * Handles loading college data, view tracking, and displaying various sections of college information
+ */
+
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,13 +23,20 @@ import {
 import { College } from './college';
 import { collegeApi } from './collegeApi';
 import { StarIcon } from '@heroicons/react/20/solid';
+import { toast } from 'react-hot-toast';
 
+/**
+ * Props for the InfoCard component
+ */
 interface InfoCardProps {
   icon: LucideIcon;
   label: string;
   value: string | number;
 }
 
+/**
+ * Props for the ContactInfo component
+ */
 interface ContactInfoProps {
   icon: LucideIcon;
   label: string;
@@ -32,6 +44,9 @@ interface ContactInfoProps {
   isLink?: boolean;
 }
 
+/**
+ * Reusable card component for displaying college information
+ */
 const InfoCard = ({ icon: Icon, label, value }: InfoCardProps) => (
   <div className="bg-white rounded-lg shadow-sm p-4 flex items-start gap-3 hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:bg-indigo-50/30 group">
     <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors duration-300">
@@ -44,6 +59,9 @@ const InfoCard = ({ icon: Icon, label, value }: InfoCardProps) => (
   </div>
 );
 
+/**
+ * Reusable component for displaying contact information with optional link functionality
+ */
 const ContactInfo = ({ icon: Icon, label, value, isLink = false }: ContactInfoProps) => (
   <div className="flex items-center gap-3 p-4 rounded-lg hover:bg-indigo-50/30 transition-all duration-300 group">
     <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors duration-300">
@@ -76,32 +94,67 @@ export default function CollegeDetail() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isHovering, setIsHovering] = useState(false);
 
+  /**
+   * Handles navigation back to the previous page or colleges list
+   */
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigate('/colleges');
+    e.stopPropagation();
+    
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate('/colleges');
+    }
   };
-
-  useEffect(() => {
-    document.documentElement.scrollTop = 0;
-  }, []);
 
   useEffect(() => {
     if (!state?.college && id) {
       const fetchCollege = async () => {
         try {
-          const response = await collegeApi.getColleges({ search: id });
-          if (response.results.length > 0) {
-            setCollege(response.results[0]);
-          }
+          // First increment the view count
+          await collegeApi.incrementView(id);
+          // Then fetch the updated college data
+          const response = await collegeApi.getCollege(id);
+          setCollege(response);
         } catch (err) {
-          console.error(err);
+          toast.error('Failed to load college details. Please try again later.');
+          if (import.meta.env.DEV) {
+            console.error('Failed to fetch college:', err);
+          }
         } finally {
           setLoading(false);
         }
       };
       fetchCollege();
+    } else if (state?.college) {
+      // For navigation from list, increment view then fetch fresh data
+      const handleStateCollege = async () => {
+        try {
+          await collegeApi.incrementView(state.college.id);
+          const response = await collegeApi.getCollege(state.college.id);
+          setCollege(response);
+        } catch (err) {
+          toast.error('Failed to update college information. Please try again later.');
+          if (import.meta.env.DEV) {
+            console.error('Failed to handle college from state:', err);
+          }
+        }
+      };
+      handleStateCollege();
     }
   }, [id, state?.college]);
+
+  useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+    
+    // Save the current scroll position of the college list page
+    const currentScrollPos = window.scrollY;
+    if (currentScrollPos > 0) {
+      sessionStorage.setItem('collegeListScrollPos', currentScrollPos.toString());
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -120,7 +173,7 @@ export default function CollegeDetail() {
           className="text-center max-w-md mx-auto px-4"
         >
           <h2 className="text-2xl font-bold text-gray-800 mb-3">College Not Found</h2>
-          <p className="text-gray-600 mb-6">The college you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-6">The college you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={handleBack}
             className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
@@ -153,7 +206,7 @@ export default function CollegeDetail() {
                 src={college.display_cover.startsWith('http') || college.display_cover.startsWith('//')
                   ? college.display_cover 
                   : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${college.display_cover}`}
-                alt=""
+                alt={`${college.name} cover`}
                 className="w-full h-full object-cover object-center transform scale-110"
                 style={{ 
                   width: '100%',
@@ -161,7 +214,9 @@ export default function CollegeDetail() {
                   display: 'block'
                 }}
                 onError={(e) => {
-                  console.error('Failed to load cover image:', college.display_cover);
+                  if (import.meta.env.DEV) {
+                    console.error('Failed to load cover image:', college.display_cover);
+                  }
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
@@ -221,7 +276,9 @@ export default function CollegeDetail() {
                     alt={`${college.name} logo`}
                     className="w-full h-full object-contain"
                     onError={(e) => {
-                      console.error('Failed to load logo:', college.display_logo);
+                      if (import.meta.env.DEV) {
+                        console.error('Failed to load logo:', college.display_logo);
+                      }
                       (e.target as HTMLImageElement).style.display = 'none';
                       e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
                     }}
