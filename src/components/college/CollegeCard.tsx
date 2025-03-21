@@ -1,3 +1,8 @@
+/**
+ * CollegeCard component displays a college in a card format
+ * Handles college information display, favorite toggling, and navigation
+ */
+
 import { College, CollegeFavorite } from './college';
 import { collegeApi } from './collegeApi';
 import { useEffect, useState, useCallback } from 'react';
@@ -10,66 +15,70 @@ import { useAuth } from '../../hooks/useAuth';
 import { StarIcon } from '@heroicons/react/20/solid';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface CollegeCardProps {
   college: College;
   onFavoriteChange?: (collegeId: string, isFavorite: boolean) => void;
 }
 
-// Loading spinner component
-const LoadingSpinner = () => (
-  <div className="animate-spin rounded-full h-5 w-5 border-2 border-red-500 border-t-transparent"/>
-);
-
 export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(Boolean(college.is_favorite));
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   // Update favorite state when college prop changes
   useEffect(() => {
-    setIsFavorite(college.is_favorite || false);
+    if (college.is_favorite !== undefined) {
+      setIsFavorite(Boolean(college.is_favorite));
+    }
   }, [college.is_favorite]);
 
+  // Verify favorite status on component mount
   useEffect(() => {
-    const checkFavoriteStatus = async () => {
+    const verifyFavoriteStatus = async () => {
       if (!isAuthenticated) {
         setIsFavorite(false);
         return;
       }
 
-      try {
-        const response = await collegeApi.getFavorites();
-        const favorites = response.results || [];
-        const isFav = favorites.some((favorite: CollegeFavorite) => {
-          if (typeof favorite.college === 'string') {
-            return favorite.college === college.id;
-          }
-          return favorite.college.id === college.id;
-        });
-        setIsFavorite(isFav);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status !== 401) {
-            showError('Failed to check favorite status');
+      if (college.is_favorite === undefined) {
+        try {
+          const response = await collegeApi.getFavorites();
+          const favorites = response.results || [];
+          const isFav = favorites.some((favorite: CollegeFavorite) => {
+            if (typeof favorite.college === 'string') {
+              return favorite.college === college.id;
+            }
+            return favorite.college.id === college.id;
+          });
+          setIsFavorite(isFav);
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status !== 401) {
+            if (import.meta.env.DEV) {
+              console.error('Failed to verify favorite status:', error);
+            }
           }
         }
       }
     };
 
-    // Only check favorite status if is_favorite is undefined
-    if (college.is_favorite === undefined) {
-      checkFavoriteStatus();
-    }
-  }, [college.id, isAuthenticated, college.is_favorite]);
+    verifyFavoriteStatus();
+  }, [college.id, college.is_favorite, isAuthenticated]);
 
+  /**
+   * Navigate to college detail page
+   */
   const handleViewClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     navigate(`/colleges/${college.id}`, { state: { college } });
   }, [college, navigate]);
 
+  /**
+   * Toggle favorite status of the college
+   */
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -108,34 +117,49 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
+          setIsFavorite(false);
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           window.location.href = '/auth';
-        } else if (error.response?.status === 404) {
-          showError('College not found. Please refresh the page.');
-        } else if (error.response?.status === 429) {
-          showError('Too many requests. Please try again later.');
         } else {
-          showError('Failed to update favorite status. Please try again.');
-          console.error('Favorite toggle error:', error);
+          const currentState = isFavorite;
+          setIsFavorite(!currentState); // Revert the optimistic update
+          if (error.response?.status === 404) {
+            showError('College not found. Please refresh the page.');
+          } else if (error.response?.status === 429) {
+            showError('Too many requests. Please try again later.');
+          } else {
+            showError('Failed to update favorite status. Please try again.');
+          }
+          if (import.meta.env.DEV) {
+            console.error('Favorite toggle error:', error);
+          }
         }
       } else {
         showError('An unexpected error occurred. Please try again.');
-        console.error('Unexpected favorite toggle error:', error);
+        if (import.meta.env.DEV) {
+          console.error('Unexpected favorite toggle error:', error);
+        }
       }
     } finally {
       setIsTogglingFavorite(false);
     }
   };
 
+  /**
+   * Share college website by copying to clipboard
+   */
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(college.website);
       showSuccess('College website link copied to clipboard!');
-    } catch {
+    } catch (error) {
       showError('Failed to copy link');
+      if (import.meta.env.DEV) {
+        console.error('Failed to copy to clipboard:', error);
+      }
     }
   };
 
@@ -176,16 +200,18 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
         {/* Fallback gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500" />
         
-        {/* Cover image */}
+        {/* Cover image with error handling */}
         {college.display_cover && (
           <img
             src={college.display_cover.startsWith('http') || college.display_cover.startsWith('//')
               ? college.display_cover 
               : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${college.display_cover}`}
-            alt=""
+            alt={`${college.name} cover`}
             className="absolute inset-0 w-full h-full object-cover object-center transform scale-110"
             onError={(e) => {
-              console.error('Failed to load cover image:', college.display_cover);
+              if (import.meta.env.DEV) {
+                console.error('Failed to load cover image:', college.display_cover);
+              }
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
@@ -204,7 +230,9 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
               alt={`${college.name} logo`}
               className="w-full h-full object-contain"
               onError={(e) => {
-                console.error('Failed to load logo:', college.display_logo);
+                if (import.meta.env.DEV) {
+                  console.error('Failed to load logo:', college.display_logo);
+                }
                 (e.target as HTMLImageElement).style.display = 'none';
                 e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
               }}
@@ -280,8 +308,8 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
             </span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          {/* Footer Actions */}
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <motion.button
                 onClick={handleFavorite}
@@ -342,7 +370,6 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
             </div>
 
             <div className="flex items-center gap-3">
-              {/* View Button */}
               <button
                 onClick={handleViewClick}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all duration-300 text-sm font-medium shadow-sm hover:shadow-indigo-200 active:scale-95"
@@ -351,7 +378,6 @@ export const CollegeCard = ({ college, onFavoriteChange }: CollegeCardProps) => 
                 View Details
               </button>
 
-              {/* Admission Status */}
               <div className={`
                 px-3 py-1.5 rounded-2xl text-xs font-medium shadow-sm
                 ${college.admission_status === 'OPEN' 
