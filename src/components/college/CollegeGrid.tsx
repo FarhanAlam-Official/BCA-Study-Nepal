@@ -1,10 +1,19 @@
+/**
+ * CollegeGrid component displays a grid of college cards with filtering and sorting
+ * Handles loading states, error states, and empty states
+ */
+
 import { useEffect, useState } from 'react';
 import { College, CollegeFilters } from './college';
 import { collegeApi } from './collegeApi';
 import { CollegeCard } from './CollegeCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 
+/**
+ * Props for CollegeGrid component, extends CollegeFilters with additional callback
+ */
 interface CollegeGridProps extends CollegeFilters {
   onFavoriteChange?: (collegeId: string, isFavorite: boolean) => void;
 }
@@ -26,6 +35,7 @@ export const CollegeGrid = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch colleges when filters change
   useEffect(() => {
     const fetchColleges = async () => {
       setIsLoading(true);
@@ -45,8 +55,12 @@ export const CollegeGrid = ({
         });
         setColleges(response.results);
       } catch (err) {
-        setError('Failed to load colleges. Please try again later.');
-        console.error('Error fetching colleges:', err);
+        const errorMessage = 'Failed to load colleges. Please try again later.';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        if (import.meta.env.DEV) {
+          console.error('Error fetching colleges:', err);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -66,6 +80,7 @@ export const CollegeGrid = ({
     sortOrder,
   ]);
 
+  // Error state
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
@@ -95,6 +110,7 @@ export const CollegeGrid = ({
     );
   }
 
+  // Loading state with skeleton UI
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
@@ -108,6 +124,7 @@ export const CollegeGrid = ({
     );
   }
 
+  // Empty state
   if (colleges.length === 0) {
     return (
       <motion.div
@@ -126,6 +143,7 @@ export const CollegeGrid = ({
     );
   }
 
+  // Grid of college cards with animations
   return (
     <motion.div
       initial={{ opacity: 0 }}
