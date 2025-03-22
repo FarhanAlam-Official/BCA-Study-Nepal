@@ -56,6 +56,26 @@ export default function CollegePage() {
   const [searchInput, setSearchInput] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
+  // Scroll restoration
+  useEffect(() => {
+    // Save scroll position before navigating away
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('collegeListScrollPos', window.scrollY.toString());
+    };
+
+    // Restore scroll position when returning
+    const savedPosition = sessionStorage.getItem('collegeListScrollPos');
+    if (savedPosition !== null) {
+      window.scrollTo(0, parseInt(savedPosition));
+      sessionStorage.removeItem('collegeListScrollPos');
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   // Debounced search function
   const debouncedSearch = useCallback(
     (value: string) => {
