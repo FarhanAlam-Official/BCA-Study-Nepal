@@ -1,12 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Book, ArrowRight, FileText } from 'lucide-react';
+import { Book, ArrowRight, FileText, BookOpen } from 'lucide-react';
 
 interface SemesterCardProps {
-  semester: number;
-  subjectCount: number;
-  isSelected: boolean;
+  semester: string | number;
+  count: number;
+  isSelected?: boolean;
   onSelect: () => void;
+  variant: 'notes' | 'questionPaper';
 }
 
 const getOrdinalSuffix = (num: number): string => {
@@ -20,10 +21,28 @@ const getOrdinalSuffix = (num: number): string => {
 
 const SemesterCard: React.FC<SemesterCardProps> = ({
   semester,
-  subjectCount,
-  isSelected,
+  count,
+  isSelected = false,
   onSelect,
+  variant
 }) => {
+  const isAll = semester === 'all';
+  const Icon = variant === 'notes' ? BookOpen : Book;
+  const itemLabel = variant === 'notes' ? 'Notes' : 'Question Papers';
+  
+  const getTitle = () => {
+    if (isAll) return 'All Semesters';
+    return (
+      <>
+        {semester}
+        {typeof semester === 'number' && (
+          <sup className="text-lg font-medium">{getOrdinalSuffix(semester)}</sup>
+        )}
+        {' Semester'}
+      </>
+    );
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -33,7 +52,7 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
       onClick={onSelect}
       className={`
         group relative overflow-hidden rounded-xl aspect-square cursor-pointer
-        transition-all duration-300 ease-out
+        transition-all duration-300 ease-out group min-h-[270px]
         ${isSelected
           ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl shadow-indigo-500/30'
           : 'bg-white/80 hover:bg-gradient-to-br hover:from-indigo-50/90 hover:via-purple-50/90 hover:to-indigo-50/90 shadow-lg hover:shadow-indigo-500/10'
@@ -51,7 +70,7 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
               : 'bg-indigo-100/50 text-indigo-600 group-hover:bg-indigo-100'
             }
           `}>
-            <Book className="w-6 h-6" />
+            <Icon className="w-6 h-6" />
           </div>
         </div>
 
@@ -61,9 +80,7 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
             text-2xl font-bold
             ${isSelected ? 'text-white' : 'text-gray-900'}
           `}>
-            {semester}
-            <sup className="text-lg font-medium">{getOrdinalSuffix(semester)}</sup>
-            {' '}Semester
+            {getTitle()}
           </h3>
           
           <div className="flex flex-col items-center space-y-2">
@@ -72,7 +89,7 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
               ${isSelected ? 'text-white/90' : 'text-gray-600'}
             `}>
               <FileText className="w-4 h-4" />
-              <span>Question Papers</span>
+              <span>{itemLabel}</span>
             </div>
             
             <div className={`
@@ -83,7 +100,7 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
                 : 'bg-indigo-200/70 text-indigo-700 group-hover:bg-indigo-200'
               }
             `}>
-              {subjectCount} {subjectCount === 1 ? 'Subject' : 'Subjects'}
+              {count} {count === 1 ? itemLabel.slice(0, -1) : itemLabel}
             </div>
           </div>
         </div>

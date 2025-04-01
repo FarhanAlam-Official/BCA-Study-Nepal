@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Code, GraduationCap, Briefcase } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Program } from '../../services/types/questionpapers.types';
 import ErrorDisplay from '../common/ErrorDisplay';
 import ProgramList from './layout/ProgramList';
-import SemesterGrid from './layout/SemesterGrid';
+import SemesterGrid from '../common/SemesterGrid';
 import SubjectList from './layout/SubjectList';
+import { questionPaperService } from '../../services/api/questionPaperService';
 
 type ViewState = 'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS';
 
@@ -27,8 +28,8 @@ const QuestionPaperList: React.FC = () => {
     setViewState('SEMESTERS');
   };
 
-  const handleSemesterSelect = (semester: number) => {
-    setSelectedSemester(semester);
+  const handleSemesterSelect = (semester: string | number) => {
+    setSelectedSemester(Number(semester));
     setViewState('SUBJECTS');
   };
 
@@ -65,6 +66,35 @@ const QuestionPaperList: React.FC = () => {
         return '';
     }
   };
+
+  const formatSemesterData = (subjectCounts: Record<number, number>) => {
+    return Array.from({ length: 8 }, (_, i) => i + 1).map(semester => ({
+      semester,
+      count: subjectCounts[semester] || 0
+    }));
+  };
+
+  const [subjectCounts, setSubjectCounts] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const fetchSubjectCounts = async () => {
+      if (selectedProgram) {
+        try {
+          const response = await questionPaperService.getByProgram(selectedProgram.id);
+          const counts = response.semesters.reduce((acc, sem) => {
+            acc[sem.semester] = sem.subjects.length;
+            return acc;
+          }, {} as Record<number, number>);
+          setSubjectCounts(counts);
+        } catch (error) {
+          console.error('Error fetching subject counts:', error);
+          setError('Failed to fetch semester data');
+        }
+      }
+    };
+
+    fetchSubjectCounts();
+  }, [selectedProgram]);
 
   if (error) return <ErrorDisplay message={error} onRetry={() => setError(null)} />;
 
@@ -213,9 +243,10 @@ const QuestionPaperList: React.FC = () => {
               className="bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-6"
             >
               <SemesterGrid
-                selectedProgram={selectedProgram}
+                variant="questionPaper"
                 selectedSemester={selectedSemester}
                 onSemesterSelect={handleSemesterSelect}
+                data={formatSemesterData(subjectCounts)}
               />
             </motion.div>
           )}
