@@ -96,3 +96,4 @@ pythonenv*/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.qodo
