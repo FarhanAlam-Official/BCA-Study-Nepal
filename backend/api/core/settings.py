@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'api.apps.users.apps.UsersConfig',
-    'api.apps.subjects.apps.SubjectsConfig',
+    'api.apps.question_papers.apps.QuestionPapersConfig',
     'api.apps.notes.apps.NotesConfig',
     'api.apps.resources.apps.ResourcesConfig',
     'api.apps.colleges',

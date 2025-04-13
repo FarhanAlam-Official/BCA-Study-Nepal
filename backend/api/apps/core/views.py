@@ -4,22 +4,21 @@ from rest_framework.response import Response
 from django.db.models import Q
 from api.apps.notes.models import Note
 from api.apps.colleges.models import College
-from api.apps.subjects.models import QuestionPaper
+from api.apps.question_papers.models import QuestionPaper
+from rest_framework.reverse import reverse
 
 @api_view(['GET'])
-def api_root(request):
+def api_root(request, format=None):
     """
     API root endpoint showing available endpoints
     """
     return Response({
-        'message': 'Welcome to BCA Study Nepal API',
-        'endpoints': {
-            'users': '/api/users/',
-            'subjects': '/api/subjects/',
-            'notes': '/api/notes/',
-            'resources': '/api/resources/',
-            'admin': '/admin/'
-        }
+        'users': reverse('user-list', request=request, format=format),
+        'question_papers': reverse('question-papers-list', request=request, format=format),
+        'notes': reverse('note-list', request=request, format=format),
+        'subjects': reverse('subject-list', request=request, format=format),
+        'resources': reverse('resource-list', request=request, format=format),
+        'admin': reverse('admin:index', request=request, format=format)
     })
 
 @api_view(['GET'])

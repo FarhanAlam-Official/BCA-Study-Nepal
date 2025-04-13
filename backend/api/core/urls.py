@@ -43,7 +43,7 @@ urlpatterns = [
     
     # App-specific routes
     path('api/users/', include('api.apps.users.urls')),
-    path('api/subjects/', include('api.apps.subjects.urls')),
+    path('api/question-papers/', include('api.apps.question_papers.urls')),
     path('api/notes/', include('api.apps.notes.urls')),
     path('api/resources/', include('api.apps.resources.urls')),
     path('api/colleges/', include('api.apps.colleges.urls')),
