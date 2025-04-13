@@ -1,41 +1,37 @@
-import api from '../config/axios';
-import { Program, ProgramSubjectsResponse } from '../types/questionpapers.types';
+import { Program, ProgramSubjectsResponse, QuestionPaper } from '../types/questionpapers.types';
+import { questionPapers } from '../api';
 // import axios from 'axios';
-import { QuestionPaper } from '../types/questionpapers.types';
-import axios from '../config/axios';
 
 export const questionPaperService = {
   getPrograms: async (): Promise<Program[]> => {
     try {
-      const response = await api.get('/programs/');
-      return response.data;
+      const response = await questionPapers.getPrograms();
+      // Handle both array and paginated response formats
+      return Array.isArray(response.data) ? response.data : response.data.results || [];
     } catch (error) {
       console.error('Error fetching programs:', error);
-      return [];
+      throw error;
     }
   },
 
   getByProgram: async (programId: number): Promise<ProgramSubjectsResponse> => {
     try {
-      const response = await api.get(`/programs/${programId}/subjects/`);
+      const response = await questionPapers.getByProgram(programId);
       return response.data;
     } catch (error) {
-      console.error('Error fetching subjects:', error);
+      console.error('Error fetching question papers:', error);
       throw error;
     }
   },
 
-  getSubjectPapers: async (subjectId: number): Promise<QuestionPaper[]> => {
+  getBySubject: async (subjectId: number, year?: number): Promise<QuestionPaper[]> => {
     try {
-      const response = await axios.get(`/question-papers/by_subject/`, {
-        params: {
-          subject_id: subjectId
-        }
-      });
-      return response.data || [];
+      const response = await questionPapers.getBySubject(subjectId, year);
+      // Handle both array and paginated response formats
+      return Array.isArray(response.data) ? response.data : response.data.results || [];
     } catch (error) {
-      console.error(`Failed to fetch papers for subject ${subjectId}:`, error);
-      return [];
+      console.error('Error fetching papers:', error);
+      throw error;
     }
   },
 };

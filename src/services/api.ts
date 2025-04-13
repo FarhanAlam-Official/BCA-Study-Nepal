@@ -249,11 +249,16 @@ export const notes = {
   delete: (id: number) => api.delete(`/api/notes/${id}/`),
 };
 
-// Subjects endpoints
-export const subjects = {
-  getAll: () => api.get('/api/subjects/'),
-  getById: (id: number) => api.get(`/api/subjects/${id}/`),
-  getQuestionPapers: (id: number) => api.get(`/api/subjects/${id}/papers/`),
+// Question Papers endpoints
+export const questionPapers = {
+    getAll: () => api.get('/api/question-papers/papers/'),
+    getById: (id: number) => api.get(`/api/question-papers/papers/${id}/`),
+    getQuestionPapers: (id: number) => api.get(`/api/question-papers/papers/${id}/papers/`),
+    getPrograms: () => api.get('/api/question-papers/programs/'),
+    getByProgram: (programId: number) => api.get(`/api/question-papers/programs/${programId}/subjects/`),
+    getBySubject: (subjectId: number, year?: number) => api.get(`/api/question-papers/papers/by-subject/`, {
+        params: { subject_id: subjectId, year }
+    })
 };
 
 // Resources endpoints
@@ -308,3 +313,5 @@ export const discoverEndpoints = async () => {
     }
   }
 };
+
+export default api;

@@ -8,28 +8,41 @@ interface SubjectCardProps {
   subject: Subject;
   questionPapers: QuestionPaper[];
   onDownload?: (paper: QuestionPaper) => void;
+  onClick?: (subject: Subject) => void;
 }
 
 const SubjectCard: React.FC<SubjectCardProps> = ({ 
   subject, 
   questionPapers,
-  onDownload 
+  onDownload,
+  onClick
 }) => {
   const navigate = useNavigate();
   const subjectPapers = questionPapers.filter(paper => paper.subject.id === subject.id);
 
   const handleViewAllPapers = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click event
-    navigate(`/subjects/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
+    navigate(`/question-papers/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
   };
 
-  const handleCardClick = () => {
-    navigate(`/subjects/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
+  const handleClick = () => {
+    if (onClick) {
+      onClick(subject);
+    } else {
+      navigate(`/question-papers/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      navigate(`/question-papers/${subject.id}/${encodeURIComponent(subject.name)}/papers`);
+    }
   };
 
   return (
     <motion.div
-      onClick={handleCardClick}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       whileHover={{ scale: 1.01 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}

@@ -26,15 +26,15 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
             animate={{ opacity: 1, y: 0 }}
             onClick={() => onSelect(id)}
             className={`
-                group relative overflow-hidden rounded-xl p-6 cursor-pointer
-                transition-all duration-300 ease-out
+                group relative overflow-hidden rounded-xl p-5 cursor-pointer
+                transition-all duration-300 ease-out min-h-[200px]
                 ${isSelected
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl shadow-indigo-500/30'
                     : 'bg-white/80 hover:bg-gradient-to-br hover:from-indigo-50/90 hover:via-purple-50/90 hover:to-indigo-50/90 shadow-lg hover:shadow-indigo-500/10'
                 }
             `}
         >
-            <div className="flex gap-5">
+            <div className="flex gap-4 h-full">
                 <div className={`
                     flex-shrink-0 w-12 h-12 rounded-xl
                     flex items-center justify-center
@@ -47,7 +47,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
                     <BookOpen className="w-6 h-6" />
                 </div>
                 
-                <div className="flex-1 min-w-0 space-y-3">
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
                     <h3 className={`
                         text-lg font-semibold line-clamp-1
                         ${isSelected ? 'text-white' : 'text-gray-900'}
@@ -56,13 +56,13 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
                     </h3>
                     
                     <p className={`
-                        text-sm line-clamp-2
+                        text-sm line-clamp-2 min-h-[3em]
                         ${isSelected ? 'text-white/90' : 'text-gray-600'}
                     `}>
-                        {description}
+                        {description || 'No description available'}
                     </p>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-2">
                         <span className={`
                             px-3 py-1 rounded-full font-medium text-sm
                             transition-colors duration-300

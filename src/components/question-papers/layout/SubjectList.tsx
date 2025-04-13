@@ -7,6 +7,7 @@ import ErrorDisplay from '../../common/ErrorDisplay';
 import { Book } from 'lucide-react';
 import { questionPaperService } from '../../../services/api/questionPaperService';
 import { QuestionPaper } from '../../../services/types/questionpapers.types';
+import { useNavigate } from 'react-router-dom';
 
 interface SubjectListProps {
   programId: number;
@@ -21,6 +22,7 @@ const SubjectList: React.FC<SubjectListProps> = ({
   isVisible,
   programName,
 }) => {
+  const navigate = useNavigate();
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -74,6 +76,7 @@ const SubjectList: React.FC<SubjectListProps> = ({
     if (subject.questionPapers && subject.questionPapers.length > 0) {
       const verifiedPaper = subject.questionPapers.find(paper => paper.status === 'VERIFIED' && paper.file);
       if (verifiedPaper?.file) {
+        // Open in new tab while preserving current state in URL
         window.open(verifiedPaper.file, '_blank');
       }
     }
