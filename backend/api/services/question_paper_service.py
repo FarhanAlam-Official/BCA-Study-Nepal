@@ -1,5 +1,5 @@
 from typing import List
-from api.apps.subjects.models import QuestionPaper
+from api.apps.question_papers.models import QuestionPaper
 from .base_service import BaseService
 
 class QuestionPaperService(BaseService[QuestionPaper]):
