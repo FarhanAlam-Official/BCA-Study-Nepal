@@ -19,7 +19,7 @@ const stagger = {
 const HeroContent = () => {
   return (
     <motion.div 
-      className="text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-12 sm:py-16 lg:py-20"
+      className="text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-2 sm:py-4 lg:py-8"
       initial="initial"
       animate="animate"
       variants={stagger}
@@ -27,10 +27,10 @@ const HeroContent = () => {
       {/* Sparkle icon with enhanced glow effect */}
       <motion.div 
         variants={fadeInUp}
-        className="flex justify-center mb-8"
+        className="flex justify-center mb-1"
       >
         <div className="relative">
-          <Sparkles className="h-14 w-14 text-indigo-600 animate-pulse" />
+          <Sparkles className="h-10 w-10 text-indigo-600 animate-pulse" />
           <div className="absolute inset-0 bg-indigo-400/30 blur-3xl rounded-full scale-150" />
         </div>
       </motion.div>
@@ -38,7 +38,7 @@ const HeroContent = () => {
       {/* Main heading with enhanced gradient */}
       <motion.h1 
         variants={fadeInUp}
-        className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight space-y-2"
+        className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight space-y-0"
       >
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient">
           Your Gateway to
@@ -50,7 +50,7 @@ const HeroContent = () => {
       {/* Enhanced subheading */}
       <motion.p 
         variants={fadeInUp}
-        className="mt-8 max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed"
+        className="mt-3 max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed"
       >
         Access comprehensive study materials, explore colleges, and discover career opportunities - all in one place.
       </motion.p>
@@ -58,7 +58,7 @@ const HeroContent = () => {
       {/* Enhanced CTA buttons */}
       <motion.div 
         variants={fadeInUp}
-        className="mt-12 flex flex-col sm:flex-row gap-5 justify-center"
+        className="mt-10 flex flex-col sm:flex-row gap-5 justify-center"
       >
         <Link
           to="/notes"
@@ -82,7 +82,7 @@ const HeroContent = () => {
       {/* Enhanced feature cards */}
       <motion.div 
         variants={fadeInUp}
-        className="mt-24 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 px-4"
+        className="mt-48 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 px-4"
       >
         {[
           { 
