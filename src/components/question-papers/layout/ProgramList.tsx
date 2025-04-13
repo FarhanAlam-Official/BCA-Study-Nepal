@@ -5,6 +5,7 @@ import { Program } from '../../../services/types/questionpapers.types';
 import { questionPaperService } from '../../../services/api/questionPaperService';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import ErrorDisplay from '../../common/ErrorDisplay';
+import { FileText } from 'lucide-react';
 
 interface ProgramListProps {
   onProgramSelect: (program: Program) => void;
@@ -23,11 +24,14 @@ const ProgramList: React.FC<ProgramListProps> = ({ onProgramSelect }) => {
   const fetchPrograms = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const data = await questionPaperService.getPrograms();
-      setPrograms(data);
+      // DRF might return either an array directly or a results property
+      const programs = Array.isArray(data) ? data : data.results || [];
+      setPrograms(programs);
     } catch (error) {
       console.error('Failed to load programs:', error);
-      setError('Failed to load programs');
+      setError('Failed to load programs. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -43,6 +47,22 @@ const ProgramList: React.FC<ProgramListProps> = ({ onProgramSelect }) => {
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorDisplay message={error} onRetry={fetchPrograms} />;
+
+  if (!programs || programs.length === 0) {
+    return (
+      <div className="text-center py-16 bg-gray-50 rounded-xl border border-gray-100">
+        <FileText className="mx-auto h-16 w-16 text-gray-400" />
+        <h3 className="mt-6 text-xl font-semibold text-gray-900">No Programs Available</h3>
+        <p className="mt-2 text-gray-500">There are no programs available at the moment.</p>
+        <button
+          onClick={fetchPrograms}
+          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Refresh
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

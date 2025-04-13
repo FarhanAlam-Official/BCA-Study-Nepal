@@ -69,7 +69,7 @@ function AppContent() {
               <Route path="/notes/:id" element={<Notes />} />
               <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
               <Route path="/question-papers" element={<QuestionPaperList />} />
-              <Route path="/subjects/:subjectId/:subjectName/papers" element={<SubjectPapersPage />} />
+              <Route path="/question-papers/:subjectId/:subjectName/papers" element={<SubjectPapersPage />} />
               <Route path="/auth" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />

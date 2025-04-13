@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Code, GraduationCap, Briefcase } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Program } from '../../services/types/questionpapers.types';
 import ErrorDisplay from '../common/ErrorDisplay';
 import ProgramList from './layout/ProgramList';
 import SemesterGrid from '../common/SemesterGrid';
 import SubjectList from './layout/SubjectList';
 import { questionPaperService } from '../../services/api/questionPaperService';
+import { useSearchParams } from 'react-router-dom';
 
 type ViewState = 'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS';
 
@@ -18,10 +19,71 @@ const pageTransition = {
 };
 
 const QuestionPaperList: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   const [viewState, setViewState] = useState<ViewState>('PROGRAMS');
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [subjectCounts, setSubjectCounts] = useState<Record<number, number>>({});
+
+  const fetchSubjectCounts = useCallback(async () => {
+    if (selectedProgram) {
+      try {
+        const response = await questionPaperService.getByProgram(selectedProgram.id);
+        const counts = response.semesters.reduce((acc, sem) => {
+          acc[sem.semester] = sem.subjects.length;
+          return acc;
+        }, {} as Record<number, number>);
+        setSubjectCounts(counts);
+      } catch (error) {
+        console.error('Error fetching subject counts:', error);
+        setError('Failed to fetch semester data');
+      }
+    }
+  }, [selectedProgram]);
+
+  // Load state from URL parameters on component mount
+  useEffect(() => {
+    const programId = searchParams.get('program');
+    const semester = searchParams.get('semester');
+    const view = searchParams.get('view') as ViewState;
+
+    if (programId) {
+      // Fetch program details and set state
+      questionPaperService.getPrograms().then(programs => {
+        const program = programs.find(p => p.id.toString() === programId);
+        if (program) {
+          setSelectedProgram(program);
+          if (semester) {
+            setSelectedSemester(Number(semester));
+            setViewState('SUBJECTS');
+          } else {
+            setViewState('SEMESTERS');
+          }
+        }
+      });
+    } else if (view) {
+      setViewState(view);
+    }
+  }, [searchParams]);
+
+  // Update URL parameters when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedProgram) {
+      params.set('program', selectedProgram.id.toString());
+      params.set('view', viewState);
+      if (selectedSemester) {
+        params.set('semester', selectedSemester.toString());
+      }
+    }
+    setSearchParams(params, { replace: true });
+  }, [viewState, selectedProgram, selectedSemester, setSearchParams]);
+
+  useEffect(() => {
+    fetchSubjectCounts();
+  }, [fetchSubjectCounts]);
 
   const handleProgramSelect = (program: Program) => {
     setSelectedProgram(program);
@@ -44,13 +106,21 @@ const QuestionPaperList: React.FC = () => {
   };
 
   const handleBreadcrumbClick = (view: ViewState) => {
-    if (view === 'PROGRAMS') {
-      setViewState('PROGRAMS');
-      setSelectedProgram(null);
-      setSelectedSemester(null);
-    } else if (view === 'SEMESTERS') {
-      setViewState('SEMESTERS');
-      setSelectedSemester(null);
+    switch (view) {
+      case 'PROGRAMS':
+        setViewState('PROGRAMS');
+        setSelectedProgram(null);
+        setSelectedSemester(null);
+        break;
+      case 'SEMESTERS':
+        if (selectedProgram) {
+          setViewState('SEMESTERS');
+          setSelectedSemester(null);
+          fetchSubjectCounts();
+        }
+        break;
+      default:
+        break;
     }
   };
 
@@ -74,27 +144,57 @@ const QuestionPaperList: React.FC = () => {
     }));
   };
 
-  const [subjectCounts, setSubjectCounts] = useState<Record<number, number>>({});
-
-  useEffect(() => {
-    const fetchSubjectCounts = async () => {
-      if (selectedProgram) {
-        try {
-          const response = await questionPaperService.getByProgram(selectedProgram.id);
-          const counts = response.semesters.reduce((acc, sem) => {
-            acc[sem.semester] = sem.subjects.length;
-            return acc;
-          }, {} as Record<number, number>);
-          setSubjectCounts(counts);
-        } catch (error) {
-          console.error('Error fetching subject counts:', error);
-          setError('Failed to fetch semester data');
-        }
-      }
-    };
-
-    fetchSubjectCounts();
-  }, [selectedProgram]);
+  const renderBreadcrumbs = () => {
+    return (
+      <motion.div 
+        className="flex items-center gap-2 text-sm pl-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <button
+          onClick={() => handleBreadcrumbClick('PROGRAMS')}
+          className={`
+            transition-colors font-medium
+            ${viewState === 'PROGRAMS' 
+              ? 'bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600' 
+              : 'text-indigo-600 hover:text-purple-600'
+            }
+          `}
+        >
+          Programs
+        </button>
+        {selectedProgram && (
+          <>
+            <span className="text-purple-600">
+              <ChevronRight className="w-4 h-4" />
+            </span>
+            <button
+              onClick={() => handleBreadcrumbClick('SEMESTERS')}
+              className={`
+                transition-colors font-medium
+                ${viewState === 'SEMESTERS' 
+                  ? 'bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600' 
+                  : 'text-indigo-600 hover:text-purple-600'
+                }
+              `}
+            >
+              {selectedProgram.name}
+            </button>
+            {viewState === 'SUBJECTS' && selectedSemester && (
+              <>
+                <span className="text-purple-600">
+                  <ChevronRight className="w-4 h-4" />
+                </span>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-medium">
+                  Semester {selectedSemester}
+                </span>
+              </>
+            )}
+          </>
+        )}
+      </motion.div>
+    );
+  };
 
   if (error) return <ErrorDisplay message={error} onRetry={() => setError(null)} />;
 
@@ -178,49 +278,7 @@ const QuestionPaperList: React.FC = () => {
               </h1>
             </div>
             
-            {viewState !== 'PROGRAMS' && (
-              <motion.div 
-                className="flex items-center gap-2 text-sm pl-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <button
-                  onClick={() => handleBreadcrumbClick('PROGRAMS')}
-                  className="text-indigo-600 hover:text-purple-600 transition-colors font-medium"
-                >
-                  Programs
-                </button>
-                <span className="text-purple-600">
-                  <ChevronRight className="w-4 h-4" />
-                </span>
-                {selectedProgram && (
-                  <>
-                    <button
-                      onClick={() => handleBreadcrumbClick('SEMESTERS')}
-                      className={`
-                        transition-colors font-medium
-                        ${viewState === 'SEMESTERS' 
-                          ? 'bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600' 
-                          : 'text-indigo-600 hover:text-purple-600'
-                        }
-                      `}
-                    >
-                      {selectedProgram.name}
-                    </button>
-                    {viewState === 'SUBJECTS' && (
-                      <>
-                        <span className="text-purple-600">
-                          <ChevronRight className="w-4 h-4" />
-                        </span>
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-medium">
-                          Semester {selectedSemester}
-                        </span>
-                      </>
-                    )}
-                  </>
-                )}
-              </motion.div>
-            )}
+            {viewState !== 'PROGRAMS' && renderBreadcrumbs()}
           </div>
         </div>
 
@@ -251,7 +309,7 @@ const QuestionPaperList: React.FC = () => {
             </motion.div>
           )}
 
-          {viewState === 'SUBJECTS' && selectedSemester && selectedProgram && (
+          {viewState === 'SUBJECTS' && selectedProgram && selectedSemester && (
             <motion.div
               key="subjects"
               {...pageTransition}
