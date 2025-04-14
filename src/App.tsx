@@ -1,5 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Settings from './pages/Settings';
 import Login from './pages/Auth/Login';
 import ForgotPassword from './pages/Auth/ForgotPassword';
@@ -10,7 +12,6 @@ import Footer from './components/layout/Footer';
 import Hero from './components/home/Hero';
 import Features from './components/home/Features';
 import QuestionPapers from './components/home/QuestionPapers';
-// import Events from './components/home/Events';
 import UsefulLinks from './components/home/UsefulLinks';
 import LoadingPage from './components/common/LoadingPage';
 import { PomodoroProvider } from './context/PomodoroContext';
@@ -27,6 +28,7 @@ const QuestionPaperList = lazy(() => import('./components/question-papers/Questi
 const Syllabus = lazy(() => import('./pages/Syllabus'));
 const GPACalculator = lazy(() => import('./components/tools/GPACalculator'));
 const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
+const Todo = lazy(() => import('./pages/tools/Todo'));
 // const MyNotes = lazy(() => import('./pages/tools/MyNotes'));
 const SubjectPapersPage = lazy(() => import('./components/question-papers/QuestionPapersPage'));
 const PDFViewerWrapper = lazy(() => import('./components/common/PDFViewerWrapper'));
@@ -64,6 +66,7 @@ function AppContent() {
               <Route path="/syllabus" element={<Syllabus />} />
               <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
               <Route path="/tools/pomodoro" element={<Pomodoro />} />
+              <Route path="/tools/todo" element={<Todo />} />
               {/* <Route path="/tools/my-notes" element={<MyNotes />} /> */}
               <Route path="/notes" element={<Notes />} />
               <Route path="/notes/:id" element={<Notes />} />
@@ -80,6 +83,20 @@ function AppContent() {
           </Suspense>
         </main>
         <Footer />
+        {/* Global Toast Container */}
+        <ToastContainer
+          containerId="global-notifications"
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
       </div>
     </PomodoroProvider>
   );
