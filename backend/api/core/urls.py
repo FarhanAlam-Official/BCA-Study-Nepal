@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/notes/', include('api.apps.notes.urls')),
     path('api/resources/', include('api.apps.resources.urls')),
     path('api/colleges/', include('api.apps.colleges.urls')),
+    path('api/todos/', include('api.apps.todos.urls')),
     
     # Search endpoint
     path('api/search/', search, name='search'),

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'api.apps.notes.apps.NotesConfig',
     'api.apps.resources.apps.ResourcesConfig',
     'api.apps.colleges',
+    'api.apps.todos.apps.TodosConfig',
 ]
 
 MIDDLEWARE = [
@@ -170,13 +171,17 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'api.apps.todos': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
 
 # Create logs directory if it doesn't exist
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
-
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -236,7 +241,7 @@ SECURE_PROXY_SSL_HEADER = None
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ['Set-Cookie', 'Cookie', 'Session']
 CORS_ALLOW_HEADERS = [
@@ -249,17 +254,13 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
-    'cookie',
-    'session',
 ]
 
-# Add specific allowed origins for more security
-CORS_ALLOWED_ORIGINS = [
-    FRONTEND_URL,  # Use the FRONTEND_URL setting
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://bcastudynepal.com",
-]
+# For production, use specific origins:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+# ]
 
 # CSRF settings
 CSRF_USE_SESSIONS = True
