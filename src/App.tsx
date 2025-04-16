@@ -89,13 +89,14 @@ function AppContent() {
           position="top-right"
           autoClose={5000}
           hideProgressBar={false}
-          newestOnTop={false}
+          newestOnTop={true}
           closeOnClick
           rtl={false}
           pauseOnFocusLoss
           draggable
           pauseOnHover
           theme="colored"
+          style={{marginTop: '5rem'}}
         />
       </div>
     </PomodoroProvider>
