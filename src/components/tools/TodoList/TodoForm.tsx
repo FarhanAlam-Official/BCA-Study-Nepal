@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TodoFormData, Todo } from './types';
+import { TodoData, Todo } from './types';
 import { 
   CalendarIcon, 
   TagIcon, 
@@ -11,17 +11,27 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
-// Define the showPicker interface
+/**
+ * Interface for HTML5 datetime input showPicker method
+ * This is needed because TypeScript doesn't include this experimental feature
+ */
 interface DateTimeInput {
   showPicker: () => void;
 }
 
+/**
+ * Shows the native date picker for the input element
+ * @param input - The HTML input element to show the picker for
+ */
 const showDatePicker = (input: HTMLInputElement) => {
   if ('showPicker' in input) {
     (input as unknown as DateTimeInput).showPicker();
   }
 };
 
+/**
+ * Animation variants for the form container
+ */
 const formVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
@@ -34,6 +44,9 @@ const formVariants = {
   }
 };
 
+/**
+ * Animation variants for form inputs
+ */
 const inputVariants = {
   focus: { 
     scale: 1.01,
@@ -51,12 +64,42 @@ const inputVariants = {
   }
 };
 
+/**
+ * Props for the TodoForm component
+ */
 interface TodoFormProps {
-  onSubmit: (data: TodoFormData) => void;
+  /** Callback function to handle form submission */
+  onSubmit: (data: TodoData) => void;
+  /** Initial data for editing mode */
   initialData?: Todo;
+  /** Whether the form is in editing mode */
   isEditing?: boolean;
 }
 
+/**
+ * Form data interface for managing todo item fields
+ */
+interface TodoFormData {
+  /** Title of the todo item */
+  title: string;
+  /** Optional description */
+  description: string;
+  /** Priority level */
+  priority: 'low' | 'medium' | 'high';
+  /** Due date in YYYY-MM-DD format */
+  dueDate: string;
+  /** Due time in HH:mm format */
+  dueTime: string;
+  /** Optional category */
+  category: string;
+  /** List of subtask titles */
+  subtasks: string[];
+}
+
+/**
+ * Floating decorative elements component
+ * Adds animated background elements to the form
+ */
 const FloatingElements = () => (
   <>
     <motion.div
@@ -153,15 +196,30 @@ const FloatingElements = () => (
   </>
 );
 
+/**
+ * TodoForm Component
+ * Handles creation and editing of todo items with a rich UI
+ */
 export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEditing = false }) => {
+  // Initialize form data with defaults or existing todo data
   const [formData, setFormData] = useState<TodoFormData>(() => {
-    let initialDueDate = new Date().toISOString().split('T')[0];
-    let initialDueTime = '09:00';
+    const today = new Date();
+    let initialDueDate = today.toISOString().split('T')[0];
+    let initialDueTime = today.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 
     if (initialData?.dueDate) {
-      const date = new Date(initialData.dueDate);
-      initialDueDate = date.toISOString().split('T')[0];
-      initialDueTime = date.toTimeString().slice(0, 5);
+      try {
+        const date = new Date(initialData.dueDate);
+        if (!isNaN(date.getTime())) {
+          initialDueDate = date.toISOString().split('T')[0];
+          initialDueTime = date.toTimeString().slice(0, 5);
+        }
+      } catch (error) {
+        // Fallback to default values if date parsing fails
+        if (error instanceof Error) {
+          console.warn('Failed to parse initial due date:', error.message);
+        }
+      }
     }
 
     return {
@@ -171,28 +229,67 @@ export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEdi
       dueDate: initialDueDate,
       dueTime: initialDueTime,
       category: initialData?.category || '',
-      subtasks: initialData?.subtasks.map(st => st.title) || []
+      subtasks: initialData?.subtasks?.map(st => st.title) || []
     };
   });
 
+  /**
+   * Handles form submission
+   * Validates and processes form data before submission
+   * @param e - Form submission event
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const combinedDateTime = new Date(`${formData.dueDate}T${formData.dueTime}`);
-    onSubmit({
-      ...formData,
-      dueDate: combinedDateTime.toISOString()
-    });
-    setFormData({
-      title: '',
-      description: '',
-      priority: 'medium',
-      dueDate: new Date().toISOString().split('T')[0],
-      dueTime: '09:00',
-      category: '',
-      subtasks: []
-    });
+    
+    if (!formData.title.trim()) {
+      return; // Silent return as the required attribute handles UI feedback
+    }
+
+    try {
+      // Create ISO datetime string
+      const dateStr = `${formData.dueDate}T${formData.dueTime}:00`;
+      const localDate = new Date(dateStr);
+      
+      if (isNaN(localDate.getTime())) {
+        throw new Error('Invalid date/time format');
+      }
+      
+      const utcString = localDate.toISOString();
+      
+      const todoData: TodoData = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        priority: formData.priority,
+        dueDate: utcString,
+        category: formData.category.trim(),
+        isCompleted: initialData?.isCompleted || false
+      };
+      
+      onSubmit(todoData);
+
+      // Reset form if not in editing mode
+      if (!isEditing) {
+        setFormData({
+          title: '',
+          description: '',
+          priority: 'medium',
+          dueDate: new Date().toISOString().split('T')[0],
+          dueTime: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+          category: '',
+          subtasks: []
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.warn('Error processing form data:', error.message);
+      }
+    }
   };
 
+  /**
+   * Handles changes to form fields
+   * @param e - Change event from form inputs
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
