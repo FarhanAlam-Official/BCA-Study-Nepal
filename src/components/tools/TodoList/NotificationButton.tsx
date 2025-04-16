@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BellIcon, BellSlashIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import NotificationComponents from './NotificationContext';
 
+/**
+ * NotificationButton component provides a UI for managing notification preferences
+ * Includes a button that shows notification status and a popup settings panel
+ */
 const NotificationButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +22,7 @@ const NotificationButton: React.FC = () => {
     requestPermission 
   } = NotificationComponents.useNotifications();
 
+  // Update popup position when opened and on window changes
   useEffect(() => {
     const updatePosition = () => {
       if (buttonRef.current) {
@@ -31,17 +36,20 @@ const NotificationButton: React.FC = () => {
 
     if (isOpen) {
       updatePosition();
-      // Update position on scroll and resize
       window.addEventListener('scroll', updatePosition);
       window.addEventListener('resize', updatePosition);
-    }
 
-    return () => {
-      window.removeEventListener('scroll', updatePosition);
-      window.removeEventListener('resize', updatePosition);
-    };
+      return () => {
+        window.removeEventListener('scroll', updatePosition);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
   }, [isOpen]);
 
+  /**
+   * Handles toggling notifications on/off
+   * Requests permission if needed when enabling notifications
+   */
   const handleToggle = async () => {
     if (!preferences.enabled && !hasPermission) {
       setIsLoading(true);
@@ -63,6 +71,7 @@ const NotificationButton: React.FC = () => {
     updatePreferences({ enabled: !preferences.enabled });
   };
 
+  // Available reminder intervals for the dropdown
   const reminderOptions = [
     { value: 5, label: '5 minutes' },
     { value: 15, label: '15 minutes' },
@@ -74,6 +83,10 @@ const NotificationButton: React.FC = () => {
     { value: 1440, label: '1 day' }
   ];
 
+  /**
+   * Renders the notification settings popup content
+   * @returns React element or null if popup is closed
+   */
   const renderPortalContent = () => {
     if (!isOpen) return null;
 
@@ -99,6 +112,7 @@ const NotificationButton: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
+              {/* Main notification toggle */}
               <div>
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-gray-900">Notifications</h3>
@@ -127,6 +141,7 @@ const NotificationButton: React.FC = () => {
 
               {preferences.enabled && (
                 <div className="space-y-4">
+                  {/* Due date reminder settings */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -154,6 +169,7 @@ const NotificationButton: React.FC = () => {
 
                     {preferences.dueDateReminders.enabled && (
                       <div className="pl-4 space-y-3">
+                        {/* Reminder interval selector */}
                         <div className="space-y-2">
                           <label className="text-sm text-gray-600">Notify before due</label>
                           <select
@@ -174,6 +190,7 @@ const NotificationButton: React.FC = () => {
                           </select>
                         </div>
 
+                        {/* Due now notifications toggle */}
                         <div className="flex items-center justify-between">
                           <label className="text-sm text-gray-600">When task is due</label>
                           <button
@@ -195,6 +212,7 @@ const NotificationButton: React.FC = () => {
                           </button>
                         </div>
 
+                        {/* Overdue notifications toggle */}
                         <div className="flex items-center justify-between">
                           <label className="text-sm text-gray-600">When task is overdue</label>
                           <button
@@ -219,6 +237,7 @@ const NotificationButton: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Sound settings */}
                   <div className="pt-3 border-t">
                     <div className="flex items-center justify-between">
                       <div>

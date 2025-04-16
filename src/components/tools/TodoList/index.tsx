@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FunnelIcon, ArrowsUpDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import TodoForm from './TodoForm';
 import TodoItem from './TodoItem';
-import { Todo, SortOption, TodoFormData } from './types';
+import { Todo, SortOption, TodoData } from './types';
 import TodoComponents from './TodoContext';
 import NotificationComponents from './NotificationContext';
 import NotificationButton from './NotificationButton';
 
+/**
+ * Animation variants for the container
+ */
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
@@ -18,11 +21,17 @@ const containerVariants = {
   }
 };
 
+/**
+ * Animation variants for individual items
+ */
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0 }
 };
 
+/**
+ * Main content component for the todo list
+ */
 const TodoListContent: React.FC = () => {
   const { todos, addTodo, updateTodo, deleteTodo, toggleTodo } = TodoComponents.useTodos();
   const { checkAndNotifyDueTasks } = NotificationComponents.useNotifications();
@@ -42,28 +51,40 @@ const TodoListContent: React.FC = () => {
     direction: 'desc',
   });
 
-  const handleAddTodo = (formData: TodoFormData) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { subtasks, ...rest } = formData;
+  /**
+   * Handles adding a new todo
+   */
+  const handleAddTodo = (formData: TodoData) => {
     addTodo({
-      ...rest,
-      isCompleted: false,
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined
+      title: formData.title,
+      description: formData.description || '',
+      priority: formData.priority,
+      dueDate: formData.dueDate,
+      category: formData.category || '',
+      isCompleted: false
     });
   };
 
-  const handleUpdateTodo = (formData: TodoFormData) => {
+  /**
+   * Handles updating an existing todo
+   */
+  const handleUpdateTodo = (formData: TodoData) => {
     if (editingTodo) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { subtasks, ...rest } = formData;
       updateTodo(editingTodo.id, {
-        ...rest,
-        dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined
+        title: formData.title,
+        description: formData.description,
+        priority: formData.priority,
+        dueDate: formData.dueDate,
+        category: formData.category,
+        isCompleted: formData.isCompleted ?? false
       });
       setEditingTodo(null);
     }
   };
 
+  /**
+   * Handles toggling a todo's completion status
+   */
   const handleToggleTodo = (id: string) => {
     const todo = todos.find(t => t.id === id);
     if (todo) {
@@ -71,11 +92,21 @@ const TodoListContent: React.FC = () => {
     }
   };
 
+  /**
+   * Handles deleting a todo
+   */
   const handleDeleteTodo = (id: string) => {
     deleteTodo(id);
   };
 
+  /**
+   * Memoized sorted and filtered todos
+   */
   const sortedAndFilteredTodos = useMemo(() => {
+    if (!Array.isArray(todos)) {
+      return [];
+    }
+
     const result = todos.filter(todo => {
       const statusMatch =
         filter.status === 'all' ||
@@ -95,21 +126,36 @@ const TodoListContent: React.FC = () => {
       const direction = sort.direction === 'asc' ? 1 : -1;
       
       switch (sort.field) {
-        case 'dueDate':
+        case 'dueDate': {
+          if (!a.dueDate && !b.dueDate) return 0;
           if (!a.dueDate) return 1;
           if (!b.dueDate) return -1;
-          return direction * (a.dueDate.getTime() - b.dueDate.getTime());
-        
+          try {
+            const aDate = new Date(a.dueDate);
+            const bDate = new Date(b.dueDate);
+            if (isNaN(aDate.getTime()) || isNaN(bDate.getTime())) {
+              return 0;
+            }
+            return direction * (aDate.getTime() - bDate.getTime());
+          } catch {
+            // Invalid date format, return 0 for equal sorting
+            return 0;
+          }
+        }
         case 'priority': {
           const priorityOrder = { high: 0, medium: 1, low: 2 };
           return direction * (priorityOrder[a.priority] - priorityOrder[b.priority]);
         }
-        
-        case 'lastModified':
-          return direction * (a.lastModified.getTime() - b.lastModified.getTime());
-        
-        default: // createdAt
-          return direction * (a.createdAt.getTime() - b.createdAt.getTime());
+        case 'lastModified': {
+          const aTime = a.lastModified ? new Date(a.lastModified).getTime() : 0;
+          const bTime = b.lastModified ? new Date(b.lastModified).getTime() : 0;
+          return direction * (aTime - bTime);
+        }
+        default: {  // createdAt
+          const aCreatedTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bCreatedTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return direction * (aCreatedTime - bCreatedTime);
+        }
       }
     });
   }, [todos, filter, sort]);
@@ -117,11 +163,10 @@ const TodoListContent: React.FC = () => {
   // Get unique categories for filter dropdown
   const categories = Array.from(new Set(todos.map(todo => todo.category).filter(Boolean)));
 
-  // Check notifications when todos change or on interval
+  // Set up notification checking
   useEffect(() => {
     checkAndNotifyDueTasks(todos);
 
-    // Listen for notification check events
     const handleNotificationCheck = () => {
       checkAndNotifyDueTasks(todos);
     };
@@ -133,7 +178,6 @@ const TodoListContent: React.FC = () => {
     };
   }, [todos, checkAndNotifyDueTasks]);
 
-  // Update window.__TODOS__ for notifications
   useEffect(() => {
     window.__TODOS__ = todos;
   }, [todos]);
@@ -310,4 +354,4 @@ const TodoList = () => {
   return <TodoListContent />;
 };
 
-export default TodoList; 
+export default TodoList;
