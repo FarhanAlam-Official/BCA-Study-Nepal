@@ -14,7 +14,6 @@ export interface Todo {
   lastModified: string;
   subtasks: SubTask[];
   comments: Comment[];
-  sharedWith: string[];
   owner: string;
 }
 
@@ -50,8 +49,8 @@ export interface SubTask {
 export interface Comment {
   id: string;
   content: string;
-  createdAt: string;
-  userName: string;
+  created_at: string;
+  user_name: string;
 }
 
 /**
@@ -76,7 +75,7 @@ export interface TodoContextType {
    * Adds a new todo item
    * @param todo - Todo data without system-managed fields
    */
-  addTodo: (todo: Omit<Todo, 'id' | 'createdAt' | 'lastModified' | 'subtasks' | 'comments' | 'sharedWith' | 'owner'>) => Promise<void>;
+  addTodo: (todo: Omit<Todo, 'id' | 'createdAt' | 'lastModified' | 'subtasks' | 'comments' | 'owner'>) => Promise<void>;
   /**
    * Updates an existing todo item
    * @param id - ID of the todo to update
@@ -123,16 +122,4 @@ export interface TodoContextType {
    * @param commentId - ID of the comment to delete
    */
   deleteComment: (todoId: string, commentId: string) => Promise<void>;
-  /**
-   * Shares a todo with another user
-   * @param todoId - ID of the todo to share
-   * @param userId - ID of the user to share with
-   */
-  shareTodo: (todoId: string, userId: string) => Promise<void>;
-  /**
-   * Removes todo sharing from a user
-   * @param todoId - ID of the todo
-   * @param userId - ID of the user to unshare with
-   */
-  unshareTask: (todoId: string, userId: string) => Promise<void>;
 }
