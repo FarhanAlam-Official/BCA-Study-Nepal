@@ -19,11 +19,10 @@ class TodoViewSet(viewsets.ModelViewSet):
     pagination_class = None  # Disable pagination for this viewset
 
     def get_queryset(self):
-        """Get todos owned by or shared with the current user."""
+        """Get todos owned by the current user."""
         return Todo.objects.filter(
-            Q(owner=self.request.user) | 
-            Q(shared_with=self.request.user)
-        ).distinct().select_related('owner').prefetch_related('shared_with', 'subtasks', 'comments')
+            owner=self.request.user
+        ).select_related('owner').prefetch_related('subtasks', 'comments')
 
     def perform_create(self, serializer):
         """Create a new todo with the current user as owner."""
@@ -33,8 +32,8 @@ class TodoViewSet(viewsets.ModelViewSet):
     def check_object_permissions(self, request, obj):
         """Check if user has permission to modify the todo."""
         super().check_object_permissions(request, obj)
-        if request.method not in permissions.SAFE_METHODS and obj.owner != request.user:
-            raise PermissionDenied("Only the owner can modify this todo.")
+        if obj.owner != request.user:
+            raise PermissionDenied("Only the owner can access this todo.")
 
     @action(detail=True, methods=['post'])
     def add_subtask(self, request, pk=None):
@@ -74,32 +73,6 @@ class TodoViewSet(viewsets.ModelViewSet):
             serializer.save(todo=todo, user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=True, methods=['post'])
-    def share(self, request, pk=None):
-        """Share the todo with specified users."""
-        todo = self.get_object()
-        user_ids = request.data.get('user_ids', [])
-        if not user_ids:
-            return Response(
-                {'error': 'user_ids is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        todo.shared_with.add(*user_ids)
-        return Response(TodoSerializer(todo).data)
-
-    @action(detail=True, methods=['post'])
-    def unshare(self, request, pk=None):
-        """Remove sharing for specified users."""
-        todo = self.get_object()
-        user_ids = request.data.get('user_ids', [])
-        if not user_ids:
-            return Response(
-                {'error': 'user_ids is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        todo.shared_with.remove(*user_ids)
-        return Response(TodoSerializer(todo).data)
 
     @action(detail=True, methods=['delete'], url_path='subtasks/(?P<subtask_id>[^/.]+)')
     def delete_subtask(self, request, pk=None, subtask_id=None):

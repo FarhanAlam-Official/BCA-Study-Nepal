@@ -21,11 +21,6 @@ class Todo(models.Model):
         on_delete=models.CASCADE,
         related_name='owned_todos'
     )
-    shared_with = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name='shared_todos',
-        blank=True
-    )
 
     class Meta:
         ordering = ['-created_at']

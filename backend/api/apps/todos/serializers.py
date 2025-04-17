@@ -24,11 +24,6 @@ class TodoSerializer(serializers.ModelSerializer):
     subtasks = SubTaskSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
-    shared_with = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=User.objects.all(),
-        required=False
-    )
     dueDate = serializers.DateTimeField(
         source='due_date',
         required=False,
@@ -44,7 +39,7 @@ class TodoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'priority', 'dueDate',
             'category', 'isCompleted', 'createdAt', 'lastModified',
-            'owner', 'shared_with', 'subtasks', 'comments'
+            'owner', 'subtasks', 'comments'
         ]
         read_only_fields = ['id', 'createdAt', 'lastModified', 'owner']
 
@@ -61,24 +56,11 @@ class TodoSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        shared_with = validated_data.pop('shared_with', [])
-        todo = Todo.objects.create(**validated_data)
-        todo.shared_with.set(shared_with)
-        return todo
+        return Todo.objects.create(**validated_data)
 
-    # Handle shared_with separately
-    def update(self, instance, validated_data):
-        shared_with = validated_data.pop('shared_with', None)
-        
+    def update(self, instance, validated_data):        
         # Update all fields using validated_data directly
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        
-        # Save the instance
         instance.save()
-        
-        # Update shared_with after saving if provided
-        if shared_with is not None:
-            instance.shared_with.set(shared_with)
-        
         return instance

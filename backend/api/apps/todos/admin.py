@@ -7,7 +7,6 @@ class TodoAdmin(admin.ModelAdmin):
     list_filter = ('priority', 'is_completed', 'category', 'created_at')
     search_fields = ('title', 'description', 'owner__username')
     readonly_fields = ('created_at', 'last_modified')
-    filter_horizontal = ('shared_with',)
     date_hierarchy = 'created_at'
 
 @admin.register(SubTask)
