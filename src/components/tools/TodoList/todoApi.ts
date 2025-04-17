@@ -168,7 +168,7 @@ class TodoApi {
    * Creates a new todo
    * @param todo - Todo data to create
    */
-  static async createTodo(todo: Omit<Todo, 'id' | 'createdAt' | 'lastModified' | 'subtasks' | 'comments' | 'sharedWith' | 'owner'>): Promise<ApiResponse<Todo>> {
+  static async createTodo(todo: Omit<Todo, 'id' | 'createdAt' | 'lastModified' | 'subtasks' | 'comments' | 'owner'>): Promise<ApiResponse<Todo>> {
     return this.request<Todo>('/', {
       method: 'POST',
       body: JSON.stringify(todo),
@@ -268,31 +268,7 @@ class TodoApi {
   }
 
   /**
-   * Shares a todo with another user
-   * @param todoId - Todo ID to share
-   * @param userId - User ID to share with
-   */
-  static async shareTodo(todoId: string, userId: string): Promise<ApiResponse<Todo>> {
-    return this.request<Todo>(`/${todoId}/share/`, {
-      method: 'POST',
-      body: JSON.stringify({ user_ids: [userId] }),
-    });
-  }
-
-  /**
-   * Removes todo sharing from a user
-   * @param todoId - Todo ID to unshare
-   * @param userId - User ID to remove sharing from
-   */
-  static async unshareTask(todoId: string, userId: string): Promise<ApiResponse<Todo>> {
-    return this.request<Todo>(`/${todoId}/unshare/`, {
-      method: 'POST',
-      body: JSON.stringify({ user_ids: [userId] }),
-    });
-  }
-
-  /**
-   * Retrieves filtered and sorted todos
+   * Gets filtered todos based on provided parameters
    * @param params - Filter and sort parameters
    */
   static async getFilteredTodos(params: {
