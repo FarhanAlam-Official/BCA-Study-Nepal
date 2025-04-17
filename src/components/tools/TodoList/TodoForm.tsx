@@ -7,9 +7,11 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClipboardDocumentListIcon,
-  ClockIcon
+  ClockIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import TodoComponents from './TodoContext';
 
 /**
  * Interface for HTML5 datetime input showPicker method
@@ -33,13 +35,20 @@ const showDatePicker = (input: HTMLInputElement) => {
  * Animation variants for the form container
  */
 const formVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { 
+    opacity: 0, 
+    y: -20,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
   visible: { 
     opacity: 1, 
     y: 0, 
     transition: { 
-      duration: 0.4,
-      ease: "easeOut"
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1]
     } 
   }
 };
@@ -95,6 +104,8 @@ interface TodoFormData {
   /** List of subtask titles */
   subtasks: string[];
 }
+
+const MAX_TODOS = 15; // Maximum number of todos allowed per user
 
 /**
  * Floating decorative elements component
@@ -201,6 +212,11 @@ const FloatingElements = () => (
  * Handles creation and editing of todo items with a rich UI
  */
 export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEditing = false }) => {
+  const { todos } = TodoComponents.useTodos();
+  const activeTodosCount = todos.filter(t => !t.isCompleted).length;
+  const remainingTodos = MAX_TODOS - activeTodosCount;
+  const isLimitReached = remainingTodos <= 0;
+
   // Initialize form data with defaults or existing todo data
   const [formData, setFormData] = useState<TodoFormData>(() => {
     const today = new Date();
@@ -296,15 +312,34 @@ export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEdi
   };
 
   return (
-    <div className="relative px-20 py-10">
+    <motion.div
+      variants={formVariants}
+      initial="hidden"
+      animate="visible"
+      className="relative"
+      id="todo-form"
+    >
       <FloatingElements />
-      <motion.form
-        variants={formVariants}
-        initial="hidden"
-        animate="visible"
+      <form
         onSubmit={handleSubmit}
-        className="relative z-10 bg-white/90 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-gray-100/50 hover:border-indigo-100/50 transition-all duration-300"
+        className="relative z-10 bg-white rounded-2xl shadow-xl border border-gray-100/50 hover:border-indigo-100/50 p-8 backdrop-blur-xl transition-all duration-300"
       >
+        {!isEditing && (
+          <div className={`mb-4 text-sm font-medium ${isLimitReached ? 'text-red-600' : 'text-gray-600'}`}>
+            {isLimitReached ? (
+              <div className="flex items-center gap-2">
+                <ExclamationTriangleIcon className="h-5 w-5" />
+                <span>You have reached the maximum limit of 15 active todos. Please complete or delete existing todos before adding new ones.</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <InformationCircleIcon className="h-5 w-5" />
+                <span>You can create {remainingTodos} more {remainingTodos === 1 ? 'todo' : 'todos'}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Title Input */}
           <div className="group">
@@ -325,7 +360,10 @@ export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEdi
                 onChange={handleChange}
                 placeholder="What needs to be done?"
                 required
-                className="w-full pl-11 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 placeholder:text-gray-400"
+                disabled={!isEditing && isLimitReached}
+                className={`w-full pl-11 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 placeholder:text-gray-400 ${
+                  !isEditing && isLimitReached ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               />
             </div>
           </div>
@@ -486,8 +524,8 @@ export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEdi
             </svg>
           </span>
         </motion.button>
-      </motion.form>
-    </div>
+      </form>
+    </motion.div>
   );
 };
 
