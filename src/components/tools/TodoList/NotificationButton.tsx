@@ -13,6 +13,7 @@ const NotificationButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 });
 
   const { 
@@ -22,28 +23,52 @@ const NotificationButton: React.FC = () => {
     requestPermission 
   } = NotificationComponents.useNotifications();
 
-  // Update popup position when opened and on window changes
+  // Handle click outside to close popup
   useEffect(() => {
-    const updatePosition = () => {
-      if (buttonRef.current) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && 
+          buttonRef.current && 
+          popupRef.current && 
+          !buttonRef.current.contains(event.target as Node) && 
+          !popupRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  // Set initial popup position when opened
+  const handleTogglePopup = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPopupPosition({
+        top: rect.bottom,
+        right: window.innerWidth - rect.right
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (isOpen && buttonRef.current) {
         const rect = buttonRef.current.getBoundingClientRect();
         setPopupPosition({
-          top: rect.bottom + window.scrollY + 8,
+          top: rect.bottom,
           right: window.innerWidth - rect.right
         });
       }
     };
 
-    if (isOpen) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition);
-      window.addEventListener('resize', updatePosition);
-
-      return () => {
-        window.removeEventListener('scroll', updatePosition);
-        window.removeEventListener('resize', updatePosition);
-      };
-    }
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleResize);  // Add scroll listener to update position
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleResize);
+    };
   }, [isOpen]);
 
   /**
@@ -93,23 +118,30 @@ const NotificationButton: React.FC = () => {
     return (
       <div 
         className="fixed inset-0" 
-        style={{ pointerEvents: 'none', zIndex: 1000 }}
+        style={{ pointerEvents: 'none', zIndex: 40 }}
       >
         <div 
-          className="absolute w-80"
+          ref={popupRef}
+          className="fixed w-80"
           style={{ 
-            top: popupPosition.top,
-            right: popupPosition.right,
-            pointerEvents: 'auto'
+            position: 'fixed',
+            top: `${popupPosition.top}px`,
+            right: `${popupPosition.right}px`,
+            pointerEvents: 'auto',
+            zIndex: 40,
+            transform: 'translateY(8px)'
           }}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.2 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 300,
+              damping: 30
+            }}
             className="bg-white rounded-xl shadow-xl border border-gray-100 p-4"
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
               {/* Main notification toggle */}
@@ -272,7 +304,7 @@ const NotificationButton: React.FC = () => {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleTogglePopup}
         disabled={isLoading}
         className={`p-2 rounded-full transition-colors duration-300 relative ${
           isLoading ? 'opacity-50 cursor-not-allowed' :
@@ -300,4 +332,4 @@ const NotificationButton: React.FC = () => {
   ) as React.ReactElement;
 };
 
-export default NotificationButton; 
+export default NotificationButton;
