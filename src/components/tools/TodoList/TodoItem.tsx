@@ -147,6 +147,23 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
   };
 
   /**
+   * Safely formats a date string into a relative time string
+   * @param {string} dateString - The date string to format
+   * @returns {string} Formatted relative time string
+   */
+  const formatCommentDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (!isValid(date)) {
+        return 'Invalid date';
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch {
+      return 'Invalid date';
+    }
+  };
+
+  /**
    * Handles the toggling of todo completion status
    * Shows error notification if the operation fails
    */
@@ -264,6 +281,21 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
     }
   };
 
+  /**
+   * Handles the edit button click
+   * Scrolls to the todo form and calls onEdit
+   */
+  const handleEdit = () => {
+    // Call the original onEdit function
+    onEdit(todo);
+    
+    // Scroll to the todo form
+    const todoForm = document.getElementById('todo-form');
+    if (todoForm) {
+      todoForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   // Format the due date if it exists
   const { date: dueDate, time: dueTime } = todo.dueDate ? formatDueDate(todo.dueDate) : { date: '', time: '' };
 
@@ -323,7 +355,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => onEdit(todo)}
+                  onClick={handleEdit}
                   disabled={todo.isCompleted}
                   className={`p-1.5 rounded-full transition-colors duration-300 ${
                     todo.isCompleted 
@@ -422,13 +454,13 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
                   {/* Subtasks Section */}
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-gray-900">Subtasks</h4>
-                    <form onSubmit={handleAddSubtask} className="flex gap-2">
+                    <form onSubmit={handleAddSubtask} className="flex items-center gap-2 px-1">
                       <input
                         type="text"
                         value={newSubtask}
                         onChange={(e) => setNewSubtask(e.target.value)}
-                        placeholder="Add a subtask..."
-                        className="flex-1 px-3 py-1.5 text-sm text-gray-700 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+                        placeholder="Add a subtask and press Enter..."
+                        className="flex-1 px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:bg-white transition-all duration-300"
                       />
                       <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -478,13 +510,13 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
                   {/* Comments Section */}
                   <div className="space-y-2 pt-4 border-t border-gray-100">
                     <h4 className="text-sm font-medium text-gray-900">Comments</h4>
-                    <form onSubmit={handleAddComment} className="flex gap-2">
+                    <form onSubmit={handleAddComment} className="flex items-center gap-2 px-1">
                       <input
                         type="text"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Add a comment..."
-                        className="flex-1 px-3 py-1.5 text-sm text-gray-700 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+                        placeholder="Add a comment and press Enter..."
+                        className="flex-1 px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:bg-white transition-all duration-300"
                       />
                       <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -506,9 +538,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
                         >
                           <div className="flex-1">
                             <div className="flex items-baseline gap-2">
-                              <span className="font-medium text-indigo-600">{comment.userName}</span>
+                              <span className="font-medium text-indigo-600">{comment.user_name}</span>
                               <span className="text-xs text-gray-500">
-                                {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
+                                {formatCommentDate(comment.created_at)}
                               </span>
                             </div>
                             <p className="text-gray-600 mt-1">{comment.content}</p>
