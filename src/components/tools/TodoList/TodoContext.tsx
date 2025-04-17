@@ -30,6 +30,7 @@ const TodoContext = createContext<TodoContextType | undefined>(undefined);
 // Constants
 const LOCAL_STORAGE_KEY = 'todos_state';
 const AUTO_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const MAX_TODOS = 15; // Maximum number of todos allowed per user
 
 /**
  * Reducer function to handle todo state updates
@@ -254,6 +255,17 @@ const TodoComponents = {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       try {
+        // Check if user has reached the todo limit
+        const activeTodos = state.todos.filter(t => !t.isCompleted);
+        if (activeTodos.length >= MAX_TODOS) {
+          dispatch({ type: 'SET_ERROR', payload: 'Todo limit reached' });
+          showNotification(
+            'Max 15 active todos reached. Complete or delete some to add new ones.',
+            'warning'
+          );
+          return;
+        }
+
         // First create todo on backend to get an ID
         const response = await TodoApi.createTodo({
           title: todo.title,
@@ -442,30 +454,6 @@ const TodoComponents = {
       }
     }, [dispatch, showNotification]);
 
-    const shareTodo = useCallback(async (todoId: string, userId: string) => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.shareTodo(todoId, userId);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else if (response.data) {
-        dispatch({ type: 'UPDATE_TODO', payload: response.data });
-        showNotification('Todo shared successfully', 'success');
-      }
-    }, [dispatch, showNotification]);
-
-    const unshareTask = useCallback(async (todoId: string, userId: string) => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.unshareTask(todoId, userId);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else if (response.data) {
-        dispatch({ type: 'UPDATE_TODO', payload: response.data });
-        showNotification('Todo unshared successfully', 'success');
-      }
-    }, [dispatch, showNotification]);
-
     const value = {
       todos: state.todos,
       isLoading: state.isLoading,
@@ -479,8 +467,6 @@ const TodoComponents = {
       deleteSubtask,
       addComment,
       deleteComment,
-      shareTodo,
-      unshareTask
     };
 
     return (
