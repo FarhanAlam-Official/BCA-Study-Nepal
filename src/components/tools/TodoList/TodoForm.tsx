@@ -322,7 +322,7 @@ export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEdi
       <FloatingElements />
       <form
         onSubmit={handleSubmit}
-        className="relative z-10 bg-white rounded-2xl shadow-xl border border-gray-100/50 hover:border-indigo-100/50 p-8 backdrop-blur-xl transition-all duration-300"
+        className="relative z-10 bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 hover:border-indigo-100/50 p-8 transition-all duration-300"
       >
         {!isEditing && (
           <div className={`mb-4 text-sm font-medium ${isLimitReached ? 'text-red-600' : 'text-gray-600'}`}>
