@@ -1,8 +1,9 @@
 import React from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { usePomodoroTimer } from '../../hooks/usePomodoroTimer';
+import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { usePomodoroTimer } from '../../hooks/usePomodoroTimer';
 
 interface PomodoroSettingsProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -42,29 +43,31 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-white p-8 shadow-xl transition-all">
-                <div className="flex justify-between items-center mb-6">
-                  <Dialog.Title className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-900">
+              <Dialog.Panel className="w-full max-w-lg sm:max-w-xl transform overflow-hidden rounded-2xl bg-white/90 backdrop-blur-md p-4 sm:p-6 shadow-xl transition-all">
+                <div className="flex justify-between items-center mb-4">
+                  <Dialog.Title className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
                     Timer Settings
                   </Dialog.Title>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                    className="text-gray-500 hover:text-red-600 transition-colors"
                   >
-                    <X className="w-6 h-6" />
-                  </button>
+                    <X className="w-5 h-5" />
+                  </motion.button>
                 </div>
 
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {/* Time Settings */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Time (minutes)</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Pomodoro
                         </label>
-                        <input
+                        <motion.input
                           type="number"
                           min="1"
                           max="60"
@@ -72,14 +75,16 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           onChange={(e) =>
                             handleChange('pomodoro', Math.max(1, parseInt(e.target.value)))
                           }
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
+                          whileHover={{ scale: 1.02 }}
+                          whileFocus={{ scale: 1.02 }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Short Break
                         </label>
-                        <input
+                        <motion.input
                           type="number"
                           min="1"
                           max="60"
@@ -87,14 +92,16 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           onChange={(e) =>
                             handleChange('shortBreak', Math.max(1, parseInt(e.target.value)))
                           }
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
+                          whileHover={{ scale: 1.02 }}
+                          whileFocus={{ scale: 1.02 }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Long Break
                         </label>
-                        <input
+                        <motion.input
                           type="number"
                           min="1"
                           max="60"
@@ -102,71 +109,82 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           onChange={(e) =>
                             handleChange('longBreak', Math.max(1, parseInt(e.target.value)))
                           }
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
+                          whileHover={{ scale: 1.02 }}
+                          whileFocus={{ scale: 1.02 }}
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Auto Start Settings */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Auto Start</h3>
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Auto Start Breaks
                         </label>
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <motion.label
+                          className="relative inline-flex items-center cursor-pointer"
+                          whileHover={{ scale: 1.05 }}
+                        >
                           <input
                             type="checkbox"
                             checked={settings.autoStartBreaks}
                             onChange={(e) => handleChange('autoStartBreaks', e.target.checked)}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+                          <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </motion.label>
                       </div>
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Auto Start Pomodoros
                         </label>
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <motion.label
+                          className="relative inline-flex items-center cursor-pointer"
+                          whileHover={{ scale: 1.05 }}
+                        >
                           <input
                             type="checkbox"
                             checked={settings.autoStartPomodoros}
                             onChange={(e) => handleChange('autoStartPomodoros', e.target.checked)}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+                          <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </motion.label>
                       </div>
                     </div>
                   </div>
 
                   {/* Sound Settings */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Sound</h3>
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-gray-700">
                         Timer Sound
                       </label>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <motion.label
+                        className="relative inline-flex items-center cursor-pointer"
+                        whileHover={{ scale: 1.05 }}
+                      >
                         <input
                           type="checkbox"
                           checked={settings.soundEnabled}
                           onChange={(e) => handleChange('soundEnabled', e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
+                        <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                      </motion.label>
                     </div>
                   </div>
 
                   {/* Long Break Interval */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Long Break Interval</h3>
                     <div>
-                      <input
+                      <motion.input
                         type="number"
                         min="1"
                         max="10"
@@ -174,13 +192,42 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                         onChange={(e) =>
                           handleChange('longBreakInterval', Math.max(1, parseInt(e.target.value)))
                         }
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
+                        whileHover={{ scale: 1.02 }}
+                        whileFocus={{ scale: 1.02 }}
                       />
-                      <p className="mt-2 text-sm text-gray-500">
+                      <p className="mt-1 text-sm text-gray-500">
                         Number of pomodoros before a long break
                       </p>
                     </div>
                   </div>
+
+                  {/* Save and Cancel Buttons */}
+                  <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+                    <motion.button
+                      whileHover={{ scale: 1.05, boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)' }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={onClose}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white w-full sm:w-2/5 px-6 py-2.5 rounded-2xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-300"
+                    >
+                      Save
+                    </motion.button>
+                    <motion.button
+                      whileHover={{
+                        scale: 1.05,
+                        backgroundColor: 'rgba(254, 242, 242, 1)',
+                        color: 'rgba(239, 68, 68, 1)',
+                        boxShadow: '0 0 12px rgba(239, 68, 68, 0.3)',
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={onClose}
+                      className="bg-white text-gray-600 w-full sm:w-2/5 px-6 py-2.5 rounded-2xl font-semibold text-lg shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-red-600 transition-all duration-300"
+                      title="Cancel"
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -191,4 +238,4 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
   );
 };
 
-export default PomodoroSettings; 
+export default PomodoroSettings;
