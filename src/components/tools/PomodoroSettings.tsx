@@ -201,7 +201,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                       </p>
                     </div>
                   </div>
-
+                  
                   {/* Save and Cancel Buttons */}
                   <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
                     <motion.button
