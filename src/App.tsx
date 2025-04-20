@@ -34,6 +34,7 @@ const SubjectPapersPage = lazy(() => import('./components/question-papers/Questi
 const PDFViewerWrapper = lazy(() => import('./components/common/PDFViewerWrapper'));
 const Register = lazy(() => import('./pages/Auth/Register'));
 const Profile = lazy(() => import('./pages/Profile'));
+const ResourceRadarPage = lazy(() => import('./pages/ResourceRadarPage'));
 
 // Loading fallback component is now replaced with the existing LoadingPage component
 
@@ -73,6 +74,7 @@ function AppContent() {
               <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
               <Route path="/question-papers" element={<QuestionPaperList />} />
               <Route path="/question-papers/:subjectId/:subjectName/papers" element={<SubjectPapersPage />} />
+              <Route path="/resource-radar" element={<ResourceRadarPage />} />
               <Route path="/auth" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />

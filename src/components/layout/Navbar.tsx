@@ -19,6 +19,7 @@ import {
   Calendar,
   LogIn,
   LogOut,
+  Radar,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBar from './SearchBar';
@@ -41,6 +42,7 @@ const navigation: NavItem[] = [
       { name: 'Notes', href: '/notes', icon: FileText },
       { name: 'Question Papers', href: '/question-papers', icon: FileQuestion },
       { name: 'Syllabus', href: '/syllabus', icon: GraduationCap },
+      { name: 'Resource Radar', href: '/resource-radar', icon: Radar },
     ]
   },
   {
