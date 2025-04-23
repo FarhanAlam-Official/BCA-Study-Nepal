@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'api.apps.resources.apps.ResourcesConfig',
     'api.apps.colleges',
     'api.apps.todos.apps.TodosConfig',
+    'api.apps.resource_radar.apps.ResourceRadarConfig',  # Added Resource Radar app
 ]
 
 MIDDLEWARE = [
@@ -241,8 +242,12 @@ SECURE_PROXY_SSL_HEADER = None
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite default port
+    "http://127.0.0.1:5173",
+]
 CORS_EXPOSE_HEADERS = ['Set-Cookie', 'Cookie', 'Session']
 CORS_ALLOW_HEADERS = [
     'accept',
