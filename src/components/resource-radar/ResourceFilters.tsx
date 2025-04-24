@@ -6,26 +6,37 @@ import { ArrowUpDown } from 'lucide-react';
 import { HeartIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useAuth } from '../../hooks/useAuth';
+import { showError, showInfo } from './utils/notifications';
 
+/**
+ * Type definitions for filter options
+ */
 type DateFilter = 'all' | 'today' | 'week' | 'month';
 type DifficultyLevel = 'all' | 'beginner' | 'intermediate' | 'advanced';
 type ResourceType = 'all' | 'article' | 'video' | 'tool' | 'course';
 type SortOrder = 'newest' | 'popular';
 
+/**
+ * Props interface for ResourceFilters component
+ * @interface ResourceFiltersProps
+ */
 interface ResourceFiltersProps {
   onFilterChange: (filters: {
-    category: string | null;
-    tags: string[];
-    search: string;
-    showBookmarked: boolean;
-    showFeatured: boolean;
-    sortOrder: SortOrder;
-    dateFilter: DateFilter;
-    difficultyLevel: DifficultyLevel;
-    resourceType: ResourceType;
+    category: string | null;      // Selected category slug
+    tags: string[];              // Array of selected tag slugs
+    search: string;             // Search query
+    showBookmarked: boolean;    // Show only bookmarked resources
+    showFeatured: boolean;     // Show only featured resources
+    sortOrder: SortOrder;     // Current sort order
+    dateFilter: DateFilter;   // Date range filter
+    difficultyLevel: DifficultyLevel; // Difficulty level filter
+    resourceType: ResourceType;      // Resource type filter
   }) => void;
 }
 
+/**
+ * ResourceFilters component provides filtering and sorting controls for resources
+ */
 export const ResourceFilters = ({ onFilterChange }: ResourceFiltersProps) => {
   const { isAuthenticated } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -41,7 +52,9 @@ export const ResourceFilters = ({ onFilterChange }: ResourceFiltersProps) => {
   const [resourceType, setResourceType] = useState<ResourceType>('all');
   const [showTagsModal, setShowTagsModal] = useState(false);
 
-  // Fetch categories and tags only once on mount
+  /**
+   * Fetch categories and tags on component mount
+   */
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -57,117 +70,92 @@ export const ResourceFilters = ({ onFilterChange }: ResourceFiltersProps) => {
         console.error('Error fetching filters:', error);
         setCategories([]);
         setTags([]);
+        showError('Failed to load filters. Please refresh the page.');
       }
     };
     fetchFilters();
   }, []);
 
+  /**
+   * Handle tag selection/deselection
+   * @param tagSlug - The slug of the tag to toggle
+   */
   const handleTagToggle = (tagSlug: string) => {
     setSelectedTags(prev => {
       const newTags = prev.includes(tagSlug) 
         ? prev.filter(t => t !== tagSlug) 
         : [...prev, tagSlug];
-      // Call updateFilters after state update
-      setTimeout(() => {
-        onFilterChange({
-          category: selectedCategory,
-          tags: newTags,
-          search: '',
-          showBookmarked: showFavorites,
-          showFeatured,
-          sortOrder,
-          dateFilter,
-          difficultyLevel,
-          resourceType
-        });
-      }, 0);
+      
+      // Update filters with new tag selection
+      updateFilters({
+        tags: newTags
+      });
+      
       return newTags;
     });
   };
 
+  /**
+   * Handle category selection
+   * @param category - The slug of the selected category or null to clear
+   */
   const handleCategorySelect = (category: string | null) => {
     setSelectedCategory(category);
-    // Ensure immediate filter update
-    setTimeout(() => {
-      onFilterChange({
-        category: category,
-        tags: selectedTags,
-        search: '',
-        showBookmarked: showFavorites,
-        showFeatured,
-        sortOrder,
-        dateFilter,
-        difficultyLevel,
-        resourceType
-      });
-    }, 0);
+    updateFilters({
+      category: category
+    });
   };
 
+  /**
+   * Toggle between newest and popular sort orders
+   */
   const handleSortOrderChange = () => {
     setSortOrder(prev => {
       const newOrder = prev === 'newest' ? 'popular' : 'newest';
-      // Call updateFilters after state update
-      setTimeout(() => {
-        onFilterChange({
-          category: selectedCategory,
-          tags: selectedTags,
-          search: '',
-          showBookmarked: showFavorites,
-          showFeatured,
-          sortOrder: newOrder,
-          dateFilter,
-          difficultyLevel,
-          resourceType
-        });
-      }, 0);
+      updateFilters({
+        sortOrder: newOrder
+      });
       return newOrder;
     });
   };
 
+  /**
+   * Toggle favorites filter with authentication check
+   */
   const handleFavoritesClick = () => {
     if (!isAuthenticated) {
-      window.location.href = '/auth';
+      showInfo('Please sign in to access favorites', {
+        onClick: () => window.location.href = '/auth',
+        style: { cursor: 'pointer' }
+      });
       return;
     }
+    
     setShowFavorites(prev => {
       const newValue = !prev;
-      // Call updateFilters immediately
-      onFilterChange({
-        category: selectedCategory,
-        tags: selectedTags,
-        search: '',
-        showBookmarked: newValue,
-        showFeatured,
-        sortOrder,
-        dateFilter,
-        difficultyLevel,
-        resourceType
+      updateFilters({
+        showBookmarked: newValue
       });
       return newValue;
     });
   };
 
+  /**
+   * Toggle featured resources filter
+   */
   const handleFeaturedClick = () => {
     setShowFeatured(prev => {
       const newValue = !prev;
-      // Call updateFilters after state update
-      setTimeout(() => {
-        onFilterChange({
-          category: selectedCategory,
-          tags: selectedTags,
-          search: '',
-          showBookmarked: showFavorites,
-          showFeatured: newValue,
-          sortOrder,
-          dateFilter,
-          difficultyLevel,
-          resourceType
-        });
-      }, 0);
+      updateFilters({
+        showFeatured: newValue
+      });
       return newValue;
     });
   };
 
+  /**
+   * Reset all filters to their default values
+   */
   const clearAllFilters = () => {
     setSelectedCategory(null);
     setSelectedTags([]);
@@ -177,20 +165,36 @@ export const ResourceFilters = ({ onFilterChange }: ResourceFiltersProps) => {
     setDateFilter('all');
     setDifficultyLevel('all');
     setResourceType('all');
-    // Call updateFilters after all state updates
-    setTimeout(() => {
-      onFilterChange({
-        category: null,
-        tags: [],
-        search: '',
-        showBookmarked: false,
-        showFeatured: false,
-        sortOrder: 'newest',
-        dateFilter: 'all',
-        difficultyLevel: 'all',
-        resourceType: 'all'
-      });
-    }, 0);
+    
+    updateFilters({
+      category: null,
+      tags: [],
+      showBookmarked: false,
+      showFeatured: false,
+      sortOrder: 'newest',
+      dateFilter: 'all',
+      difficultyLevel: 'all',
+      resourceType: 'all'
+    });
+  };
+
+  /**
+   * Helper function to update filters with partial changes
+   * @param changes - Partial filter changes to apply
+   */
+  const updateFilters = (changes: Partial<Parameters<ResourceFiltersProps['onFilterChange']>[0]>) => {
+    onFilterChange({
+      category: selectedCategory,
+      tags: selectedTags,
+      search: '',
+      showBookmarked: showFavorites,
+      showFeatured,
+      sortOrder,
+      dateFilter,
+      difficultyLevel,
+      resourceType,
+      ...changes
+    });
   };
 
   return (
