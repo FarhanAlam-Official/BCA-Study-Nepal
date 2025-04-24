@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Resource, Category, Tag, ResourceFilters, PaginatedResponse, FavoriteResponse, ResourceFavorite } from './resource-radar';
-import { toast } from 'react-toastify';
+import { showError } from './utils/notifications';
 
 /**
  * Runtime configuration interface for Next.js environment variables
@@ -32,12 +32,6 @@ class ResourceRadarAPI {
   });
 
   constructor() {
-    // Initialize auth token from localStorage
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      this.setAuthToken(token);
-    }
-
     // Add request interceptor to handle authentication
     this.axiosInstance.interceptors.request.use(
       (config) => {
@@ -56,16 +50,7 @@ class ResourceRadarAPI {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          // Clear tokens on 401 error
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          
-          // Redirect to auth page if not already there
-          if (!window.location.pathname.includes('/auth')) {
-            window.location.href = '/auth';
-          }
-        }
+        // Let the main auth system handle 401 errors
         return Promise.reject(error);
       }
     );
@@ -79,9 +64,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get('/resources/', { params: filters });
       return data;
     } catch {
-      toast.error('Failed to fetch resources. Please try again later.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch resources. Please try again later.');
       return { count: 0, next: null, previous: null, results: [] };
     }
   }
@@ -94,9 +77,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get(`/resources/${id}/`);
       return data;
     } catch {
-      toast.error('Failed to fetch resource details.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch resource details.');
       return null;
     }
   }
@@ -120,9 +101,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get('/categories/');
       return data;
     } catch {
-      toast.error('Failed to fetch categories.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch categories.');
       return { count: 0, next: null, previous: null, results: [] };
     }
   }
@@ -135,9 +114,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get(`/categories/${slug}/`);
       return data;
     } catch {
-      toast.error('Failed to fetch category details.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch category details.');
       return null;
     }
   }
@@ -150,9 +127,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get('/tags/');
       return data;
     } catch {
-      toast.error('Failed to fetch tags.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch tags.');
       return { count: 0, next: null, previous: null, results: [] };
     }
   }
@@ -165,9 +140,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get(`/tags/${slug}/`);
       return data;
     } catch {
-      toast.error('Failed to fetch tag details.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch tag details.');
       return null;
     }
   }
@@ -181,9 +154,7 @@ class ResourceRadarAPI {
       return data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status !== 401) {
-        toast.error('Failed to fetch favorites.', {
-          containerId: "global-notifications"
-        });
+        showError('Failed to fetch favorites.');
       }
       return { count: 0, next: null, previous: null, results: [] };
     }
@@ -202,9 +173,7 @@ class ResourceRadarAPI {
           throw error;
         }
       }
-      toast.error('Failed to update favorite status.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to update favorite status.');
       throw error;
     }
   }
@@ -219,9 +188,7 @@ class ResourceRadarAPI {
       });
       return data;
     } catch {
-      toast.error('Search failed. Please try again.', {
-        containerId: "global-notifications"
-      });
+      showError('Search failed. Please try again.');
       return { count: 0, next: null, previous: null, results: [] };
     }
   }
@@ -234,9 +201,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get('/resources/featured/');
       return data;
     } catch {
-      toast.error('Failed to fetch featured resources.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch featured resources.');
       return [];
     }
   }
@@ -249,9 +214,7 @@ class ResourceRadarAPI {
       const { data } = await this.axiosInstance.get('/resources/popular/');
       return data;
     } catch {
-      toast.error('Failed to fetch popular resources.', {
-        containerId: "global-notifications"
-      });
+      showError('Failed to fetch popular resources.');
       return [];
     }
   }
