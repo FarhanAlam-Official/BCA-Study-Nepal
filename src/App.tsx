@@ -11,7 +11,6 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Hero from './components/home/Hero';
 import Features from './components/home/Features';
-import QuestionPapers from './components/home/QuestionPapers';
 import UsefulLinks from './components/home/UsefulLinks';
 import LoadingPage from './components/common/LoadingPage';
 import { PomodoroProvider } from './context/PomodoroContext';
@@ -43,8 +42,6 @@ function HomePage() {
     <>
       <Hero />
       <Features />
-      {/* <Events />  */} {/*Later to be implemendted if necessary */}
-      <QuestionPapers />
       <UsefulLinks />
     </>
   );
