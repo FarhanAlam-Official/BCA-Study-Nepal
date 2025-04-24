@@ -4,16 +4,23 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
 import { resourceRadarApi } from './resourceRadar';
 import { Lightbulb } from 'lucide-react';
+import { showError } from './utils/notifications';
 
+/**
+ * Props interface for the ResourceGrid component
+ */
 interface ResourceGridProps {
-  category?: string | null;
-  tags?: string[];
-  search?: string;
-  showBookmarked?: boolean;
-  showFeatured?: boolean;
-  sortOrder?: 'newest' | 'popular';
+  category?: string | null;      // Category filter for resources
+  tags?: string[];              // Array of tag filters
+  search?: string;             // Search query string
+  showBookmarked?: boolean;    // Whether to show only bookmarked resources
+  showFeatured?: boolean;      // Whether to show only featured resources
+  sortOrder?: 'newest' | 'popular';  // Sort order for resources
 }
 
+/**
+ * Generic interface for paginated API responses
+ */
 interface PaginatedResponse<T> {
   count: number;
   next: string | null;
@@ -21,6 +28,9 @@ interface PaginatedResponse<T> {
   results: T[];
 }
 
+/**
+ * ResourceGrid component displays a grid of resource cards with filtering and sorting capabilities
+ */
 export const ResourceGrid = ({ 
   category, 
   tags = [], 
@@ -34,38 +44,34 @@ export const ResourceGrid = ({
   const [error, setError] = useState<string | null>(null);
   const [currentSearch, setCurrentSearch] = useState(search);
 
+  // Update currentSearch when search prop changes
   useEffect(() => {
     setCurrentSearch(search);
   }, [search]);
 
+  /**
+   * Fetches resources based on current filters and settings
+   */
   const fetchResources = useCallback(async () => {
     try {
       setIsLoading(true);
       let data: Resource[] | PaginatedResponse<Resource>;
       
       if (showBookmarked) {
-        console.log('Fetching bookmarked resources');
         // Fetch bookmarked resources
         const favorites = await resourceRadarApi.getFavorites();
-        console.log('Favorites response:', favorites);
         
         // Handle both array and paginated response formats
         const favoritesArray = Array.isArray(favorites) ? favorites : favorites.results || [];
         
-        // Extract resources from favorites and ensure they're valid
+        // Extract and validate resources from favorites
         data = favoritesArray
-          .filter((fav: ResourceFavorite) => fav && (fav.resource || fav.id)) // Filter out invalid favorites
-          .map((fav: ResourceFavorite) => fav.resource || fav) // Map to resources
-          .filter((resource): resource is Resource => !!resource); // Filter out nulls
+          .filter((fav: ResourceFavorite) => fav && (fav.resource || fav.id))
+          .map((fav: ResourceFavorite) => fav.resource || fav)
+          .filter((resource): resource is Resource => !!resource);
       } else {
-        // Fetch regular resources with filters
+        // Fetch regular resources with applied filters
         const searchTerm = currentSearch ? currentSearch.trim() : undefined;
-        console.log('Fetching resources with filters:', {
-          category,
-          tags,
-          search: searchTerm,
-          ordering: sortOrder === 'newest' ? '-created_at' : '-view_count'
-        });
 
         data = await resourceRadarApi.getResources({
           category: category || undefined,
@@ -75,51 +81,49 @@ export const ResourceGrid = ({
         });
       }
 
-      // Filter for featured resources if needed
+      // Apply featured filter if needed
       let finalResources = Array.isArray(data) ? data : data.results || [];
       if (showFeatured) {
         finalResources = finalResources.filter((resource: Resource) => resource.featured);
       }
 
-      console.log('Setting resources:', finalResources.length);
       setResources(finalResources);
       setError(null);
     } catch (error) {
-      console.error('Error fetching resources:', error);
       const err = error as Error;
       const errorMessage = err.message || 'Failed to load resources';
+      console.error('Error fetching resources:', error);
       setError(errorMessage);
       setResources([]);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   }, [category, tags, currentSearch, showBookmarked, showFeatured, sortOrder]);
 
-  // Refetch resources when filters change
+  // Fetch resources whenever filters change
   useEffect(() => {
-    console.log('Filters changed, fetching resources:', {
-      category,
-      tags,
-      search: currentSearch,
-      showBookmarked,
-      showFeatured,
-      sortOrder
-    });
     fetchResources();
   }, [fetchResources]);
 
+  /**
+   * Handles changes in resource favorite status
+   */
   const handleFavoriteChange = useCallback(async (resourceId: string, isFavorite: boolean) => {
-    if (showBookmarked) {
-      console.log('Favorite changed in bookmarked view:', { resourceId, isFavorite });
-      if (!isFavorite) {
-        // If we're showing favorites and a resource was unfavorited, remove it immediately
+    try {
+      if (showBookmarked && !isFavorite) {
+        // Remove unfavorited resource immediately in favorites view
         setResources(prev => prev.filter(r => r.id !== resourceId));
+        // Refetch to ensure data consistency
+        await fetchResources();
       }
-      // Refetch the list to ensure we have the latest state
-      await fetchResources();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update favorites view';
+      showError(errorMessage);
     }
   }, [showBookmarked, fetchResources]);
 
+  // Error state UI
   if (error) {
     return (
       <motion.div 
@@ -134,6 +138,7 @@ export const ResourceGrid = ({
     );
   }
 
+  // Loading state UI
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -150,6 +155,7 @@ export const ResourceGrid = ({
     );
   }
 
+  // Empty state UI
   if (resources.length === 0) {
     return (
       <motion.div 
@@ -173,6 +179,7 @@ export const ResourceGrid = ({
     );
   }
 
+  // Resources grid UI
   return (
     <motion.div 
       initial={{ opacity: 0 }}
