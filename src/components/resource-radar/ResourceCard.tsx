@@ -5,16 +5,24 @@ import { useEffect, useState, useCallback } from 'react';
 import { HeartIcon, EyeIcon, ShareIcon, ClockIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, SparklesIcon } from '@heroicons/react/24/solid';
 import { formatDistanceToNow } from 'date-fns';
-import { toast } from 'react-toastify';
+import { showSuccess, showError, showInfo } from './utils/notifications';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 
+/**
+ * Props for the ResourceCard component
+ * @interface ResourceCardProps
+ */
 interface ResourceCardProps {
-  resource: Resource;
-  onFavoriteChange?: (resourceId: string, isFavorite: boolean) => void;
+  resource: Resource;                                                  // The resource to display
+  onFavoriteChange?: (resourceId: string, isFavorite: boolean) => void; // Callback when favorite status changes
 }
 
+/**
+ * ResourceCard component displays a single resource with interactive features
+ * Includes favoriting, view counting, and sharing capabilities
+ */
 export const ResourceCard = ({ resource, onFavoriteChange }: ResourceCardProps) => {
   const { isAuthenticated } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -22,7 +30,9 @@ export const ResourceCard = ({ resource, onFavoriteChange }: ResourceCardProps) 
   const [isHovered, setIsHovered] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  // Check if resource is favorited on mount and when auth status changes
+  /**
+   * Check if resource is favorited on mount and when auth status changes
+   */
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (!isAuthenticated) {
@@ -41,11 +51,13 @@ export const ResourceCard = ({ resource, onFavoriteChange }: ResourceCardProps) 
         });
         
         setIsFavorite(isFav);
-      } catch (err) {
-        console.error('Error checking favorite status:', err);
-        // Only show error if it's not an auth error
-        if (axios.isAxiosError(err) && err.response?.status !== 401) {
-          toast.error('Failed to check favorite status');
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status !== 401) {
+            showError('Failed to check favorite status');
+          }
+        } else {
+          showError('An unexpected error occurred while checking favorites');
         }
       }
     };
@@ -53,40 +65,40 @@ export const ResourceCard = ({ resource, onFavoriteChange }: ResourceCardProps) 
     checkFavoriteStatus();
   }, [resource.id, isAuthenticated]);
 
+  /**
+   * Handle resource click - opens URL and increments view count
+   */
   const handleClick = useCallback(async () => {
     window.open(resource.url, '_blank', 'noopener,noreferrer');
     try {
       await resourceRadarApi.incrementView(resource.id);
       setViewCount(prev => prev + 1);
-    } catch (err) {
-      console.error('Error incrementing view count:', err);
-      // Don't show error for view count failures
+    } catch (error) {
+      // Silent fail for view count as it's not critical
+      // But log for debugging purposes
+      console.error('Error incrementing view count:', error);
     }
   }, [resource.url, resource.id]);
 
+  /**
+   * Handle favorite toggle with proper error handling and user feedback
+   */
   const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
     if (!isAuthenticated) {
-      toast.info(
-        <div className="flex flex-col">
-          <span className="font-medium">Authentication Required</span>
-          <span className="text-sm">Sign in to add resources to your favorites</span>
-        </div>,
-        {
-          onClick: () => window.location.href = '/auth',
-          style: { cursor: 'pointer' },
-          toastId: 'login-required',
-          icon: () => <span role="img" aria-label="lock">🔒</span>,
-          containerId: "global-notifications",
-          position: 'top-right',
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
+      showInfo('Please sign in to add resources to your favorites', {
+        onClick: () => window.location.href = '/auth',
+        style: { cursor: 'pointer' },
+        toastId: 'login-required',
+        icon: () => <span role="img" aria-label="lock">🔒</span>,
+        position: 'top-right',
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return;
     }
 
@@ -101,41 +113,44 @@ export const ResourceCard = ({ resource, onFavoriteChange }: ResourceCardProps) 
       setIsFavorite(newFavoriteStatus);
       onFavoriteChange?.(resource.id, newFavoriteStatus);
 
-      toast.success(
+      showSuccess(
         newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites',
-        { position: 'bottom-right', autoClose: 2000 }
+        { 
+          position: 'top-right', 
+          autoClose: 2000
+        }
       );
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-      
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 401) {
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
           // Clear auth state and redirect to login
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           window.location.href = '/auth';
         } else {
-          toast.error('Failed to update favorite status. Please try again.');
+          showError('Failed to update favorite status. Please try again.');
         }
       } else {
-        toast.error('An unexpected error occurred. Please try again.');
+        showError('An unexpected error occurred. Please try again.');
       }
     } finally {
       setIsTogglingFavorite(false);
     }
   };
 
+  /**
+   * Handle sharing resource URL via clipboard
+   */
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(resource.url);
-      toast.success('Link copied to clipboard!', {
-        position: 'bottom-right',
-        autoClose: 2000,
+      showSuccess('Link copied to clipboard!', {
+        position: 'top-right',
+        autoClose: 2000
       });
-    } catch (err) {
-      console.error('Error copying link:', err);
-      toast.error('Failed to copy link. Please try again.');
+    } catch {
+      showError('Failed to copy link. Please try again.');
     }
   };
 
