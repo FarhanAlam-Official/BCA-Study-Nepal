@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Code, GraduationCap, Briefcase } from 'lucide-react';
-import NotesList from '../components/notes/NotesList';
+import NotesList from '../../components/notes/NotesList';
 
 export default function Notes() {
   return (

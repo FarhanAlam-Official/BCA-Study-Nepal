@@ -17,7 +17,7 @@ import { PomodoroProvider } from './context/PomodoroContext';
 import { AuthProvider } from './context/AuthContext';
 
 // Lazy load components
-const Notes = lazy(() => import('./pages/Notes'));
+const Notes = lazy(() => import('./pages/notes'));
 const CollegePage = lazy(() => import('./pages/CollegePage'));
 const Career = lazy(() => import('./pages/Career'));
 const Contact = lazy(() => import('./pages/Contact'));
