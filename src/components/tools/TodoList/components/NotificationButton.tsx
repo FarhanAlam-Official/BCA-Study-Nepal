@@ -2,7 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BellIcon, BellSlashIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import NotificationComponents from './NotificationContext';
+import NotificationComponents from '../../../../context/NotificationContext';
+
+/**
+ * Interface for reminder option items
+ */
+interface ReminderOption {
+  value: number;
+  label: string;
+}
 
 /**
  * NotificationButton component provides a UI for managing notification preferences
@@ -97,7 +105,7 @@ const NotificationButton: React.FC = () => {
   };
 
   // Available reminder intervals for the dropdown
-  const reminderOptions = [
+  const reminderOptions: ReminderOption[] = [
     { value: 5, label: '5 minutes' },
     { value: 15, label: '15 minutes' },
     { value: 30, label: '30 minutes' },

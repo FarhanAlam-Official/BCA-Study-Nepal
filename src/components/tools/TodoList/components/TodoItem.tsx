@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Todo } from './types';
+import { Todo, Priority } from '../types';
 import {
   CheckCircleIcon,
   TrashIcon,
@@ -14,8 +14,8 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { format, formatDistanceToNow, isValid } from 'date-fns';
-import TodoComponents from './TodoContext';
-import NotificationComponents from './NotificationContext';
+import TodoComponents from '../../../../context/TodoContext';
+import NotificationComponents from '../../../../context/NotificationContext';
 
 /**
  * Props interface for the TodoItem component
@@ -36,7 +36,7 @@ interface TodoItemProps {
  * Color mappings for different priority levels
  * Uses Tailwind CSS classes for consistent styling
  */
-const priorityColors = {
+const priorityColors: Record<Priority, string> = {
   low: 'bg-green-100 text-green-800 border border-green-200',
   medium: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
   high: 'bg-red-100 text-red-800 border border-red-200',

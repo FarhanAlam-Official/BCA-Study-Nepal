@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TodoData, Todo } from './types';
+import { TodoData, Todo, Priority } from '../types';
 import { 
   CalendarIcon, 
   TagIcon, 
@@ -11,7 +11,7 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import TodoComponents from './TodoContext';
+import TodoComponents from '../../../../context/TodoContext';
 
 /**
  * Interface for HTML5 datetime input showPicker method
@@ -94,7 +94,7 @@ interface TodoFormData {
   /** Optional description */
   description: string;
   /** Priority level */
-  priority: 'low' | 'medium' | 'high';
+  priority: Priority;
   /** Due date in YYYY-MM-DD format */
   dueDate: string;
   /** Due time in HH:mm format */
@@ -213,7 +213,7 @@ const FloatingElements = () => (
  */
 export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEditing = false }) => {
   const { todos } = TodoComponents.useTodos();
-  const activeTodosCount = todos.filter(t => !t.isCompleted).length;
+  const activeTodosCount = todos.filter((t: Todo) => !t.isCompleted).length;
   const remainingTodos = MAX_TODOS - activeTodosCount;
   const isLimitReached = remainingTodos <= 0;
 

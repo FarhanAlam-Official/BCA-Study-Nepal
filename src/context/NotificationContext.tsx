@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { Todo } from './types';
+import { Todo } from '../components/tools/TodoList/types';
 import {
+  NotificationContextType,
   NotificationPreferences,
   defaultPreferences,
   STORAGE_KEYS
-} from './notificationTypes';
+} from '../components/tools/TodoList/notificationTypes';
 import { toast, ToastContainer } from 'react-toastify';
-
-interface NotificationContextType {
-  preferences: NotificationPreferences;
-  updatePreferences: (newPrefs: Partial<NotificationPreferences>) => void;
-  showNotification: (message: string, type: 'info' | 'warning' | 'error' | 'success', isGlobal?: boolean) => void;
-  checkAndNotifyDueTasks: (todos: Todo[]) => void;
-  hasPermission: boolean;
-  requestPermission: () => Promise<boolean>;
-}
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
@@ -296,6 +288,27 @@ const NotificationComponents = {
       });
     }, []);
 
+    /**
+     * Shows a toast notification
+     * @param message - The notification message
+     * @param type - The type of notification
+     */
+    const showToast = useCallback((
+      message: string,
+      type: 'info' | 'warning' | 'error' | 'success'
+    ) => {
+      toast(message, {
+        type,
+        position: "top-right",
+        autoClose: type === 'error' ? 5000 : 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored"
+      });
+    }, []);
+
     return (
       <NotificationContext.Provider
         value={{
@@ -304,7 +317,8 @@ const NotificationComponents = {
           showNotification,
           checkAndNotifyDueTasks,
           hasPermission,
-          requestPermission
+          requestPermission,
+          showToast
         }}
       >
         {children}

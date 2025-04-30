@@ -1,7 +1,7 @@
 import React from 'react';
 import TodoList from '../../components/tools/TodoList';
-import TodoComponents from '../../components/tools/TodoList/TodoContext';
-import NotificationComponents from '../../components/tools/TodoList/NotificationContext';
+import TodoComponents from '../../context/TodoContext';
+import NotificationComponents from '../../context/NotificationContext';
 
 const TodoPage: React.FC = () => {
   return (

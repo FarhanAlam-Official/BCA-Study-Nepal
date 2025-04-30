@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { Todo, TodoContextType } from './types';
+import { Todo, TodoContextType, SubTask } from '../components/tools/TodoList/types';
 import NotificationComponents from './NotificationContext';
-import TodoApi from './todoApi';
+import TodoApi from '../components/tools/TodoList/todoApi';
 
 /**
  * Interface for the todo state
@@ -22,7 +22,10 @@ type TodoAction =
   | { type: 'UPDATE_TODO'; payload: Todo }
   | { type: 'DELETE_TODO'; payload: string }
   | { type: 'TOGGLE_TODO'; payload: { id: string; isCompleted: boolean } }
-  | { type: 'SET_TODOS'; payload: Todo[] };
+  | { type: 'SET_TODOS'; payload: Todo[] }
+  | { type: 'ADD_SUBTASK'; payload: { todoId: string; subtask: SubTask } }
+  | { type: 'TOGGLE_SUBTASK'; payload: { todoId: string; subtaskId: string; isCompleted: boolean } }
+  | { type: 'DELETE_SUBTASK'; payload: { todoId: string; subtaskId: string } };
 
 // Create context without exporting it
 const TodoContext = createContext<TodoContextType | undefined>(undefined);
@@ -96,6 +99,47 @@ const todoReducer = (state: TodoState, action: TodoAction): TodoState => {
       newState = {
         ...state,
         todos: action.payload,
+        isLoading: false,
+        error: null
+      };
+      break;
+    case 'ADD_SUBTASK':
+      newState = {
+        ...state,
+        todos: state.todos.map(todo =>
+          todo.id === action.payload.todoId ? {
+            ...todo,
+            subtasks: [...todo.subtasks, action.payload.subtask]
+          } : todo
+        ),
+        isLoading: false,
+        error: null
+      };
+      break;
+    case 'TOGGLE_SUBTASK':
+      newState = {
+        ...state,
+        todos: state.todos.map(todo =>
+          todo.id === action.payload.todoId ? {
+            ...todo,
+            subtasks: todo.subtasks.map(subtask =>
+              subtask.id === action.payload.subtaskId ? { ...subtask, isCompleted: action.payload.isCompleted } : subtask
+            )
+          } : todo
+        ),
+        isLoading: false,
+        error: null
+      };
+      break;
+    case 'DELETE_SUBTASK':
+      newState = {
+        ...state,
+        todos: state.todos.map(todo =>
+          todo.id === action.payload.todoId ? {
+            ...todo,
+            subtasks: todo.subtasks.filter(subtask => subtask.id !== action.payload.subtaskId)
+          } : todo
+        ),
         isLoading: false,
         error: null
       };

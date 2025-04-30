@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FunnelIcon, ArrowsUpDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import TodoForm from './TodoForm';
-import TodoItem from './TodoItem';
-import { Todo, SortOption, TodoData } from './types';
-import TodoComponents from './TodoContext';
-import NotificationComponents from './NotificationContext';
-import NotificationButton from './NotificationButton';
+import TodoForm from './components/TodoForm';
+import TodoItem from './components/TodoItem';
+import { Todo, SortOption, TodoData, Priority } from './types';
+import TodoComponents from '../../../context/TodoContext';
+import NotificationComponents from '../../../context/NotificationContext';
+import NotificationButton from './components/NotificationButton';
 
 /**
  * Animation variants for the container
@@ -86,7 +86,7 @@ const TodoListContent: React.FC = () => {
    * Handles toggling a todo's completion status
    */
   const handleToggleTodo = (id: string) => {
-    const todo = todos.find(t => t.id === id);
+    const todo = todos.find((t: Todo) => t.id === id);
     if (todo) {
       toggleTodo(id);
     }
@@ -143,8 +143,8 @@ const TodoListContent: React.FC = () => {
           }
         }
         case 'priority': {
-          const priorityOrder = { high: 0, medium: 1, low: 2 };
-          return direction * (priorityOrder[a.priority] - priorityOrder[b.priority]);
+          const priorityOrder: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
+          return direction * (priorityOrder[a.priority as Priority] - priorityOrder[b.priority as Priority]);
         }
         case 'lastModified': {
           const aTime = a.lastModified ? new Date(a.lastModified).getTime() : 0;
@@ -161,7 +161,7 @@ const TodoListContent: React.FC = () => {
   }, [todos, filter, sort]);
 
   // Get unique categories for filter dropdown
-  const categories = Array.from(new Set(todos.map(todo => todo.category).filter(Boolean)));
+  const categories = Array.from(new Set(todos.map((todo: Todo) => todo.category).filter(Boolean))) as string[];
 
   // Set up notification checking
   useEffect(() => {
@@ -280,7 +280,7 @@ const TodoListContent: React.FC = () => {
                 className="px-3 py-1.5 text-gray-700 bg-gray-50 rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
               >
                 <option value="">All Categories</option>
-                {categories.map((category) => (
+                {categories.map((category: string) => (
                   <option key={category} value={category}>
                     {category}
                   </option>

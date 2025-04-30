@@ -25,7 +25,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 const CollegeDetail = lazy(() => import('./components/college/CollegeDetail'));
 const QuestionPaperList = lazy(() => import('./components/question-papers/QuestionPaperList'));
 const Syllabus = lazy(() => import('./pages/Syllabus'));
-const GPACalculator = lazy(() => import('./components/tools/GPACalculator'));
+const GPACalculator = lazy(() => import('./pages/tools/GPACalculator'));
 const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
 const Todo = lazy(() => import('./pages/tools/Todo'));
 // const MyNotes = lazy(() => import('./pages/tools/MyNotes'));
@@ -37,7 +37,7 @@ const ResourceRadarPage = lazy(() => import('./pages/ResourceRadarPage'));
 
 // Loading fallback component is now replaced with the existing LoadingPage component
 
-function HomePage() {
+const HomePage: React.FC = () => {
   return (
     <>
       <Hero />
@@ -45,9 +45,9 @@ function HomePage() {
       <UsefulLinks />
     </>
   );
-}
+};
 
-function AppContent() {
+const AppContent: React.FC = () => {
   return (
     <PomodoroProvider>
       <div className="min-h-screen bg-white flex flex-col">
@@ -100,7 +100,7 @@ function AppContent() {
       </div>
     </PomodoroProvider>
   );
-}
+};
 
 const App: React.FC = () => {
   return (

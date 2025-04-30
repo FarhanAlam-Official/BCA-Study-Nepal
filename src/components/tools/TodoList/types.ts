@@ -1,4 +1,9 @@
 /**
+ * Priority levels for todo items
+ */
+export type Priority = 'low' | 'medium' | 'high';
+
+/**
  * Core todo item interface representing a task in the system
  * @interface Todo
  */
@@ -6,7 +11,7 @@ export interface Todo {
   id: string;
   title: string;
   description?: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: Priority;
   dueDate?: string; // ISO string, e.g., "2025-04-16T04:15:00.000Z"
   category?: string;
   isCompleted: boolean;
@@ -25,7 +30,7 @@ export interface Todo {
 export interface TodoData {
   title: string;
   description?: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: Priority;
   dueDate?: string; // ISO string, e.g., "2025-04-16T04:15:00.000Z"
   category?: string;
   isCompleted?: boolean;

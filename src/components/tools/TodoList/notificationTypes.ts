@@ -1,6 +1,5 @@
-import { useContext } from 'react';
+import { useContext, createContext } from 'react';
 import { Todo } from './types';
-import { NotificationContext } from './notificationContext.base';
 
 /**
  * Configuration options for notification preferences
@@ -46,6 +45,11 @@ export interface NotificationContextType {
   /** Show a toast notification */
   showToast: (message: string, type: 'info' | 'success' | 'warning' | 'error') => void;
 }
+
+/**
+ * Create the notification context
+ */
+export const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 /**
  * Extend Window interface to include our custom property for global todos access
