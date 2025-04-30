@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Pause, X } from 'lucide-react';
-import TimerCompletionModal from '../components/TimerCompletionModal';
+import TimerCompletionModal from '../components/tools/Pomodoro/TimerCompletionModal';
+// import { useSound } from 'use-sound';
 
 // Sound URL that points to a stable external source
 // const SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869.wav';

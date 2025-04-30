@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { usePomodoroTimer } from '../../hooks/usePomodoroTimer';
+import { usePomodoroTimer } from '../../../hooks/usePomodoroTimer';
 
 interface PomodoroSettingsProps {
   isOpen: boolean;

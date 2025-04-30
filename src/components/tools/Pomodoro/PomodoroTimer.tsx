@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {RotateCcw,Settings,Volume2,VolumeX,Clock,Brain,Coffee,HelpCircle,Sparkles} from "lucide-react";
-import { usePomodoroTimer } from "../../hooks/usePomodoroTimer";
+import { usePomodoroTimer } from "../../../hooks/usePomodoroTimer";
 import PomodoroSettings from "./PomodoroSettings";
 import InfoModal from "./InfoModal";
 
@@ -144,7 +144,7 @@ const PomodoroTimer: React.FC = () => {
     htmlFor="task"
     className="block text-center mb-4 text-base font-semibold text-indigo-500 tracking-wide"
   >
-    What’s Your Main Focus Today?
+    What's Your Main Focus Today?
   </label>
 
   <input

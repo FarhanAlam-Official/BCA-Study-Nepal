@@ -1,5 +1,5 @@
 import React from 'react';
-import PomodoroTimer from '../../components/tools/PomodoroTimer';
+import PomodoroTimer from '../../components/tools/Pomodoro/PomodoroTimer';
 
 const PomodoroPage: React.FC = () => {
   return (
