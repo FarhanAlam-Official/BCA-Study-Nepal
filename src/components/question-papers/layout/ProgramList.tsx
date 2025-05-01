@@ -1,42 +1,71 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import ProgramCard from '../ui/ProgramCard';
-import { Program } from '../../../services/types/questionpapers.types';
-import { questionPaperService } from '../../../services/api/questionPaperService';
+import { Program } from '../../../types/question-papers/question-papers.types';
+import { questionPaperService } from '../../../api/question-papers/question-papers.api';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import ErrorDisplay from '../../common/ErrorDisplay';
 import { FileText } from 'lucide-react';
+import { showError } from '../../../utils/notifications';
 
+/**
+ * Props for the ProgramList component
+ */
 interface ProgramListProps {
   onProgramSelect: (program: Program) => void;
 }
 
+/**
+ * ProgramList Component
+ * Displays a grid of available academic programs
+ * Features loading states, error handling, and empty state
+ * 
+ * @param props - Component props
+ * @param props.onProgramSelect - Callback when a program is selected
+ */
 const ProgramList: React.FC<ProgramListProps> = ({ onProgramSelect }) => {
   const [programs, setPrograms] = React.useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = React.useState<number | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  // Load programs on component mount
   React.useEffect(() => {
     fetchPrograms();
   }, []);
 
+  /**
+   * Fetches available programs from the API
+   * Handles loading states and error scenarios
+   */
   const fetchPrograms = async () => {
     try {
       setIsLoading(true);
       setError(null);
       const data = await questionPaperService.getPrograms();
-      // DRF might return either an array directly or a results property
-      const programs = Array.isArray(data) ? data : data.results || [];
-      setPrograms(programs);
-    } catch (error) {
-      console.error('Failed to load programs:', error);
-      setError('Failed to load programs. Please try again later.');
+      if (Array.isArray(data)) {
+        setPrograms(data);
+      } else {
+        const errorMessage = 'Received invalid data format from server';
+        setError(errorMessage);
+        showError(errorMessage);
+      }
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to load programs. Please try again later.';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  /**
+   * Handles program selection
+   * Updates local state and notifies parent component
+   * @param id - ID of the selected program
+   */
   const handleSelect = (id: number) => {
     const program = programs.find(p => p.id === id);
     if (program) {
@@ -45,29 +74,36 @@ const ProgramList: React.FC<ProgramListProps> = ({ onProgramSelect }) => {
     }
   };
 
+  // Loading state
   if (isLoading) return <LoadingSpinner />;
+
+  // Error state with retry option
   if (error) return <ErrorDisplay message={error} onRetry={fetchPrograms} />;
 
+  // Empty state
   if (!programs || programs.length === 0) {
     return (
-      <div className="text-center py-16 bg-gray-50 rounded-xl border border-gray-100">
-        <FileText className="mx-auto h-16 w-16 text-gray-400" />
-        <h3 className="mt-6 text-xl font-semibold text-gray-900">No Programs Available</h3>
-        <p className="mt-2 text-gray-500">There are no programs available at the moment.</p>
+      <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100/50 mb-6">
+          <FileText className="h-8 w-8 text-indigo-600" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Programs Available</h3>
+        <p className="text-gray-500 mb-6">There are no programs available at the moment.</p>
         <button
           onClick={fetchPrograms}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors duration-200 shadow-md hover:shadow-xl"
         >
-          Refresh
+          Try Again
         </button>
       </div>
     );
   }
 
+  // Program grid
   return (
     <div className="container mx-auto px-4 py-8">
       <motion.div 
-        className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+        className="grid grid-cols-1 gap-6 lg:gap-8 md:grid-cols-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -78,8 +114,6 @@ const ProgramList: React.FC<ProgramListProps> = ({ onProgramSelect }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             <ProgramCard
               {...program}

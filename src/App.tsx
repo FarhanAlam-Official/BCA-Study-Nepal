@@ -23,13 +23,12 @@ const Career = lazy(() => import('./pages/Career'));
 const Contact = lazy(() => import('./pages/Contact'));
 // import PDFViewer from './components/notes/PDFViewer';
 const CollegeDetail = lazy(() => import('./components/college/CollegeDetail'));
-const QuestionPaperList = lazy(() => import('./components/question-papers/QuestionPaperList'));
+const QuestionPapers = lazy(() => import('./pages/question-papers'));
+const QuestionPapersPapers = lazy(() => import('./pages/question-papers/papers'));
 const Syllabus = lazy(() => import('./pages/Syllabus'));
 const GPACalculator = lazy(() => import('./pages/tools/GPACalculator'));
 const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
 const Todo = lazy(() => import('./pages/tools/Todo'));
-// const MyNotes = lazy(() => import('./pages/tools/MyNotes'));
-const SubjectPapersPage = lazy(() => import('./components/question-papers/QuestionPapersPage'));
 const PDFViewerWrapper = lazy(() => import('./components/common/PDFViewerWrapper'));
 const Register = lazy(() => import('./pages/Auth/Register'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -65,12 +64,11 @@ const AppContent: React.FC = () => {
               <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
               <Route path="/tools/pomodoro" element={<Pomodoro />} />
               <Route path="/tools/todo" element={<Todo />} />
-              {/* <Route path="/tools/my-notes" element={<MyNotes />} /> */}
               <Route path="/notes" element={<Notes />} />
               <Route path="/notes/:id" element={<Notes />} />
               <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
-              <Route path="/question-papers" element={<QuestionPaperList />} />
-              <Route path="/question-papers/:subjectId/:subjectName/papers" element={<SubjectPapersPage />} />
+              <Route path="/question-papers" element={<QuestionPapers />} />
+              <Route path="/question-papers/:subjectId/:subjectName/papers" element={<QuestionPapersPapers />} />
               <Route path="/resource-radar" element={<ResourceRadar />} />
               <Route path="/auth" element={<Login />} />
               <Route path="/register" element={<Register />} />

@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { QuestionPaper } from '../../services/types/questionpapers.types';
-import { questionPaperService } from '../../services/api/questionPaperService';
-import { FileText, Download, Eye, ArrowLeft, Calendar, BookOpen, GraduationCap, Book } from 'lucide-react';
-import PDFViewer from '../common/PDFViewer';
+import { QuestionPaper } from '../../types/question-papers/question-papers.types';
+import { questionPaperService } from '../../api/question-papers/question-papers.api';
+import { FileText, Download, Eye, ArrowLeft, Calendar, BookOpen, GraduationCap } from 'lucide-react';
+import PDFViewer from '../../components/common/PDFViewer';
+import { showError, showSuccess } from '../../utils/notifications';
 
+/**
+ * SubjectPapersPage Component
+ * Displays a list of question papers for a specific subject with options to view and download.
+ * 
+ * Features:
+ * - PDF viewer integration
+ * - Download functionality
+ * - Loading and error states
+ * - Animated UI elements
+ * - Responsive grid layout
+ */
 const SubjectPapersPage = () => {
   const { subjectId, subjectName } = useParams();
   const navigate = useNavigate();
@@ -14,18 +26,30 @@ const SubjectPapersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Fetches question papers for the current subject
+   * Handles loading states and error scenarios
+   */
   React.useEffect(() => {
     const fetchPapers = async () => {
-      if (!subjectId) return;
+      if (!subjectId) {
+        const errorMessage = 'No subject ID provided';
+        setError(errorMessage);
+        showError(errorMessage);
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
         setError(null);
         const response = await questionPaperService.getBySubject(Number(subjectId));
         setPapers(response);
-      } catch (err) {
-        setError('Failed to load question papers. Please try again later.');
-        console.error('Error fetching papers:', err);
+      } catch (error: Error | unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load question papers';
+        setError(errorMessage);
+        showError(errorMessage);
+        setPapers([]);
       } finally {
         setLoading(false);
       }
@@ -34,31 +58,56 @@ const SubjectPapersPage = () => {
     fetchPapers();
   }, [subjectId]);
 
+  /**
+   * Opens the PDF viewer for the selected paper
+   * @param paper - The question paper to view
+   * @param e - Mouse event
+   */
   const handleView = (paper: QuestionPaper, e: React.MouseEvent) => {
     e.preventDefault();
+    if (!paper.file) {
+      showError('No file available for this paper');
+      return;
+    }
     setSelectedPaper(paper);
   };
 
+  /**
+   * Downloads the selected paper
+   * Handles file download and error scenarios
+   * @param paper - The question paper to download
+   */
   const handleDownload = async (paper: QuestionPaper) => {
-    if (paper.file) {
-      try {
-        const response = await fetch(paper.file);
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${paper.subject.code}_${paper.year}_SEM${paper.semester}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(downloadUrl);
-      } catch (err) {
-        console.error('Error downloading file:', err);
-        setError('Failed to download the file. Please try again later.');
+    if (!paper.file) {
+      showError('No file available for this paper');
+      return;
+    }
+
+    try {
+      const response = await fetch(paper.file);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `${subjectName}_${paper.year}_SEM${paper.semester}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      showSuccess('Paper downloaded successfully');
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to download the file';
+      showError(`${errorMessage}. Please try again later.`);
     }
   };
 
+  /**
+   * Animation variants for container and items
+   * Used to create staggered animations for list items
+   */
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,6 +131,7 @@ const SubjectPapersPage = () => {
     }
   };
 
+  // Loading state with animated spinner
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white">
@@ -95,6 +145,7 @@ const SubjectPapersPage = () => {
     );
   }
 
+  // Error state with retry option
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 via-purple-50 to-white px-4">
@@ -121,21 +172,23 @@ const SubjectPapersPage = () => {
     );
   }
 
+  // PDF Viewer state
   if (selectedPaper) {
     return (
       <PDFViewer 
         pdfUrl={selectedPaper.file}
         title="Question Paper"
-        mainHeading={selectedPaper.subject.name}
+        mainHeading={subjectName || ''}
         subHeading={`Year ${selectedPaper.year} - Semester ${selectedPaper.semester}`}
         onBack={() => setSelectedPaper(null)}
       />
     );
   }
 
+  // Main content with paper grid
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white relative overflow-hidden">
-      {/* Floating Elements */}
+      {/* Decorative floating elements */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent via-indigo-50/20 to-blue-50/20 pointer-events-none"></div>
       <motion.div
         animate={{ 
@@ -151,7 +204,7 @@ const SubjectPapersPage = () => {
         className="absolute right-[15%] top-[15%]"
       >
         <div className="h-28 w-28 text-purple-600/10">
-          <Book size="100%" />
+          <BookOpen size="100%" />
         </div>
       </motion.div>
 
@@ -193,12 +246,14 @@ const SubjectPapersPage = () => {
         </div>
       </motion.div>
 
+      {/* Main content container */}
       <motion.div 
         initial="hidden"
         animate="visible"
         variants={containerVariants}
         className="container mx-auto px-4 py-6 max-w-7xl relative z-10"
       >
+        {/* Back button */}
         <motion.button
           variants={itemVariants}
           whileHover={{ scale: 1.05 }}
@@ -210,6 +265,7 @@ const SubjectPapersPage = () => {
           Back
         </motion.button>
 
+        {/* Header section */}
         <motion.div 
           variants={itemVariants}
           className="mb-8 text-center space-y-3"
@@ -222,11 +278,13 @@ const SubjectPapersPage = () => {
           </p>
         </motion.div>
 
+        {/* Papers grid section */}
         <motion.div
           variants={itemVariants}
           className="bg-white/50 backdrop-blur-xl rounded-2xl shadow-lg p-8 border border-purple-100/50"
         >
           {papers.length === 0 ? (
+            // Empty state
             <motion.div 
               variants={itemVariants}
               className="max-w-2xl mx-auto"
@@ -240,6 +298,7 @@ const SubjectPapersPage = () => {
               </div>
             </motion.div>
           ) : (
+            // Papers grid
             <motion.div 
               variants={containerVariants}
               className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
@@ -256,7 +315,9 @@ const SubjectPapersPage = () => {
                     hover:shadow-xl hover:border-indigo-100 hover:shadow-indigo-500/10 hover:bg-gradient-to-br hover:from-indigo-50/90 hover:via-purple-50/90 hover:to-indigo-50/90
                     transition-all duration-300"
                 >
+                  {/* Paper card content */}
                   <div className="p-8 space-y-6">
+                    {/* Paper header */}
                     <div className="flex justify-between items-start">
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
@@ -270,6 +331,7 @@ const SubjectPapersPage = () => {
                           {`${paper.semester}${['st', 'nd', 'rd'][paper.semester - 1] || 'th'} Semester`}
                         </p>
                       </div>
+                      {/* Status badge */}
                       <span className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
                         paper.status === 'VERIFIED' 
                           ? 'bg-green-100/70 text-green-800 group-hover:bg-green-200/80 group-hover:shadow-lg group-hover:shadow-green-100/50'
@@ -281,6 +343,7 @@ const SubjectPapersPage = () => {
                       </span>
                     </div>
 
+                    {/* Action buttons */}
                     <div className="pt-4 border-t border-gray-100/80 flex justify-between items-center">
                       <div className="space-x-4">
                         <motion.button
@@ -304,6 +367,7 @@ const SubjectPapersPage = () => {
                           Download
                         </motion.button>
                       </div>
+                      {/* View count */}
                       <div className="flex items-center text-sm text-indigo-600">
                         <Eye className="h-4 w-4 mr-1 text-indigo-500" />
                         {paper.view_count}
