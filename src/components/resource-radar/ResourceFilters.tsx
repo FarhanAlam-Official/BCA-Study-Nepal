@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { resourceRadarApi } from './resourceRadar';
-import { Category, Tag } from './resource-radar';
+import { resourceRadarApi } from '../../api/resource-radar/resource-radar.api';
+import { Category, Tag } from '../../types/resource-radar/resource-radar.types';
 import { motion } from 'framer-motion';
 import { ArrowUpDown } from 'lucide-react';
 import { HeartIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useAuth } from '../../hooks/useAuth';
-import { showError, showInfo } from './utils/notifications';
+import { showError, showInfo } from '../../utils/notifications';
 
 /**
  * Type definitions for filter options

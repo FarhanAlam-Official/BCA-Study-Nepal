@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Resource, ResourceFavorite } from './resource-radar';
-import { resourceRadarApi } from './resourceRadar';
+import { Resource, ResourceFavorite } from '../../types/resource-radar/resource-radar.types';
+import { resourceRadarApi } from '../../api/resource-radar/resource-radar.api';
 import { useEffect, useState, useCallback } from 'react';
 import { HeartIcon, EyeIcon, ShareIcon, ClockIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, SparklesIcon } from '@heroicons/react/24/solid';
 import { formatDistanceToNow } from 'date-fns';
-import { showSuccess, showError, showInfo } from './utils/notifications';
+import { showSuccess, showError, showInfo } from '../../utils/notifications';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';

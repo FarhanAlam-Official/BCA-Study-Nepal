@@ -1,10 +1,10 @@
-import { Resource, ResourceFavorite } from './resource-radar';
+import { Resource, ResourceFavorite } from '../../types/resource-radar/resource-radar.types';
 import { ResourceCard } from './ResourceCard';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
-import { resourceRadarApi } from './resourceRadar';
+import { resourceRadarApi } from '../../api/resource-radar/resource-radar.api';
 import { Lightbulb } from 'lucide-react';
-import { showError } from './utils/notifications';
+import { showError } from '../../utils/notifications';
 
 /**
  * Props interface for the ResourceGrid component

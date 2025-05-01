@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Resource, Category, Tag, ResourceFilters, PaginatedResponse, FavoriteResponse, ResourceFavorite } from './resource-radar';
-import { showError } from './utils/notifications';
+import { Resource, Category, Tag, ResourceFilters, PaginatedResponse, FavoriteResponse, ResourceFavorite } from '../../types/resource-radar/resource-radar.types';
+import { showError } from '../../utils/notifications';
 
 /**
  * Runtime configuration interface for Next.js environment variables

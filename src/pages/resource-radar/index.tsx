@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { ResourceGrid } from "../components/resource-radar/ResourceGrid";
-import { ResourceFilters } from "../components/resource-radar/ResourceFilters";
+import { ResourceGrid } from "../../components/resource-radar/ResourceGrid";
+import { ResourceFilters } from "../../components/resource-radar/ResourceFilters";
 import { motion, AnimationProps } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
