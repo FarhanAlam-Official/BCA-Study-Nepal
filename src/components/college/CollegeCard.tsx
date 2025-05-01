@@ -8,7 +8,7 @@ import { collegeApi } from '../../api/colleges/college.api';
 import { useEffect, useState, useCallback } from 'react';
 import { HeartIcon, MapPinIcon, ShareIcon, AcademicCapIcon, BuildingLibraryIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, SparklesIcon } from '@heroicons/react/24/solid';
-import { showSuccess, showError, showInfo } from '../resource-radar/utils/notifications';
+import { showSuccess, showError, showInfo } from '../../utils/notifications';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
