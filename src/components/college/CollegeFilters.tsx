@@ -15,8 +15,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowDownUp, ArrowDown, ArrowUp } from 'lucide-react';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { collegeApi } from './collegeApi';
-import { CollegeFilters as CollegeFiltersType } from './college';
+import { collegeApi } from '../../api/colleges/college.api';
+import { CollegeFilters as CollegeFiltersType } from '../../types/colleges/college.types';
 import { Combobox } from '@headlessui/react';
 import { toast } from 'react-hot-toast';
 

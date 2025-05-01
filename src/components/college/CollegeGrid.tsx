@@ -4,8 +4,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import { College, CollegeFilters } from './college';
-import { collegeApi } from './collegeApi';
+import { College, CollegeFilters } from '../../types/colleges/college.types';
+import { collegeApi } from '../../api/colleges/college.api';
 import { CollegeCard } from './CollegeCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';

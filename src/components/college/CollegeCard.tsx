@@ -3,8 +3,8 @@
  * Handles college information display, favorite toggling, and navigation
  */
 
-import { College, CollegeFavorite } from './college';
-import { collegeApi } from './collegeApi';
+import { College, CollegeFavorite } from '../../types/colleges/college.types';
+import { collegeApi } from '../../api/colleges/college.api';
 import { useEffect, useState, useCallback } from 'react';
 import { HeartIcon, MapPinIcon, ShareIcon, AcademicCapIcon, BuildingLibraryIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, SparklesIcon } from '@heroicons/react/24/solid';

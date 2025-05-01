@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { CollegeGrid } from "../components/college/CollegeGrid";
-import { CollegeFilters } from "../components/college/CollegeFilters";
+import { CollegeGrid } from "../../components/college/CollegeGrid";
+import { CollegeFilters } from "../../components/college/CollegeFilters";
 import { motion, AnimationProps } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
@@ -13,7 +13,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import debounce from "lodash/debounce";
-import { CollegeFilters as CollegeFiltersType } from "../components/college/college";
+import { CollegeFilters as CollegeFiltersType } from "../../types/colleges/college.types";
 
 interface FloatingIconProps {
   Icon: LucideIcon;
@@ -160,7 +160,6 @@ export default function CollegePage() {
     
     // Only show loading state and trigger search if there's actual input
     setIsSearching(true);
-    console.log('Searching for:', newValue);
     debouncedSearchWithDelay(newValue);
   };
 

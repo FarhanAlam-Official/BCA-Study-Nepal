@@ -20,8 +20,8 @@ import {
   Phone,
   Mail
 } from 'lucide-react';
-import { College } from './college';
-import { collegeApi } from './collegeApi';
+import { College } from '../../types/colleges/college.types';
+import { collegeApi } from '../../api/colleges/college.api';
 import { StarIcon } from '@heroicons/react/20/solid';
 import { toast } from 'react-hot-toast';
 
