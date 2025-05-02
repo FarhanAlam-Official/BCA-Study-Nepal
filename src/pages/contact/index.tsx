@@ -1,9 +1,16 @@
+/**
+ * Contact Page Component
+ * Provides an interactive contact interface with form submission, 
+ * contact information display, map integration, and FAQ section
+ */
+
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, ArrowRight, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedPageHeader from '../../components/common/AnimatedPageHeader';
 
 export default function Contact() {
+  // Form state management
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,6 +20,7 @@ export default function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
+  // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate form submission
@@ -20,11 +28,12 @@ export default function Contact() {
     setTimeout(() => setIsSubmitted(false), 3000);
   };
 
+  // Form field change handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Add these variants inside the Contact component
+  // Animation variants for container elements
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -35,6 +44,7 @@ export default function Contact() {
     }
   };
 
+  // Animation variants for individual items
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -46,6 +56,7 @@ export default function Contact() {
     }
   };
 
+  // Animation variants for expandable content
   const contentVariants = {
     collapsed: {
       height: 0,
@@ -65,6 +76,7 @@ export default function Contact() {
     }
   };
 
+  // FAQ data
   const faqs = [
     {
       q: "What services do you offer?",
@@ -84,7 +96,7 @@ export default function Contact() {
     }
   ];
 
-  // Add this new animation variant
+  // Animation variant for scroll reveal effect
   const scrollRevealVariants = {
     hidden: { 
       opacity: 0,
@@ -102,6 +114,7 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Page Header */}
       <AnimatedPageHeader
         title="Let's Start a Conversation"
         description="Have a question or want to work together? We'd love to hear from you."
@@ -111,6 +124,7 @@ export default function Contact() {
       {/* Contact Methods Grid */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32">
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Contact method cards with hover effects */}
           {[
             {
               icon: Phone,
@@ -140,9 +154,11 @@ export default function Contact() {
               whileHover={{ y: -5 }}
               transition={{ type: "spring", stiffness: 200 }}
             >
+              {/* Hover effect gradient background */}
               <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl blur-xl"
                 style={{ background: `linear-gradient(to right, var(--tw-gradient-${item.color}))` }}
               />
+              {/* Card content */}
               <div className="relative bg-white p-8 rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300">
                 <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${item.color} text-white mb-4`}>
                   <item.icon size={24} />
@@ -159,7 +175,7 @@ export default function Contact() {
         </motion.div>
       </div>
 
-      {/* Second Section - Scrollable Content */}
+      {/* Contact Form and Map Section */}
       <div className="min-h-screen py-20 bg-gray-50">
         <motion.div 
           initial="hidden"
@@ -168,15 +184,16 @@ export default function Contact() {
           variants={scrollRevealVariants}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          {/* Form and Map Grid */}
+          {/* Two-column layout for form and map */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Form Section */}
+            {/* Contact Form */}
             <motion.div
               variants={itemVariants}
               className="bg-white rounded-2xl shadow-xl p-8 lg:p-12 h-[800px] overflow-y-auto"
             >
               <h2 className="text-3xl font-bold mb-8">Send us a message</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Form fields with animations */}
                 {[
                   { name: "name", label: "Full Name", type: "text" },
                   { name: "email", label: "Email Address", type: "email" },
@@ -201,6 +218,7 @@ export default function Contact() {
                   </motion.div>
                 ))}
                 
+                {/* Message textarea */}
                 <motion.div whileHover={{ scale: 1.01 }}>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Message
@@ -215,6 +233,7 @@ export default function Contact() {
                   />
                 </motion.div>
 
+                {/* Submit button with success animation */}
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.02 }}
@@ -250,12 +269,13 @@ export default function Contact() {
               </form>
             </motion.div>
 
-            {/* Map and Info Section */}
+            {/* Map Section */}
             <motion.div
               variants={itemVariants}
               className="bg-white rounded-2xl shadow-xl overflow-hidden h-[800px]"
             >
               <div className="h-full">
+                {/* Google Maps iframe */}
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d113058.2132937578!2d84.3520225!3d27.6783907!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3994fb37e078d531%3A0x973f22922ea702f7!2sChitwan%2044200!5e0!3m2!1sen!2snp!4v1647827138000!5m2!1sen!2snp"
                   width="100%"
@@ -265,6 +285,7 @@ export default function Contact() {
                   loading="lazy"
                   className="rounded-lg"
                 />
+                {/* Location info */}
                 <div className="p-6 bg-white h-[10%]">
                   <div className="flex items-center space-x-3 text-gray-700">
                     <MapPin className="h-5 w-5 text-indigo-600" />
@@ -275,7 +296,7 @@ export default function Contact() {
             </motion.div>
           </div>
 
-          {/* Updated FAQ Section */}
+          {/* FAQ Section */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -295,6 +316,7 @@ export default function Contact() {
               Got questions? We've got answers! Check out our most commonly asked questions below.
             </motion.p>
             
+            {/* FAQ accordion */}
             <div className="max-w-3xl mx-auto space-y-4">
               {faqs.map((faq, index) => (
                 <motion.div
@@ -305,6 +327,7 @@ export default function Contact() {
                   layout
                   className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100"
                 >
+                  {/* FAQ question button */}
                   <motion.div
                     className="relative"
                     whileHover={{ scale: 1.01 }}
@@ -321,6 +344,7 @@ export default function Contact() {
                       <span className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
                         {faq.q}
                       </span>
+                      {/* Animated arrow icon */}
                       <motion.div
                         animate={{ 
                           rotate: expandedFaq === index ? 90 : 0,
@@ -338,6 +362,7 @@ export default function Contact() {
                     </button>
                   </motion.div>
 
+                  {/* FAQ answer with animation */}
                   <AnimatePresence initial={false}>
                     {expandedFaq === index && (
                       <motion.div

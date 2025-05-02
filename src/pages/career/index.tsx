@@ -1,10 +1,20 @@
+/**
+ * Career Page Component
+ * 
+ * A comprehensive career guidance page featuring:
+ * - Higher education options in Nepal and abroad
+ * - Job roles and opportunities in tech
+ * - Professional certifications
+ * - Interactive UI with animations
+ */
+
 import React from 'react';
 import { Briefcase, GraduationCap, Award, MapPin, Clock, Code, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '../../services/utils/animation';
 import AnimatedPageHeader from '../../components/common/AnimatedPageHeader';
 
-// Floating Icon Component Types
+// Component Types
 interface FloatingIconProps {
   icon: React.ElementType;
   className: string;
@@ -21,6 +31,10 @@ interface FloatingIconProps {
   };
 }
 
+/**
+ * Floating Icon Component
+ * Renders an animated icon with customizable motion properties
+ */
 const FloatingIcon: React.FC<FloatingIconProps> = ({ icon: Icon, className, animate, transition }) => (
   <motion.div
     animate={animate}
@@ -33,7 +47,11 @@ const FloatingIcon: React.FC<FloatingIconProps> = ({ icon: Icon, className, anim
   </motion.div>
 );
 
-// Data Constants
+// Education Data
+/**
+ * Higher education opportunities in Nepal
+ * Including popular programs and universities
+ */
 const higherEducationNepal = [
   {
     title: "Master of Computer Applications (MCA)",
@@ -57,6 +75,10 @@ const higherEducationNepal = [
   }
 ];
 
+/**
+ * Higher education opportunities abroad
+ * Including international programs and specializations
+ */
 const higherEducationAbroad = [
   {
     title: "Master's in Data Science",
@@ -80,6 +102,10 @@ const higherEducationAbroad = [
   }
 ];
 
+/**
+ * Current job roles in tech industry
+ * Including responsibilities, skills, and salary ranges
+ */
 const jobRoles = [
   {
     title: "Full Stack Developer",
@@ -131,6 +157,10 @@ const jobRoles = [
   }
 ];
 
+/**
+ * Professional certifications
+ * Including details about certification providers and requirements
+ */
 const certifications = [
   {
     name: "AWS Certified Solutions Architect",
@@ -182,7 +212,11 @@ const certifications = [
   }
 ];
 
-// Function to get certification links
+/**
+ * Helper function to get certification links
+ * @param certName - Name of the certification
+ * @returns URL of the certification
+ */
 const getCertificationLink = (certName: string): string => {
   const links: { [key: string]: string } = {
     'AWS Certified Solutions Architect': 'https://aws.amazon.com/certification/certified-solutions-architect-associate/',
