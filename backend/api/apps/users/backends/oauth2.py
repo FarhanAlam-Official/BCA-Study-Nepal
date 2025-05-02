@@ -5,6 +5,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from email.mime.text import MIMEText
+from email.utils import formataddr
 import base64
 import pickle
 import os
@@ -128,7 +129,9 @@ class OAuth2EmailBackend(BaseEmailBackend):
                 try:
                     message = MIMEText(email_message.body)
                     message['to'] = ', '.join(email_message.to)
-                    message['from'] = email_message.from_email
+                    
+                    # Always use BCA Study Nepal as the display name
+                    message['from'] = formataddr(('BCA Study Nepal', settings.EMAIL_HOST_USER))
                     message['subject'] = email_message.subject
 
                     # If there's HTML content
@@ -138,7 +141,8 @@ class OAuth2EmailBackend(BaseEmailBackend):
                             if mime_type == 'text/html':
                                 message = MIMEText(content, 'html')
                                 message['to'] = ', '.join(email_message.to)
-                                message['from'] = email_message.from_email
+                                # Apply the same from formatting for HTML messages
+                                message['from'] = formataddr(('BCA Study Nepal', settings.EMAIL_HOST_USER))
                                 message['subject'] = email_message.subject
                                 break
 

@@ -135,7 +135,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@bcastudynepal.com')
+DEFAULT_FROM_EMAIL = 'BCA Study Nepal <noreply@bcastudynepal.com>'
 
 # Update template settings to include the password reset email template
 TEMPLATES[0]['DIRS'].append(BASE_DIR / 'api' / 'apps' / 'users' / 'templates')
