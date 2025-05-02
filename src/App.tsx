@@ -47,7 +47,7 @@ const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
 const Todo = lazy(() => import('./pages/tools/Todo'));
 const PDFViewerWrapper = lazy(() => import('./components/common/PDFViewerWrapper'));
 const Register = lazy(() => import('./pages/Auth/Register'));
-const Profile = lazy(() => import('./pages/Profile'));
+const Profile = lazy(() => import('./pages/profile'));
 const ResourceRadar = lazy(() => import('./pages/resource-radar'));
 
 /**

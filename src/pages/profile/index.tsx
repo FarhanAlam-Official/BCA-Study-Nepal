@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import authService, { User as AuthUser } from '../services/authService';
+import { useAuth } from '../../hooks/useAuth';
+import authService, { User as AuthUser } from '../../services/authService';
 import { UserCircle, Mail, Phone, School, BookOpen, LogOut, Edit2, UserIcon, FileText, Share2, Facebook, Twitter, Linkedin, Github, Brain, Code, Heart, X, Save, ImageIcon } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,18 +9,22 @@ import type { AnimationProps } from 'framer-motion';
 import { motion } from 'framer-motion';
 import imageCompression from 'browser-image-compression';
 
-// TypeScript interfaces
+/**
+ * Props for the FloatingIcon component
+ * Used to create animated decorative icons in the profile page background
+ */
 interface FloatingIconProps {
-  Icon: React.ElementType;
-  className: string;
-  size?: string;
-  animate: AnimationProps['animate'];
-  transition: AnimationProps['transition'];
+  Icon: React.ElementType;    // The icon component to render
+  className: string;          // CSS classes for styling
+  size?: string;             // Optional size override
+  animate: AnimationProps['animate'];       // Framer Motion animation props
+  transition: AnimationProps['transition']; // Framer Motion transition props
 }
 
 /**
  * FloatingIcon Component
  * Renders animated decorative icons using Framer Motion
+ * Used to create visual interest in the profile page background
  */
 const FloatingIcon: React.FC<FloatingIconProps> = ({ 
     Icon, 
@@ -40,6 +44,15 @@ const FloatingIcon: React.FC<FloatingIconProps> = ({
     </motion.div>
 );
 
+/**
+ * Calculates the profile completion percentage and returns appropriate styling
+ * 
+ * @param user - The user object containing profile information
+ * @returns Object containing:
+ * - color: The color to use for the completion indicator
+ * - percentage: The completion percentage (0-100)
+ * - isComplete: Whether the profile is 100% complete
+ */
 const calculateProfileCompletion = (user: AuthUser) => {
   const fields = [
     'first_name',
@@ -94,7 +107,12 @@ const calculateProfileCompletion = (user: AuthUser) => {
   }
 };
 
-// Utility function to get user initials
+/**
+ * Extracts initials from user's name for avatar placeholder
+ * 
+ * @param user - The user object containing name information
+ * @returns A string of 1-2 characters representing the user's initials
+ */
 const getUserInitials = (user: AuthUser | null) => {
   if (!user) return '??';
   
@@ -110,7 +128,12 @@ const getUserInitials = (user: AuthUser | null) => {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 };
 
-// Function to compress image
+/**
+ * Compresses an image file before upload
+ * 
+ * @param file - The file to compress
+ * @returns A compressed File object
+ */
 const compressImage = async (file: File) => {
   const options = {
     maxSizeMB: 1,
@@ -129,13 +152,23 @@ const compressImage = async (file: File) => {
   }
 };
 
-// Add this function to truncate bio text
+/**
+ * Truncates bio text to specified length
+ * 
+ * @param bio - The bio text to truncate
+ * @param maxLength - Maximum length before truncation
+ * @returns Truncated bio text with ellipsis
+ */
 const truncateBio = (bio: string, maxLength: number = 200) => {
   if (!bio || bio.length <= maxLength) return bio;
   return bio.substring(0, maxLength) + '...';
 };
 
-// Helper component for profile completion badge
+/**
+ * ProfileCompletionBadge Component
+ * Displays a visual indicator of profile completion status
+ * Shows percentage or checkmark based on completion level
+ */
 const ProfileCompletionBadge: React.FC<{ user: AuthUser }> = ({ user }) => {
   const completion = calculateProfileCompletion(user);
   
@@ -186,7 +219,28 @@ const ProfileCompletionBadge: React.FC<{ user: AuthUser }> = ({ user }) => {
   );
 };
 
+/**
+ * Main Profile Component
+ * 
+ * Handles the display and management of user profile information.
+ * Features include:
+ * - Profile information display
+ * - In-place editing of profile details
+ * - Profile picture upload with preview
+ * - Social media links management
+ * - Skills and interests management with tag-like input
+ * - Responsive layout with animated transitions
+ * - Profile completion tracking
+ */
 const Profile = () => {
+  /**
+   * State Management:
+   * - user, isAuthenticated, isLoading: Authentication state from useAuth hook
+   * - isEditing: Controls profile edit mode
+   * - profileLoading: Loading state during profile updates
+   * - imagePreview: Temporary URL for profile picture preview
+   * - formData: Form state containing all profile fields
+   */
   const { user, isAuthenticated, isLoading, logout, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -216,6 +270,10 @@ const Profile = () => {
     (user as { created_at: string }).created_at : 
     new Date().toISOString();
 
+  /**
+   * Effect: Initialize form data when user data is available
+   * Updates form fields with current user data
+   */
   useEffect(() => {
     if (user) {
       // Set initial form data from user data
@@ -239,7 +297,10 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Cleanup preview URL when component unmounts or editing is cancelled
+  /**
+   * Effect: Cleanup image preview URL
+   * Revokes object URL when component unmounts or editing is cancelled
+   */
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -265,6 +326,12 @@ const Profile = () => {
     );
   }
 
+  /**
+   * Handles changes to form input fields
+   * Updates the formData state with new values
+   * 
+   * @param e - Change event from input element
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -273,7 +340,13 @@ const Profile = () => {
     }));
   };
 
-  // Handle changes to arrays (interests and skills)
+  /**
+   * Handles changes to array-based inputs (skills and interests)
+   * Processes comma-separated values and updates the respective arrays
+   * 
+   * @param name - The array field to update ('skills' or 'interests')
+   * @param value - The new input value
+   */
   const handleArrayChange = (name: 'skills' | 'interests', value: string) => {
     // Store the current input value
     setFormData(prev => ({
@@ -303,6 +376,13 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Handles keyboard events for skills and interests inputs
+   * Processes Enter key for adding items and Backspace for removing
+   * 
+   * @param e - Keyboard event
+   * @param name - The array field being edited
+   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, name: 'skills' | 'interests') => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -322,6 +402,12 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Handles profile picture file selection
+   * Validates file type and size, compresses image, and creates preview
+   * 
+   * @param e - File input change event
+   */
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -357,6 +443,13 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Handles form submission
+   * Validates data, processes image, and sends update request
+   * Handles various error cases and shows appropriate notifications
+   * 
+   * @param e - Form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileLoading(true);
@@ -517,11 +610,18 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Handles user logout
+   * Calls logout function from auth context
+   */
   const handleLogout = () => {
     logout();
   };
 
-  // Update handleCancel to cleanup preview
+  /**
+   * Handles cancellation of edit mode
+   * Cleans up preview URL and resets form state
+   */
   const handleCancel = () => {
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
