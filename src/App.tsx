@@ -19,8 +19,8 @@ import { AuthProvider } from './context/AuthContext';
 // Lazy load components
 const Notes = lazy(() => import('./pages/notes'));
 const CollegePage = lazy(() => import('./pages/colleges'));
-const Career = lazy(() => import('./pages/Career'));
-const Contact = lazy(() => import('./pages/Contact'));
+const Career = lazy(() => import('./pages/career'));
+const Contact = lazy(() => import('./pages/contact'));
 // import PDFViewer from './components/notes/PDFViewer';
 const CollegeDetail = lazy(() => import('./components/college/CollegeDetail'));
 const QuestionPapers = lazy(() => import('./pages/question-papers'));

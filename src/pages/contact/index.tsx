@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, ArrowRight, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import AnimatedPageHeader from '../components/common/AnimatedPageHeader';
+import AnimatedPageHeader from '../../components/common/AnimatedPageHeader';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
