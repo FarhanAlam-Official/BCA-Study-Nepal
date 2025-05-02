@@ -1,26 +1,42 @@
+/**
+ * Syllabus Page Component
+ * 
+ * Displays the complete BCA curriculum including:
+ * - Semester-wise course listings
+ * - Course details (credit hours, descriptions)
+ * - Required textbooks and references
+ * - Interactive UI for browsing different semesters
+ */
+
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
+// Type definitions for curriculum structure
 interface Course {
-  title: string;
-  description: string;
-  creditHours: number;
-  textbooks: string[];
-  references: string[];
+  title: string;          // Course name
+  description: string;    // Brief course description
+  creditHours: number;    // Number of credit hours
+  textbooks: string[];    // Required textbooks
+  references: string[];   // Additional reference materials
 }
 
 interface Semester {
-  name: string;
-  courses: Course[];
+  name: string;          // Semester name (e.g., "1st Semester")
+  courses: Course[];     // Array of courses in the semester
 }
 
 interface Program {
-  name: string;
-  code: string;
-  description: string;
-  semesters: Semester[];
+  name: string;          // Program name
+  code: string;          // Program code
+  description: string;   // Program description
+  semesters: Semester[]; // Array of semesters
 }
 
+/**
+ * Curriculum Data
+ * Complete semester-wise course structure for BCA program
+ * Including course details, credit hours, and recommended reading materials
+ */
 const syllabusData: Semester[] = [
   {
     name: "1st Semester",
@@ -335,7 +351,6 @@ const syllabusData: Semester[] = [
       },
     ],
   },
-
 ];
 
 const programsData: Program[] = [
@@ -353,6 +368,10 @@ const programsData: Program[] = [
   }
 ];
 
+/**
+ * Main Syllabus Component
+ * Renders an interactive view of the BCA curriculum
+ */
 const Syllabus: React.FC = () => {
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [activeSemester, setActiveSemester] = useState<string | null>(null);

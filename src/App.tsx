@@ -41,7 +41,7 @@ const Contact = lazy(() => import('./pages/contact'));
 const CollegeDetail = lazy(() => import('./components/college/CollegeDetail'));
 const QuestionPapers = lazy(() => import('./pages/question-papers'));
 const QuestionPapersPapers = lazy(() => import('./pages/question-papers/papers'));
-const Syllabus = lazy(() => import('./pages/Syllabus'));
+const Syllabus = lazy(() => import('./pages/syllabus'));
 const GPACalculator = lazy(() => import('./pages/tools/GPACalculator'));
 const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
 const Todo = lazy(() => import('./pages/tools/Todo'));
