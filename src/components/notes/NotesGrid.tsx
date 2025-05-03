@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Download } from 'lucide-react';
-import { Note } from '../../services/types';
+import { Note } from '../../types/notes/notes.types';
 
 interface NotesGridProps {
   notes: Note[];

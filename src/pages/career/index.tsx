@@ -11,7 +11,7 @@
 import React from 'react';
 import { Briefcase, GraduationCap, Award, MapPin, Clock, Code, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { fadeIn, staggerContainer } from '../../services/utils/animation';
+import { fadeIn, staggerContainer } from '../../utils/animations';
 import AnimatedPageHeader from '../../components/common/AnimatedPageHeader';
 
 // Component Types

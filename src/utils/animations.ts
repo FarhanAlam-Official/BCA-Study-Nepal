@@ -65,4 +65,4 @@ export const textReveal = {
       stiffness: 100
     }
   }
-};
+}; 
