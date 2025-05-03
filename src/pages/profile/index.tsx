@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import authService, { User as AuthUser } from '../../services/authService';
+import authService, { User as AuthUser } from '../../services/auth/auth.service';
 import { UserCircle, Mail, Phone, School, BookOpen, LogOut, Edit2, UserIcon, FileText, Share2, Facebook, Twitter, Linkedin, Github, Brain, Code, Heart, X, Save, ImageIcon } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

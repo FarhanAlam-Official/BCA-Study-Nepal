@@ -1,4 +1,4 @@
-import api from '../config/axios';
+import api from '../../api/core/api.core';
 import { Note } from '../types';
 
 interface NotesResponse {

@@ -1,11 +1,23 @@
+/**
+ * Forgot Password Page Component
+ * 
+ * Handles the password reset request process with features including:
+ * - Email validation
+ * - Rate limiting for resend requests
+ * - Animated UI elements
+ * - Error handling and user feedback
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { motion, AnimationProps } from 'framer-motion';
 import { Mail, KeyRound, ShieldCheck, Undo2, MailQuestion, SendHorizonal } from 'lucide-react';
-import authService from '../../services/authService';
+import authService from '../../services/auth/auth.service';
 
-// Animation variants
+/**
+ * Animation variants for form transitions
+ */
 const formVariants = {
     initial: {
         opacity: 0,
@@ -20,7 +32,9 @@ const formVariants = {
     }
 };
 
-// TypeScript interface for the FloatingIcon component props
+/**
+ * Props interface for the FloatingIcon component
+ */
 interface FloatingIconProps {
     Icon: React.ElementType;
     className: string;
@@ -51,17 +65,29 @@ const FloatingIcon: React.FC<FloatingIconProps> = ({
     </motion.div>
 );
 
+// Rate limiting constant
 const RESEND_COOLDOWN = 60; // 60 seconds cooldown for resend
 
+/**
+ * ForgotPassword Component
+ * Handles the password reset request flow
+ */
 const ForgotPassword = () => {
+    // Form state
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [emailSent, setEmailSent] = useState(false);
     const [touched, setTouched] = useState(false);
     const [error, setError] = useState('');
+    
+    // Rate limiting state
     const [resendCountdown, setResendCountdown] = useState(0);
     const [canResend, setCanResend] = useState(true);
 
+    /**
+     * Countdown timer for rate limiting
+     * Decrements the resend countdown and enables resend when it reaches 0
+     */
     useEffect(() => {
         let timer: ReturnType<typeof setTimeout>;
         if (resendCountdown > 0) {
@@ -76,11 +102,20 @@ const ForgotPassword = () => {
         };
     }, [resendCountdown]);
 
-    // Email validation
+    /**
+     * Validates email format using regex
+     * @param email - The email to validate
+     * @returns boolean indicating if email is valid
+     */
     const isValidEmail = (email: string) => {
         return /\S+@\S+\.\S+/.test(email);
     };
 
+    /**
+     * Validates email and sets error state
+     * @param value - The email value to validate
+     * @returns boolean indicating if validation passed
+     */
     const validateEmail = (value: string) => {
         setTouched(true);
         if (!value) {
@@ -95,6 +130,9 @@ const ForgotPassword = () => {
         return true;
     };
 
+    /**
+     * Handles email input changes and validates on the fly
+     */
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setEmail(value);
@@ -103,6 +141,9 @@ const ForgotPassword = () => {
         }
     };
 
+    /**
+     * Handles resend request with rate limiting
+     */
     const handleResend = async () => {
         if (!canResend) return;
         
@@ -116,18 +157,17 @@ const ForgotPassword = () => {
                 position: "top-center",
                 autoClose: 6000
             });
-        } catch (error) {
-            console.error('Failed to resend password reset email');
-            if (error instanceof Error) {
-                toast.error(error.message);
-            } else {
-                toast.error('Failed to resend email. Please try again later.');
-            }
+        } catch {
+            toast.error('Failed to resend email. Please try again later.');
         } finally {
             setIsLoading(false);
         }
     };
 
+    /**
+     * Handles form submission
+     * Validates email and sends password reset request
+     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -146,8 +186,6 @@ const ForgotPassword = () => {
                 autoClose: 6000
             });
         } catch (error: unknown) {
-            console.error('Password reset request failed');
-            
             interface ApiError {
                 status: string;
                 detail: string;

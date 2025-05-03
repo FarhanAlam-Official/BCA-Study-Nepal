@@ -1,12 +1,25 @@
+/**
+ * Reset Password Component
+ * 
+ * Handles password reset functionality with features including:
+ * - Password strength validation
+ * - Password visibility toggle
+ * - Animated UI elements
+ * - Token-based reset verification
+ * - Error handling and user feedback
+ */
+
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { motion, AnimationProps } from 'framer-motion';
 import { Lock, KeyRound, ShieldCheck, Fingerprint, Key, RefreshCcw } from 'lucide-react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import authService from '../../services/authService';
+import authService from '../../services/auth/auth.service';
 
-// Animation variants
+/**
+ * Animation variants for form transitions
+ */
 const formVariants = {
     initial: {
         opacity: 0,
@@ -21,14 +34,18 @@ const formVariants = {
     }
 };
 
-// Password strength levels
+/**
+ * Password strength levels with corresponding styles
+ */
 const PASSWORD_STRENGTH = {
     WEAK: { label: 'Weak', color: 'text-red-500 border-red-500' },
     MEDIUM: { label: 'Medium', color: 'text-yellow-500 border-yellow-500' },
     STRONG: { label: 'Strong', color: 'text-green-500 border-green-500' }
 };
 
-// TypeScript interface for the FloatingIcon component props
+/**
+ * Props interface for the FloatingIcon component
+ */
 interface FloatingIconProps {
     Icon: React.ElementType;
     className: string;
@@ -59,26 +76,41 @@ const FloatingIcon: React.FC<FloatingIconProps> = ({
     </motion.div>
 );
 
+/**
+ * Interface for form validation errors
+ */
 interface FormErrors {
     newPassword: string;
     confirmPassword: string;
 }
 
+/**
+ * ResetPassword Component
+ * Handles the password reset process
+ */
 const ResetPassword = () => {
     const navigate = useNavigate();
     const { uidb64, token } = useParams();
+    
+    // Form state
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Validation state
     const [errors, setErrors] = useState<FormErrors>({
         newPassword: '',
         confirmPassword: ''
     });
     const [passwordStrength, setPasswordStrength] = useState<keyof typeof PASSWORD_STRENGTH>('WEAK');
 
-    // Calculate password strength
+    /**
+     * Calculates password strength based on various criteria
+     * @param value - The password to evaluate
+     * @returns The strength level (WEAK, MEDIUM, or STRONG)
+     */
     const calculatePasswordStrength = (value: string): keyof typeof PASSWORD_STRENGTH => {
         let score = 0;
         
@@ -97,7 +129,11 @@ const ResetPassword = () => {
         return 'STRONG';
     };
 
-    // Password validation
+    /**
+     * Validates password against security requirements
+     * @param password - The password to validate
+     * @returns Error message if invalid, empty string if valid
+     */
     const validatePassword = (password: string): string => {
         if (password.length < 8) {
             return 'Password must be at least 8 characters';
@@ -117,6 +153,10 @@ const ResetPassword = () => {
         return '';
     };
 
+    /**
+     * Handles form submission
+     * Validates passwords and calls reset API
+     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 

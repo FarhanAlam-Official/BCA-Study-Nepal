@@ -1,7 +1,7 @@
 // src/components/notes/NotesList.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { notes } from '../../services/api';
+import { notes } from '../../api/core/api.core';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorDisplay from '../common/ErrorDisplay';
 import SemesterGrid from '../common/SemesterGrid';

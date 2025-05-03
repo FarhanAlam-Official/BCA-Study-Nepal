@@ -1,10 +1,24 @@
+/**
+ * OTP Verification Component
+ * 
+ * Handles email verification through OTP with features including:
+ * - 6-digit OTP input with auto-focus
+ * - Rate-limited resend functionality
+ * - Paste support for OTP
+ * - Cancellation with confirmation
+ * - Loading states and error handling
+ */
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, RefreshCw, X, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
-import authService from '../../services/authService';
+import authService from '../../services/auth/auth.service';
 import { AxiosError } from 'axios';
 
+/**
+ * Props interface for OTPVerification component
+ */
 interface OTPVerificationProps {
   email: string;
   onVerificationSuccess: () => void;
@@ -13,12 +27,18 @@ interface OTPVerificationProps {
   isLoading: boolean;
 }
 
+/**
+ * Interface for API error response data
+ */
 interface ErrorResponseData {
   message?: string;
   detail?: string;
   [key: string]: unknown;
 }
 
+/**
+ * Animation variants for form transitions
+ */
 const formVariants = {
   enter: {
     x: 100,
@@ -36,6 +56,10 @@ const formVariants = {
   }
 };
 
+/**
+ * OTPVerification Component
+ * Handles the OTP verification process for email confirmation
+ */
 const OTPVerification: React.FC<OTPVerificationProps> = ({
   email,
   onVerificationSuccess,
@@ -43,6 +67,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   onCancel,
   isLoading: isLoadingProp
 }) => {
+  // Form state
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [resendCountdown, setResendCountdown] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -50,7 +75,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
-  // Remove debug logging of OTP state
+  /**
+   * Countdown timer for resend functionality
+   * Enables resend button after countdown reaches 0
+   */
   useEffect(() => {
     if (resendCountdown > 0) {
       const timer = setTimeout(() => {
@@ -62,7 +90,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
   }, [resendCountdown]);
 
-  // Handle OTP input
+  /**
+   * Handles OTP input changes
+   * Validates input and manages auto-focus
+   */
   const handleOTPChange = (index: number, value: string) => {
     if (value.length > 1) {
       value = value[0];
@@ -83,7 +114,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
   };
 
-  // Handle backspace
+  /**
+   * Handles backspace key for OTP input
+   * Manages focus when deleting digits
+   */
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
@@ -91,7 +125,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
   };
 
-  // Handle paste
+  /**
+   * Handles paste event for OTP input
+   * Validates and distributes pasted digits
+   */
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').slice(0, 6);
@@ -104,9 +141,11 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setOtp(newOtp);
   };
 
-  // Handle OTP verification
+  /**
+   * Handles OTP verification
+   * Validates and submits OTP to backend
+   */
   const handleVerify = async () => {
-    // Don't proceed if already loading from props
     if (isLoadingProp) return;
     
     const otpString = otp.join('');
@@ -116,23 +155,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     }
 
     try {
-      // Set loading state while verifying
       setIsLoading(true);
-      
-      // Remove detailed logging of sensitive data like OTP
-      
-      // Call the backend API to verify the OTP
       await authService.verifyOTP(email, otpString);
-      
-      // Keep this log but don't log full response details in production
-      console.error('OTP verification successful for email:', email);
-      
-      // Call the callback to complete registration
       await onVerificationSuccess();
     } catch (error: unknown) {
-      console.error('OTP verification failed:', error);
-      
-      // Extract the error message from the response
       const axiosError = error as AxiosError<ErrorResponseData>;
       const errorData = axiosError.response?.data;
       const errorMessage = 
@@ -142,75 +168,65 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
       
       toast.error(errorMessage);
     } finally {
-      // Reset loading state
       setIsLoading(false);
     }
   };
 
-  // Handle resend OTP
+  /**
+   * Handles OTP resend request
+   * Manages rate limiting and loading states
+   */
   const handleResend = async () => {
-    // Don't proceed if already loading from props or can't resend yet
     if (isLoadingProp || !canResend) return;
     
     try {
-      // Set loading state
       setIsLoading(true);
-      
-      // Call API to resend OTP
       await onResendOTP();
-      
-      // Reset countdown and disable resend button
       setResendCountdown(30);
       setCanResend(false);
-      
-      // Show success message
       toast.success('A new verification code has been sent to your email');
     } catch (error: unknown) {
-      // Extract error message if available, or use default
       const errorMessage = error instanceof Error 
         ? error.message 
         : 'Failed to resend verification code. Please try again.';
       toast.error(errorMessage);
-      console.error('Failed to resend OTP for email:', email);
     } finally {
-      // Reset loading state
       setIsLoading(false);
     }
   };
   
-  // Handle cancel registration
+  /**
+   * Initiates cancel confirmation flow
+   */
   const handleCancel = async () => {
     if (isLoadingProp || isLoading) return;
-    
-    // Show confirmation UI instead of the browser confirm dialog
     setShowCancelConfirm(true);
   };
   
-  // Handle actual cancellation after confirmation
+  /**
+   * Handles confirmed cancellation
+   * Calls API to cancel registration
+   */
   const handleConfirmCancel = async () => {
     try {
       setIsCancelling(true);
-      
-      // Call API to cancel registration and delete user
       await authService.cancelRegistration(email);
-      
       toast.info('Registration cancelled successfully');
-      
-      // Go back to registration form
       onCancel();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error 
         ? error.message 
         : 'Failed to cancel registration';
       toast.error(errorMessage);
-      console.error('Registration cancellation error:', error);
     } finally {
       setIsCancelling(false);
       setShowCancelConfirm(false);
     }
   };
   
-  // Back to OTP verification without cancelling
+  /**
+   * Returns to OTP verification from cancel confirmation
+   */
   const handleCancelGoBack = () => {
     setShowCancelConfirm(false);
   };

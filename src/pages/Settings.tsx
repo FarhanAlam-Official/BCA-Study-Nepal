@@ -1,15 +1,33 @@
+/**
+ * Settings Page Component
+ * 
+ * This component handles user settings and configurations, including:
+ * - OAuth integrations (Gmail)
+ * - Account settings
+ * - Status messages for OAuth operations
+ */
+
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+/**
+ * Interface for OAuth operation status
+ * Tracks the success/failure state and associated messages
+ */
 interface OAuthStatus {
   status: 'success' | 'error' | null;
   message: string | null;
 }
 
+/**
+ * Settings Component
+ * Manages and displays user settings and configuration options
+ */
 const Settings = () => {
   const [searchParams] = useSearchParams();
   const [oauthStatus, setOAuthStatus] = useState<OAuthStatus>({ status: null, message: null });
 
+  // Effect to handle OAuth callback responses
   useEffect(() => {
     const oauth = searchParams.get('oauth');
     const reason = searchParams.get('reason');
@@ -31,7 +49,7 @@ const Settings = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Settings</h1>
 
-      {/* OAuth Status Messages */}
+      {/* OAuth Status Messages - Display success/error notifications */}
       {oauthStatus.status === 'success' && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6">
           <strong className="font-bold">Success! </strong>
@@ -46,7 +64,7 @@ const Settings = () => {
         </div>
       )}
 
-      {/* Settings Sections */}
+      {/* Email Integration Section */}
       <div className="bg-white shadow rounded-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Email Settings</h2>
         <div className="space-y-4">
@@ -65,7 +83,7 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Additional Settings Sections */}
+      {/* Account Settings Section - Placeholder for future settings */}
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
         <div className="space-y-4">

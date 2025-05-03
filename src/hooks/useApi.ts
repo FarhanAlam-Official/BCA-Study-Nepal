@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from '../api/core/api.core';
 
-interface UseApiOptions {
-  onSuccess?: (data: any) => void;
+interface UseApiOptions<T> {
+  onSuccess?: (data: T) => void;
   onError?: (error: AxiosError) => void;
 }
 
-export const useApi = <T>(url: string, options: UseApiOptions = {}) => {
+export const useApi = <T>(url: string, options: UseApiOptions<T> = {}) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AxiosError | null>(null);
@@ -14,7 +15,7 @@ export const useApi = <T>(url: string, options: UseApiOptions = {}) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(url);
+        const response = await api.get(url);
         setData(response.data);
         options.onSuccess?.(response.data);
       } catch (err) {
@@ -27,7 +28,7 @@ export const useApi = <T>(url: string, options: UseApiOptions = {}) => {
     };
 
     fetchData();
-  }, [url]);
+  }, [url, options]);
 
   return { data, loading, error };
 };

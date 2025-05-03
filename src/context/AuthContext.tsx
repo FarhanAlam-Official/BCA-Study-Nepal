@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authService, { LoginData, RegisterData } from '../services/authService';
+import authService, { LoginData, RegisterData } from '../services/auth/auth.service';
 
 interface User {
   id: number;

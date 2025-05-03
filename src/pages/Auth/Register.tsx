@@ -1,3 +1,15 @@
+/**
+ * Registration Page Component
+ * 
+ * Handles user registration with features including:
+ * - Form validation
+ * - Password strength checking
+ * - OTP verification
+ * - Social login options
+ * - Form persistence
+ * - Rate limiting for submissions
+ */
+
 import { useState, useEffect } from 'react';
 import { FaGoogle, FaGithub, FaLinkedinIn } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -6,21 +18,23 @@ import { motion, AnimatePresence, AnimationProps } from 'framer-motion';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../../hooks/useAuth';
-import { RegisterData } from '../../services/authService';
-import authService from '../../services/authService';
+import { RegisterData } from '../../services/auth/auth.service';
+import authService from '../../services/auth/auth.service';
 import OTPVerification from './OTPVerification';
 
 // Constants for rate limiting
 const SUBMIT_COOLDOWN = 2000; // 2 seconds cooldown between submissions
 
-// Password strength levels
+// Password strength levels with corresponding styles
 const PASSWORD_STRENGTH = {
   WEAK: { label: 'Weak', color: 'text-red-500 border-red-500' },
   MEDIUM: { label: 'Medium', color: 'text-yellow-500 border-yellow-500' },
   STRONG: { label: 'Strong', color: 'text-green-500 border-green-500' }
 };
 
-// TypeScript interface for the FloatingIcon component props
+/**
+ * Props interface for the FloatingIcon component
+ */
 interface FloatingIconProps {
     Icon: React.ElementType;
     className: string;
@@ -51,7 +65,10 @@ const FloatingIcon: React.FC<FloatingIconProps> = ({
     </motion.div>
 );
 
-// Animation variants for the panels
+/**
+ * Animation variants for the sliding panels
+ * Defines enter, center, and exit states with spring animations
+ */
 const panelVariants = {
   enter: {
     x: "100%",
@@ -112,6 +129,10 @@ const panelVariants = {
   }
 };
 
+/**
+ * Animation variants for the form elements
+ * Defines smooth transitions for form visibility
+ */
 const formVariants = {
   enter: {
     x: 100,
@@ -129,13 +150,21 @@ const formVariants = {
   }
 };
 
+/**
+ * Register Component
+ * Main registration form component with form handling and validation
+ */
 const Register = () => {
   const { error, success, isLoading, resetMessages } = useAuth();
+  
+  // Form state
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
@@ -143,13 +172,16 @@ const Register = () => {
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [registrationData, setRegistrationData] = useState<RegisterData | null>(null);
 
-  // Validation states
+  // Validation state
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
 
-  // Clear form fields
+  /**
+   * Clears all form fields and validation states
+   * Also removes persisted form data from localStorage
+   */
   const clearForm = () => {
     setUsername('');
     setName('');
@@ -168,15 +200,14 @@ const Register = () => {
     localStorage.removeItem('registrationForm');
   };
 
-  // Clear auth messages on component mount
+  // Clear auth messages when component mounts
   useEffect(() => {
     resetMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Form persistence
+  // Load persisted form data from localStorage
   useEffect(() => {
-    // Load saved form data from localStorage
     const savedForm = localStorage.getItem('registrationForm');
     if (savedForm) {
       const { username, name, email } = JSON.parse(savedForm);
@@ -192,7 +223,7 @@ const Register = () => {
     localStorage.setItem('registrationForm', JSON.stringify(formData));
   }, [username, name, email]);
 
-  // Handle success state
+  // Handle successful registration
   useEffect(() => {
     if (success) {
       clearForm();
@@ -207,7 +238,11 @@ const Register = () => {
     }
   }, [error]);
 
-  // Calculate password strength
+  /**
+   * Calculates password strength based on various criteria
+   * @param value - The password to evaluate
+   * @returns The strength level (WEAK, MEDIUM, or STRONG)
+   */
   const calculatePasswordStrength = (value: string): keyof typeof PASSWORD_STRENGTH => {
     let score = 0;
     
@@ -226,7 +261,11 @@ const Register = () => {
     return 'STRONG';
   };
 
-  // Validate username as user types
+  /**
+   * Validates username format and availability
+   * @param value - The username to validate
+   * @returns Error message if invalid, null if valid
+   */
   const validateUsername = (value: string) => {
     setUsernameError(null);
     if (!value.trim()) {
@@ -248,7 +287,11 @@ const Register = () => {
     return true;
   };
 
-  // Validate email as user types
+  /**
+   * Validates email format
+   * @param value - The email to validate
+   * @returns Error message if invalid, null if valid
+   */
   const validateEmail = (value: string) => {
     setEmailError(null);
     if (!value.trim()) {
@@ -266,7 +309,11 @@ const Register = () => {
     return true;
   };
 
-  // Validate password as user types
+  /**
+   * Validates password strength and requirements
+   * @param value - The password to validate
+   * @returns Error message if invalid, null if valid
+   */
   const validatePassword = (value: string) => {
     setPasswordError(null);
     if (!value.trim()) {
@@ -311,7 +358,12 @@ const Register = () => {
     return true;
   };
 
-  // Validate confirm password
+  /**
+   * Validates that confirm password matches the password
+   * @param confirmValue - The confirm password value
+   * @param passwordValue - The original password value
+   * @returns Error message if not matching, null if valid
+   */
   const validateConfirmPassword = (confirmValue: string, passwordValue: string) => {
     setConfirmPasswordError(null);
     if (!confirmValue) {
@@ -327,18 +379,27 @@ const Register = () => {
     return true;
   };
 
+  /**
+   * Handles username input changes with validation
+   */
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUsername(value);
     validateUsername(value);
   };
 
+  /**
+   * Handles email input changes with validation
+   */
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
     validateEmail(value);
   };
 
+  /**
+   * Handles password input changes with validation and strength calculation
+   */
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
@@ -350,12 +411,19 @@ const Register = () => {
     }
   };
 
+  /**
+   * Handles confirm password input changes with validation
+   */
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setConfirmPassword(value);
     validateConfirmPassword(value, password);
   };
 
+  /**
+   * Handles successful OTP verification
+   * Completes the registration process and redirects user
+   */
   const handleVerificationSuccess = async () => {
     if (!registrationData) return;
     
@@ -375,40 +443,45 @@ const Register = () => {
       // Reset success message to prevent it from showing again
       resetMessages();
       
-      // Redirect to login page or dashboard
-      // You might want to add a redirect here if needed
-      
     } catch {
-      console.error('Account verification finalization failed');
       toast.error('There was a problem completing your registration. Please try again.');
     }
   };
 
+  /**
+   * Handles cancellation of registration process
+   * Cleans up form data and resets states
+   */
   const handleCancelRegistration = () => {
-    // Reset the OTP verification view and go back to registration form
     setShowOTPVerification(false);
-    
-    // Optional: Clear the stored registration data
     setRegistrationData(null);
-    
-    // Reset success message
     resetMessages();
-    
-    // Do not clear the form so the user can fix any issues and try again
     toast.info('Registration cancelled. You can update your information and try again.');
   };
 
+  /**
+   * Handles OTP resend request
+   * Implements rate limiting to prevent abuse
+   */
   const handleResendOTP = async () => {
-    if (!registrationData?.email) return;
+    if (!registrationData?.email) {
+      toast.error('No email address found. Please start the registration process again.');
+      return;
+    }
     
     try {
       await authService.resendOTP(registrationData.email);
+      toast.info('Verification code has been resent to your email.');
     } catch {
-      console.error('Failed to resend OTP');
-      toast.error('Failed to resend verification code');
+      toast.error('Failed to resend verification code. Please try again.');
     }
   };
 
+  /**
+   * Handles form submission
+   * Validates all fields and initiates registration process
+   * @param e - Form submission event
+   */
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -468,7 +541,6 @@ const Register = () => {
           data: Record<string, string[]>; 
         } 
       };
-      console.error("Registration error occurred");
 
       // Extract specific error messages if available
       if (err.response?.data) {
