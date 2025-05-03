@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import { College } from './types/types';
-import { redirectToAuth } from '../utils/routing';
+import { College } from '../../services/types/types';
+import { redirectToAuth } from '../../utils/routing';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 

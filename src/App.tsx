@@ -15,9 +15,9 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Direct imports for core components
 import Settings from './pages/Settings';
-import Login from './pages/Auth/Login';
-import ForgotPassword from './pages/Auth/ForgotPassword';
-import ResetPassword from './pages/Auth/ResetPassword';
+import Login from './pages/auth/Login';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import { lazy, Suspense } from 'react';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -46,7 +46,7 @@ const GPACalculator = lazy(() => import('./pages/tools/GPACalculator'));
 const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
 const Todo = lazy(() => import('./pages/tools/Todo'));
 const PDFViewerWrapper = lazy(() => import('./components/common/PDFViewerWrapper'));
-const Register = lazy(() => import('./pages/Auth/Register'));
+const Register = lazy(() => import('./pages/auth/Register'));
 const Profile = lazy(() => import('./pages/profile'));
 const ResourceRadar = lazy(() => import('./pages/resource-radar'));
 

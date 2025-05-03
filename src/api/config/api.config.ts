@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import authService from './authService';
-
+import authService from '../../services/auth/auth.service';
 const API_URL = 'http://localhost:8000/api';
 
 const apiClient = axios.create({
