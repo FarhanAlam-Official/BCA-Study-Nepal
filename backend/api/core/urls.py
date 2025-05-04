@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/colleges/', include('api.apps.colleges.urls')),
     path('api/todos/', include('api.apps.todos.urls')),
     path('api/resource-radar/', include('api.apps.resource_radar.urls')),
+    path('api/syllabus/', include('api.apps.syllabus.urls')),
     
     # Search endpoint
     path('api/search/', search, name='search'),

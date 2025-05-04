@@ -5,13 +5,16 @@ from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    program_name = serializers.CharField(source='program.name', read_only=True)
+    
     class Meta:
         model = User
         fields = (
             'id', 'username', 'email', 'first_name', 'last_name', 
             'is_verified', 'phone_number', 'college', 'semester',
-            'profile_picture', 'facebook_url', 'twitter_url', 
-            'linkedin_url', 'github_url', 'bio', 'interests', 'skills'
+            'program', 'program_name', 'profile_picture', 'facebook_url', 
+            'twitter_url', 'linkedin_url', 'github_url', 'bio', 
+            'interests', 'skills'
         )
         read_only_fields = ('id', 'is_verified', 'email', 'username')
 

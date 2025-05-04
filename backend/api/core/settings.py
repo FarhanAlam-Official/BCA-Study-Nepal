@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'api.apps.colleges',
     'api.apps.todos.apps.TodosConfig',
     'api.apps.resource_radar.apps.ResourceRadarConfig',  # Added Resource Radar app
+    'api.apps.syllabus.apps.SyllabusConfig',  # Added Syllabus app
 ]
 
 MIDDLEWARE = [
