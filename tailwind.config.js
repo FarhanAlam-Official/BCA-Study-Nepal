@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  
   theme: {
     extend: {
       animation: {
@@ -12,6 +13,8 @@ module.exports = {
         'float-delayed': 'float 6s ease-in-out infinite 2s',
         'float-slow-delayed': 'float 8s ease-in-out infinite 4s',
         'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'animate-float': 'float 6s ease-in-out infinite',
+        'animate-blink': 'blink 1s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -19,8 +22,8 @@ module.exports = {
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         float: {
-          '0%, 100%': { transform: 'translateY(0) scale(1)' },
-          '50%': { transform: 'translateY(-20px) scale(1.05)' },
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
         },
         ping: {
           '75%, 100%': {
@@ -28,7 +31,12 @@ module.exports = {
             opacity: '0',
           },
         },
+        blink: {
+          '0%, 100%': { opacity: '0.1', transform: 'scale(0.95)' },
+          '50%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
+      
       transitionDelay: {
         '1000': '1000ms',
         '2000': '2000ms',
@@ -36,4 +44,5 @@ module.exports = {
     },
   },
   plugins: [],
+  
 }
