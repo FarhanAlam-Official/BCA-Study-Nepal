@@ -279,6 +279,15 @@ export const collegeService = {
   delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`/api/colleges/${id}/`),
 };
 
+// Syllabus endpoints
+export const syllabus = {
+    getBySubject: (subjectId: number) => api.get(`/api/syllabus/by-subject/`, {
+        params: { subject_id: subjectId }
+    }),
+    incrementView: (syllabusId: number) => api.post(`/api/syllabus/${syllabusId}/increment_view/`),
+    download: (syllabusId: number) => api.get(`/api/syllabus/${syllabusId}/download/`)
+};
+
 // Add a test connection function
 export const testConnection = async () => {
   try {

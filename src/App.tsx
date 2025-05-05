@@ -41,7 +41,8 @@ const Contact = lazy(() => import('./pages/contact'));
 const CollegeDetail = lazy(() => import('./components/college/CollegeDetail'));
 const QuestionPapers = lazy(() => import('./pages/question-papers'));
 const QuestionPapersPapers = lazy(() => import('./pages/question-papers/papers'));
-const Syllabus = lazy(() => import('./pages/syllabus'));
+const SyllabusList = lazy(() => import('./pages/syllabus'));
+const SubjectSyllabusList = lazy(() => import('./components/syllabus/SyllabusList'));
 const GPACalculator = lazy(() => import('./pages/tools/GPACalculator'));
 const Pomodoro = lazy(() => import('./pages/tools/Pomodoro'));
 const Todo = lazy(() => import('./pages/tools/Todo'));
@@ -90,7 +91,6 @@ const AppContent: React.FC = () => {
               {/* Information Pages */}
               <Route path="/career" element={<Career />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/syllabus" element={<Syllabus />} />
               
               {/* Tool Routes */}
               <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
@@ -104,6 +104,10 @@ const AppContent: React.FC = () => {
               <Route path="/question-papers" element={<QuestionPapers />} />
               <Route path="/question-papers/:subjectId/:subjectName/papers" element={<QuestionPapersPapers />} />
               <Route path="/resource-radar" element={<ResourceRadar />} />
+              
+              {/* Syllabus Routes */}
+              <Route path="/syllabus" element={<SyllabusList />} />
+              <Route path="/syllabus/subject/:subjectId/:subjectName" element={<SubjectSyllabusList />} />
               
               {/* Authentication Routes */}
               <Route path="/auth" element={<Login />} />
