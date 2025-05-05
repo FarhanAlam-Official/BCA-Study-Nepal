@@ -104,5 +104,17 @@ export const syllabusService = {
             showError('Failed to load subjects. Please try again.');
             throw error;
         }
+    },
+
+    /**
+     * Increments the download count for a syllabus
+     * @param syllabusId - ID of the syllabus to increment downloads for
+     */
+    incrementDownload: async (syllabusId: number): Promise<void> => {
+        try {
+            await api.post(`${BASE_URL}/${syllabusId}/increment_download/`);
+        } catch (error) {
+            console.error('Failed to increment download count:', error);
+        }
     }
 }; 

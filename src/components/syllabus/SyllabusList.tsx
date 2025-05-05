@@ -34,8 +34,8 @@ const SubjectSyllabusList: React.FC = () => {
                 setError(null);
                 const data = await syllabusService.getBySubject(Number(subjectId));
                 setSyllabusList(data);
-            } catch (error: any) {
-                const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load syllabus';
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to load syllabus';
                 setError(errorMessage);
                 showError(errorMessage);
             } finally {
@@ -55,7 +55,7 @@ const SubjectSyllabusList: React.FC = () => {
         try {
             await syllabusService.incrementView(syllabus.id);
             setSelectedSyllabus(syllabus);
-        } catch (error) {
+        } catch {
             showError('Failed to view syllabus');
         }
     };
@@ -63,22 +63,37 @@ const SubjectSyllabusList: React.FC = () => {
     // Handle download action
     const handleDownload = async (syllabus: Syllabus) => {
         try {
-            const downloadUrl = await syllabusService.getDownloadUrl(syllabus.id);
-            const response = await fetch(downloadUrl);
-            if (!response.ok) throw new Error('Download failed');
+            if (!syllabus.file_url) {
+                showError('No file available for this syllabus');
+                return;
+            }
+
+            const response = await fetch(syllabus.file_url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${subjectName}_Syllabus_${syllabus.version}.pdf`;
+            link.download = `${decodeURIComponent(String(subjectName))}_Syllabus_${syllabus.version}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
+            
+            // Increment download count
+            try {
+                await syllabusService.incrementDownload(syllabus.id);
+            } catch {
+                console.warn('Failed to increment download count');
+            }
+            
             showSuccess('Syllabus downloaded successfully');
-        } catch (error) {
-            showError('Failed to download syllabus');
+        } catch (error: unknown) {
+            console.error('Download error:', error);
+            showError('Failed to download syllabus. Please try again.');
         }
     };
 
@@ -161,29 +176,26 @@ const SubjectSyllabusList: React.FC = () => {
                 variants={containerVariants}
                 className="container mx-auto px-4 py-6 max-w-7xl relative z-10"
             >
-                {/* Back button */}
-                <motion.button
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(-1)}
-                    className="group mb-6 inline-flex items-center px-6 py-2.5 text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-md hover:shadow-xl transition-all duration-200"
-                >
-                    <ArrowLeft className="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" />
-                    Back
-                </motion.button>
-
                 {/* Header */}
                 <motion.div
                     variants={itemVariants}
-                    className="mb-8 text-center space-y-3"
+                    className="mb-12 space-y-6"
                 >
-                    <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600">
+                    <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-2 text-center">
                         {decodeURIComponent(String(subjectName))}
                     </h1>
-                    <p className="text-indigo-600 text-xl font-medium">
-                        {syllabusList.length} {syllabusList.length === 1 ? 'Version' : 'Versions'} Available
-                    </p>
+                    <div className="flex items-center">
+                        <motion.button
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => navigate(-1)}
+                            className="group inline-flex items-center px-5 py-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all duration-200"
+                        >
+                            <ArrowLeft className="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" />
+                            Back
+                        </motion.button>
+                    </div>
                 </motion.div>
 
                 {/* Syllabus grid */}
@@ -202,55 +214,54 @@ const SubjectSyllabusList: React.FC = () => {
                             <motion.div
                                 key={syllabus.id}
                                 variants={itemVariants}
-                                className={`bg-white rounded-xl shadow-sm border border-purple-100/50 p-6 relative ${
-                                    syllabus.is_current ? 'ring-2 ring-purple-500' : ''
-                                }`}
+                                className={`group bg-white rounded-xl shadow-sm border border-indigo-100/50 p-6 relative 
+                                    hover:shadow-md hover:border-indigo-200 transition-all duration-300 cursor-pointer
+                                    ${syllabus.is_current ? 'ring-2 ring-indigo-500' : ''}`}
+                                onClick={() => handleView(syllabus)}
                             >
                                 {syllabus.is_current && (
-                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white px-3 py-0.5 rounded-full text-xs font-medium">
                                         Current Version
                                     </span>
                                 )}
-                                <div className="flex flex-col h-full">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                            Version {syllabus.version}
+                                
+                                <div className="flex-1">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-gray-900">
+                                            {subjectName}
                                         </h3>
-                                        <p className="text-gray-500 text-sm mb-4">
-                                            {syllabus.description || 'No description available'}
-                                        </p>
-                                        <div className="flex items-center text-sm text-gray-500 space-x-4 mb-4">
-                                            <span className="flex items-center">
-                                                <Eye className="h-4 w-4 mr-1" />
-                                                {syllabus.view_count}
+                                        <span className="text-sm font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                            Version {syllabus.version}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-600 text-sm mb-6">
+                                        {syllabus.description || 'No description available'}
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center text-sm text-gray-500 space-x-6">
+                                            <span className="flex items-center group-hover:text-indigo-600 transition-colors">
+                                                <Eye className="h-4 w-4 mr-1.5" />
+                                                {syllabus.view_count} Views
                                             </span>
-                                            <span className="flex items-center">
-                                                <Download className="h-4 w-4 mr-1" />
-                                                {syllabus.download_count}
-                                            </span>
-                                            <span className="flex items-center">
-                                                <Calendar className="h-4 w-4 mr-1" />
+                                            <span className="flex items-center group-hover:text-indigo-600 transition-colors">
+                                                <Calendar className="h-4 w-4 mr-1.5" />
                                                 {new Date(syllabus.upload_date).toLocaleDateString()}
                                             </span>
                                         </div>
-                                    </div>
-                                    <div className="flex space-x-3">
                                         <button
-                                            onClick={() => handleView(syllabus)}
-                                            className="flex-1 bg-purple-50 text-purple-600 hover:bg-purple-100 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDownload(syllabus);
+                                            }}
+                                            className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
                                         >
-                                            <Eye className="h-4 w-4 mr-2" />
-                                            View
-                                        </button>
-                                        <button
-                                            onClick={() => handleDownload(syllabus)}
-                                            className="flex-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                                        >
-                                            <Download className="h-4 w-4 mr-2" />
+                                            <Download className="h-4 w-4 mr-1.5" />
                                             Download
                                         </button>
                                     </div>
                                 </div>
+                                
+                                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-b-xl" />
                             </motion.div>
                         ))
                     )}

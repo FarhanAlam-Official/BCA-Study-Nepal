@@ -95,6 +95,15 @@ class SyllabusViewSet(viewsets.ModelViewSet):
         syllabus.increment_view_count()
         return Response({'status': 'view counted'})
 
+    @action(detail=True, methods=['post'])
+    def increment_download(self, request, pk=None):
+        """
+        Increment the download count for a syllabus
+        """
+        syllabus = self.get_object()
+        syllabus.increment_download_count()
+        return Response({'status': 'download counted'})
+
     @action(detail=True, methods=['get'], throttle_classes=[DownloadRateThrottle])
     def download(self, request, pk=None):
         syllabus = self.get_object()
@@ -103,7 +112,6 @@ class SyllabusViewSet(viewsets.ModelViewSet):
                 {'error': 'No file available'},
                 status=status.HTTP_404_NOT_FOUND
             )
-        syllabus.increment_download_count()
         return Response({'url': syllabus.file.url})
 
     @action(detail=False, methods=['get'])

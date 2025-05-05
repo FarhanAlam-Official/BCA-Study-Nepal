@@ -8,6 +8,7 @@ from django.utils import timezone
 
 class Program(models.Model):
     name = models.CharField(max_length=100)  # e.g., BCA, BIT, BSc.CSIT
+    full_name = models.CharField(max_length=255, blank=True)  # e.g., Bachelor of Computer Applications
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
     duration_years = models.PositiveIntegerField(default=4)

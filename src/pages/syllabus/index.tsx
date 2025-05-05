@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, BookOpen, GraduationCap } from 'lucide-react';
+import { ChevronRight, BookOpen, GraduationCap } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
 import { SyllabusProgram, SyllabusSubject } from '../../types/syllabus/syllabus.types';
 import SyllabusProgramList from '../../components/syllabus/SyllabusProgramList';
@@ -18,9 +18,9 @@ type ViewState = 'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS';
  * Animation configuration for page transitions
  */
 const pageTransition = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
+    initial: { opacity: 0, scale: 0.98 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.98 },
     transition: { duration: 0.2 }
 };
 
@@ -123,20 +123,6 @@ const SyllabusList: React.FC = () => {
         setViewState('SUBJECTS');
     };
 
-    // Handle navigation back
-    const handleBack = () => {
-        if (viewState === 'SUBJECTS') {
-            setViewState('SEMESTERS');
-            setSelectedSemester(null);
-        } else if (viewState === 'SEMESTERS') {
-            setViewState('PROGRAMS');
-            setSelectedProgram(null);
-            setSubjectCounts({});
-        } else {
-            navigate(-1); // Go back to previous page if on programs view
-        }
-    };
-
     // Handle breadcrumb navigation
     const handleBreadcrumbClick = (view: ViewState) => {
         switch (view) {
@@ -155,6 +141,25 @@ const SyllabusList: React.FC = () => {
                 break;
         }
     };
+
+    // Handle browser back button and gesture navigation
+    useEffect(() => {
+        const handlePopState = () => {
+            if (viewState === 'SUBJECTS') {
+                setViewState('SEMESTERS');
+                setSelectedSemester(null);
+            } else if (viewState === 'SEMESTERS') {
+                setViewState('PROGRAMS');
+                setSelectedProgram(null);
+                setSubjectCounts({});
+            } else {
+                navigate(-1); // Go back to previous page if on programs view
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [navigate, setSelectedProgram, setSelectedSemester, setSubjectCounts, setViewState, viewState]);
 
     // Get header text based on current view
     const getHeaderText = () => {
@@ -179,134 +184,133 @@ const SyllabusList: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white">
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
-                {/* Header and Navigation */}
-                <div className="mb-8">
-                    {/* Back button */}
-                    <motion.button
-                        onClick={handleBack}
-                        className="mb-6 inline-flex items-center text-gray-600 hover:text-indigo-600 transition-colors"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white px-6 py-8">
+            <div className="max-w-7xl mx-auto relative">
+                {/* Page title */}
+                <motion.h1 
+                    className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {getHeaderText()}
+                </motion.h1>
+
+                {/* Breadcrumb navigation */}
+                <nav className="flex items-center space-x-2 mb-8 text-sm">
+                    <button
+                        onClick={() => handleBreadcrumbClick('PROGRAMS')}
+                        className={`hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 transition-colors ${
+                            viewState === 'PROGRAMS' 
+                            ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 font-medium' 
+                            : 'text-gray-600'
+                        }`}
                     >
-                        <ChevronLeft className="h-5 w-5 mr-1" />
-                        <span>Back</span>
-                    </motion.button>
-
-                    {/* Breadcrumb navigation */}
-                    <nav className="flex items-center space-x-2 mb-4">
-                        <button
-                            onClick={() => handleBreadcrumbClick('PROGRAMS')}
-                            className={`hover:text-indigo-600 ${viewState === 'PROGRAMS' ? 'text-indigo-600 font-medium' : 'text-gray-600'}`}
-                        >
-                            Programs
-                        </button>
-                        {selectedProgram && (
-                            <>
-                                <ChevronRight className="h-4 w-4 text-gray-400" />
-                                <button
-                                    onClick={() => handleBreadcrumbClick('SEMESTERS')}
-                                    className={`hover:text-indigo-600 ${viewState === 'SEMESTERS' ? 'text-indigo-600 font-medium' : 'text-gray-600'}`}
-                                >
-                                    {selectedProgram.name}
-                                </button>
-                            </>
-                        )}
-                        {selectedSemester && (
-                            <>
-                                <ChevronRight className="h-4 w-4 text-gray-400" />
-                                <span className="text-indigo-600 font-medium">
-                                    Semester {selectedSemester}
-                                </span>
-                            </>
-                        )}
-                    </nav>
-
-                    {/* Page title */}
-                    <h1 className="text-4xl font-bold text-gray-900">
-                        {getHeaderText()}
-                    </h1>
-                </div>
+                        Programs
+                    </button>
+                    {selectedProgram && (
+                        <>
+                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                            <button
+                                onClick={() => handleBreadcrumbClick('SEMESTERS')}
+                                className={`hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 transition-colors ${
+                                    viewState === 'SEMESTERS' 
+                                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 font-medium' 
+                                    : 'text-gray-600'
+                                }`}
+                            >
+                                {selectedProgram.name}
+                            </button>
+                        </>
+                    )}
+                    {selectedSemester && (
+                        <>
+                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 font-medium">
+                                Semester {selectedSemester}
+                            </span>
+                        </>
+                    )}
+                </nav>
 
                 {/* Main content area */}
-                <AnimatePresence mode="wait">
-                    {viewState === 'PROGRAMS' && (
-                        <motion.div
-                            key="programs"
-                            {...pageTransition}
-                            className="bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-6"
-                        >
-                            <SyllabusProgramList onProgramSelect={handleProgramSelect} />
-                        </motion.div>
-                    )}
+                <div className="relative z-10">
+                    <AnimatePresence mode="wait">
+                        {viewState === 'PROGRAMS' && (
+                            <motion.div
+                                key="programs"
+                                {...pageTransition}
+                            >
+                                <SyllabusProgramList onProgramSelect={handleProgramSelect} />
+                            </motion.div>
+                        )}
 
-                    {viewState === 'SEMESTERS' && selectedProgram && (
-                        <motion.div
-                            key="semesters"
-                            {...pageTransition}
-                            className="bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-6"
-                        >
-                            <SemesterGrid
-                                variant="syllabus"
-                                selectedSemester={selectedSemester}
-                                onSemesterSelect={handleSemesterSelect}
-                                data={formatSemesterData(subjectCounts)}
-                            />
-                        </motion.div>
-                    )}
+                        {viewState === 'SEMESTERS' && selectedProgram && (
+                            <motion.div
+                                key="semesters"
+                                {...pageTransition}
+                            >
+                                <SemesterGrid
+                                    variant="syllabus"
+                                    selectedSemester={selectedSemester}
+                                    onSemesterSelect={handleSemesterSelect}
+                                    data={formatSemesterData(subjectCounts)}
+                                />
+                            </motion.div>
+                        )}
 
-                    {viewState === 'SUBJECTS' && selectedProgram && selectedSemester && (
-                        <motion.div
-                            key="subjects"
-                            {...pageTransition}
-                        >
-                            <SyllabusSubjectList
-                                programId={selectedProgram.id}
-                                semester={selectedSemester}
-                                isVisible={true}
-                                programName={selectedProgram.name}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        {viewState === 'SUBJECTS' && selectedProgram && selectedSemester && (
+                            <motion.div
+                                key="subjects"
+                                {...pageTransition}
+                            >
+                                <SyllabusSubjectList
+                                    programId={selectedProgram.id}
+                                    semester={selectedSemester}
+                                    isVisible={true}
+                                    programName={selectedProgram.name}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Decorative elements */}
+                <motion.div
+                    animate={{
+                        y: [0, -20, 0],
+                        rotate: [0, 5, -5, 0]
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="fixed right-[15%] top-[20%] -z-10 opacity-50"
+                >
+                    <div className="h-32 w-32 text-indigo-600/20">
+                        <BookOpen size="100%" />
+                    </div>
+                </motion.div>
+
+                <motion.div 
+                    animate={{
+                        y: [0, 20, 0],
+                        rotate: [0, -5, 5, 0]
+                    }}
+                    transition={{
+                        duration: 7,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.5
+                    }}
+                    className="fixed left-[20%] bottom-[20%] -z-10 opacity-50"
+                >
+                    <div className="h-40 w-40 text-indigo-600/20">
+                        <GraduationCap size="100%" />
+                    </div>
+                </motion.div>
             </div>
-
-            {/* Decorative elements */}
-            <motion.div
-                animate={{
-                    y: [0, -20, 0],
-                    rotate: [0, 5, -5, 0]
-                }}
-                transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                className="fixed right-[15%] top-[20%] z-0"
-            >
-                <div className="h-32 w-32 text-purple-600/10">
-                    <BookOpen size="100%" />
-                </div>
-            </motion.div>
-
-            <motion.div 
-                animate={{
-                    y: [0, 20, 0],
-                    rotate: [0, -5, 5, 0]
-                }}
-                transition={{
-                    duration: 7,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.5
-                }}
-                className="fixed left-[20%] bottom-[20%] z-0"
-            >
-                <div className="h-40 w-40 text-purple-600/10">
-                    <GraduationCap size="100%" />
-                </div>
-            </motion.div>
         </div>
     );
 };

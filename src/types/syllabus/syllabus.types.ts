@@ -8,9 +8,11 @@
  */
 export interface SyllabusProgram {
     id: number;
-    name: string;
-    code: string;
+    name: string;      // e.g., "BCA"
+    full_name: string; // e.g., "Bachelor of Computer Applications"
     description?: string;
+    duration_years: number;
+    is_active: boolean;
 }
 
 /**
