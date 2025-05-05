@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { College } from '../../types/colleges/college.types';
 import { redirectToAuth } from '../../utils/routing';
+import { NoteFilters } from '../../types/notes/notes.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -242,11 +243,32 @@ export const auth = {
 
 // Notes endpoints
 export const notes = {
-  getAll: (page = 1) => api.get('/api/notes/', { params: { page } }),
+  getAll: (page = 1, filters?: NoteFilters) => api.get('/api/notes/', { 
+    params: { 
+      page,
+      ...filters
+    } 
+  }),
   getById: (id: number) => api.get(`/api/notes/${id}/`),
   create: (data: FormData) => api.post('/api/notes/', data),
   update: (id: number, data: FormData) => api.put(`/api/notes/${id}/`, data),
   delete: (id: number) => api.delete(`/api/notes/${id}/`),
+  getPrograms: () => api.get('/api/notes/programs/'),
+  getByProgram: (programId: number, page = 1) => api.get('/api/notes/', {
+    params: {
+      program_id: programId,
+      page
+    }
+  }),
+  getProgramSubjects: (programId: number, semester?: number) => api.get('/api/notes/subjects_by_program/', {
+    params: {
+      program_id: programId,
+      semester
+    }
+  }),
+  getBySubject: (subjectId: number) => api.get('/api/notes/by-subject/', {
+    params: { subject_id: subjectId }
+  })
 };
 
 // Question Papers endpoints

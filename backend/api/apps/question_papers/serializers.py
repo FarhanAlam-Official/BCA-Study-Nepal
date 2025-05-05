@@ -2,9 +2,11 @@ from rest_framework import serializers
 from .models import Program, Subject, QuestionPaper
 
 class ProgramSerializer(serializers.ModelSerializer):
+    notes_count = serializers.IntegerField(read_only=True, default=0)
+
     class Meta:
         model = Program
-        fields = '__all__'
+        fields = ['id', 'name', 'full_name', 'slug', 'description', 'duration_years', 'is_active', 'notes_count']
 
 class QuestionPaperSerializer(serializers.ModelSerializer):
     class Meta:

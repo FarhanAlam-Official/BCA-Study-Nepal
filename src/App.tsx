@@ -50,6 +50,7 @@ const PDFViewerWrapper = lazy(() => import('./components/common/PDFViewerWrapper
 const Register = lazy(() => import('./pages/auth/Register'));
 const Profile = lazy(() => import('./pages/profile'));
 const ResourceRadar = lazy(() => import('./pages/resource-radar'));
+const SubjectNotes = lazy(() => import('./components/notes/SubjectNotes'));
 
 /**
  * HomePage Component
@@ -100,6 +101,7 @@ const AppContent: React.FC = () => {
               {/* Study Material Routes */}
               <Route path="/notes" element={<Notes />} />
               <Route path="/notes/:id" element={<Notes />} />
+              <Route path="/notes/subject/:subjectId/:subjectName" element={<SubjectNotes />} />
               <Route path="/viewer/:pdfUrl/:subject" element={<PDFViewerWrapper />} />
               <Route path="/question-papers" element={<QuestionPapers />} />
               <Route path="/question-papers/:subjectId/:subjectName/papers" element={<QuestionPapersPapers />} />

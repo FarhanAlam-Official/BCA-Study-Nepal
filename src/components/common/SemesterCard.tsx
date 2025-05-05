@@ -51,8 +51,8 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       onClick={onSelect}
       className={`
-        group relative overflow-hidden rounded-xl aspect-square cursor-pointer
-        transition-all duration-300 ease-out group min-h-[270px]
+        group relative overflow-hidden rounded-xl cursor-pointer
+        transition-all duration-300 ease-out group min-h-[250px]
         ${isSelected
           ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl shadow-indigo-500/30'
           : 'bg-white/80 hover:bg-gradient-to-br hover:from-indigo-50/90 hover:via-purple-50/90 hover:to-indigo-50/90 shadow-lg hover:shadow-indigo-500/10'
