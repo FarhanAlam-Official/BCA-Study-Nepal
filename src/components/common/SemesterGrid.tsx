@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import SemesterCard from './SemesterCard';
 
 interface SemesterGridProps {
-  variant: 'notes' | 'questionPaper';
+  variant: 'notes' | 'questionPaper' | 'syllabus';
   selectedSemester: string | number | null;
   onSemesterSelect: (semester: string | number) => void;
   data: {

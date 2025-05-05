@@ -1,14 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Code, GraduationCap, Briefcase } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Program, SemesterData } from '../../types/question-papers/question-papers.types';
-import ErrorDisplay from '../../components/common/ErrorDisplay';
+import { Program, Subject } from '../../types/question-papers/question-papers.types';
 import ProgramList from '../../components/question-papers/layout/ProgramList';
 import SemesterGrid from '../../components/common/SemesterGrid';
 import SubjectList from '../../components/question-papers/layout/SubjectList';
 import { questionPaperService } from '../../api/question-papers/question-papers.api';
-import { useSearchParams } from 'react-router-dom';
-import { showError, showSuccess } from '../../utils/notifications';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { showError } from '../../utils/notifications';
+import ErrorDisplay from '../../components/common/ErrorDisplay';
 
 /**
  * Represents the current view state of the question papers page
@@ -39,16 +39,12 @@ const pageTransition = {
  * - Loading states
  */
 const QuestionPaperList: React.FC = () => {
-  // URL and navigation state
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewState, setViewState] = useState<ViewState>('PROGRAMS');
-  
-  // Data state
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
   const [subjectCounts, setSubjectCounts] = useState<Record<number, number>>({});
-  
-  // Error state
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -60,29 +56,15 @@ const QuestionPaperList: React.FC = () => {
 
     try {
       const response = await questionPaperService.getByProgram(selectedProgram.id);
-      
-      if (!response?.semesters) {
-        throw new Error('No semester data received from server');
-      }
-
-      // Calculate subject counts for each semester
-      const counts = response.semesters.reduce((acc: Record<number, number>, sem: SemesterData) => {
-        if (sem && typeof sem.semester === 'number' && Array.isArray(sem.subjects)) {
-          acc[sem.semester] = sem.subjects.length;
-        }
-        return acc;
-      }, {});
-
+      const counts: Record<number, number> = {};
+      response.semesters.forEach((sem: { semester: number; subjects: Subject[] }) => {
+        counts[sem.semester] = sem.subjects.length;
+      });
       setSubjectCounts(counts);
       setError(null);
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to fetch semester data. Please try again later.';
-      
-      setError(errorMessage);
-      showError(errorMessage);
-      setSubjectCounts({});
+    } catch {
+      setError('Failed to load subject counts');
+      showError('Failed to load subject counts. Please try again.');
     }
   }, [selectedProgram]);
 
@@ -110,9 +92,7 @@ const QuestionPaperList: React.FC = () => {
           }
         })
         .catch(() => {
-          const errorMessage = 'Failed to load program details. Please try again.';
-          showError(errorMessage);
-          setError(errorMessage);
+          showError('Failed to load program details. Please try again.');
         });
     } else if (view) {
       setViewState(view);
@@ -144,10 +124,19 @@ const QuestionPaperList: React.FC = () => {
    * Handles program selection
    * Updates state and navigates to semester view
    */
-  const handleProgramSelect = (program: Program) => {
-    setSelectedProgram(program);
-    setViewState('SEMESTERS');
-    showSuccess(`Selected ${program.name}`);
+  const handleProgramSelect = async (program: Program) => {
+    try {
+      setSelectedProgram(program);
+      const response = await questionPaperService.getByProgram(program.id);
+      const counts: Record<number, number> = {};
+      response.semesters.forEach((sem: { semester: number; subjects: Subject[] }) => {
+        counts[sem.semester] = sem.subjects.length;
+      });
+      setSubjectCounts(counts);
+      setViewState('SEMESTERS');
+    } catch {
+      showError('Failed to load program details. Please try again.');
+    }
   };
 
   /**
@@ -170,6 +159,9 @@ const QuestionPaperList: React.FC = () => {
     } else if (viewState === 'SEMESTERS') {
       setViewState('PROGRAMS');
       setSelectedProgram(null);
+      setSubjectCounts({});
+    } else {
+      navigate(-1); // Go back to previous page if on programs view
     }
   };
 
@@ -183,6 +175,7 @@ const QuestionPaperList: React.FC = () => {
         setViewState('PROGRAMS');
         setSelectedProgram(null);
         setSelectedSemester(null);
+        setSubjectCounts({});
         break;
       case 'SEMESTERS':
         if (selectedProgram) {
@@ -202,7 +195,7 @@ const QuestionPaperList: React.FC = () => {
       case 'PROGRAMS':
         return 'Question Papers';
       case 'SEMESTERS':
-        return selectedProgram?.name || 'Select Semester';
+        return selectedProgram?.name;
       case 'SUBJECTS':
         return `Semester ${selectedSemester} Subjects`;
       default:
@@ -221,62 +214,6 @@ const QuestionPaperList: React.FC = () => {
     }));
   };
 
-  /**
-   * Renders the breadcrumb navigation
-   * Shows current location in the navigation hierarchy
-   */
-  const renderBreadcrumbs = () => {
-    return (
-      <motion.div 
-        className="flex items-center gap-2 text-sm pl-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <button
-          onClick={() => handleBreadcrumbClick('PROGRAMS')}
-          className={`
-            transition-colors font-medium
-            ${viewState === 'PROGRAMS' 
-              ? 'bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600' 
-              : 'text-indigo-600 hover:text-purple-600'
-            }
-          `}
-        >
-          Programs
-        </button>
-        {selectedProgram && (
-          <>
-            <span className="text-purple-600">
-              <ChevronRight className="w-4 h-4" />
-            </span>
-            <button
-              onClick={() => handleBreadcrumbClick('SEMESTERS')}
-              className={`
-                transition-colors font-medium
-                ${viewState === 'SEMESTERS' 
-                  ? 'bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600' 
-                  : 'text-indigo-600 hover:text-purple-600'
-                }
-              `}
-            >
-              {selectedProgram.name}
-            </button>
-            {viewState === 'SUBJECTS' && selectedSemester && (
-              <>
-                <span className="text-purple-600">
-                  <ChevronRight className="w-4 h-4" />
-                </span>
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-medium">
-                  Semester {selectedSemester}
-                </span>
-              </>
-            )}
-          </>
-        )}
-      </motion.div>
-    );
-  };
-
   // Show error state if there's an error
   if (error) {
     return (
@@ -293,90 +230,57 @@ const QuestionPaperList: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white relative overflow-hidden">
-      {/* Floating Decorative Elements */}
-      <motion.div
-        animate={{ 
-          y: [0, -30, 0],
-          x: [0, 20, 0],
-          rotate: [0, 10, -10, 0]
-        }}
-        transition={{ 
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut" 
-        }}
-        className="absolute right-[15%] top-[15%]"
-      >
-        <div className="h-28 w-28 text-indigo-600/20">
-          <Code size="100%" />
-        </div>
-      </motion.div>
-
-      <motion.div
-        animate={{ 
-          y: [0, 30, 0],
-          x: [0, -20, 0],
-          rotate: [0, -10, 10, 0]
-        }}
-        transition={{ 
-          duration: 7,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.5
-        }}
-        className="absolute left-[20%] top-[25%]"
-      >
-        <div className="h-[112px] w-[112px] text-purple-600/15">
-          <GraduationCap size="100%" />
-        </div>
-      </motion.div>
-
-      <motion.div
-        animate={{ 
-          y: [0, -20, 0],
-          x: [0, -15, 0],
-          rotate: [0, 5, -5, 0]
-        }}
-        transition={{ 
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1
-        }}
-        className="absolute right-[25%] bottom-[20%]"
-      >
-        <div className="h-[90px] w-[90px] text-indigo-600/20">
-          <Briefcase size="100%" />
-        </div>
-      </motion.div>
-
-      {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header and Navigation */}
         <div className="mb-8">
-          <div className="flex flex-col space-y-4">
-            <div className="flex items-center gap-4">
-              {viewState !== 'PROGRAMS' && (
-                <motion.button
-                  onClick={handleBack}
-                  className="p-2 rounded-lg hover:bg-white/50 active:bg-white/70
-                           transition-colors duration-150"
-                  whileTap={{ scale: 0.95 }}
+          {/* Back button */}
+          <motion.button
+            onClick={handleBack}
+            className="mb-6 inline-flex items-center text-gray-600 hover:text-indigo-600 transition-colors"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <ChevronLeft className="h-5 w-5 mr-1" />
+            <span>Back</span>
+          </motion.button>
+
+          {/* Breadcrumb navigation */}
+          <nav className="flex items-center space-x-2 mb-4">
+            <button
+              onClick={() => handleBreadcrumbClick('PROGRAMS')}
+              className={`hover:text-indigo-600 ${viewState === 'PROGRAMS' ? 'text-indigo-600 font-medium' : 'text-gray-600'}`}
+            >
+              Programs
+            </button>
+            {selectedProgram && (
+              <>
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <button
+                  onClick={() => handleBreadcrumbClick('SEMESTERS')}
+                  className={`hover:text-indigo-600 ${viewState === 'SEMESTERS' ? 'text-indigo-600 font-medium' : 'text-gray-600'}`}
                 >
-                  <ChevronLeft className="w-5 h-5 text-indigo-600" />
-                </motion.button>
-              )}
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient">
-                {getHeaderText()}
-              </h1>
-            </div>
-            
-            {viewState !== 'PROGRAMS' && renderBreadcrumbs()}
-          </div>
+                  {selectedProgram.name}
+                </button>
+              </>
+            )}
+            {selectedSemester && (
+              <>
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <span className="text-indigo-600 font-medium">
+                  Semester {selectedSemester}
+                </span>
+              </>
+            )}
+          </nav>
+
+          {/* Page title */}
+          <h1 className="text-4xl font-bold text-gray-900">
+            {getHeaderText()}
+          </h1>
         </div>
 
-        {/* Content Section with View Transitions */}
+        {/* Main content area */}
         <AnimatePresence mode="wait">
           {viewState === 'PROGRAMS' && (
             <motion.div
@@ -407,7 +311,6 @@ const QuestionPaperList: React.FC = () => {
             <motion.div
               key="subjects"
               {...pageTransition}
-              className="bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-6"
             >
               <SubjectList
                 programId={selectedProgram.id}

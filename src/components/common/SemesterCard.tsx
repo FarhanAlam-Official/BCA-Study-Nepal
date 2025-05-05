@@ -7,7 +7,7 @@ interface SemesterCardProps {
   count: number;
   isSelected?: boolean;
   onSelect: () => void;
-  variant: 'notes' | 'questionPaper';
+  variant: 'notes' | 'questionPaper' | 'syllabus';
 }
 
 const getOrdinalSuffix = (num: number): string => {
@@ -27,8 +27,8 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
   variant
 }) => {
   const isAll = semester === 'all';
-  const Icon = variant === 'notes' ? BookOpen : Book;
-  const itemLabel = variant === 'notes' ? 'Notes' : 'Question Papers';
+  const Icon = variant === 'notes' ? BookOpen : variant === 'syllabus' ? Book : FileText;
+  const itemLabel = variant === 'notes' ? 'Notes' : variant === 'syllabus' ? 'Syllabus' : 'Question Papers';
   
   const getTitle = () => {
     if (isAll) return 'All Semesters';

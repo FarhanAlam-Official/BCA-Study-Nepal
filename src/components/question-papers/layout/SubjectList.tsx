@@ -1,20 +1,18 @@
 import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Subject } from '../../../types/question-papers/question-papers.types';
-import SubjectCard from '../ui/SubjectCard';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import ErrorDisplay from '../../common/ErrorDisplay';
 import { Book } from 'lucide-react';
 import { questionPaperService } from '../../../api/question-papers/question-papers.api';
-import { QuestionPaper } from '../../../types/question-papers/question-papers.types';
 import { useNavigate } from 'react-router-dom';
 import { showError } from '../../../utils/notifications';
+import SubjectCard from '../ui/SubjectCard';
 
 interface SubjectListProps {
   programId: number;
   semester: number;
   isVisible: boolean;
-  programName: string;
 }
 
 /**
@@ -26,7 +24,6 @@ const SubjectList: React.FC<SubjectListProps> = ({
   programId,
   semester,
   isVisible,
-  programName,
 }) => {
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -44,8 +41,8 @@ const SubjectList: React.FC<SubjectListProps> = ({
         .find(sem => sem.semester === semester)?.subjects || [];
       setSubjects(semesterSubjects);
       setError(null);
-    } catch (error: Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load subjects. Please try again later.';
+    } catch {
+      const errorMessage = 'Failed to load subjects. Please try again later.';
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -100,25 +97,20 @@ const SubjectList: React.FC<SubjectListProps> = ({
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      className="space-y-8"
     >
-      {/* Header Section */}
-      <motion.div 
+      {/* Subject count */}
+      <motion.p 
         variants={itemVariants}
-        className="text-center space-y-3 max-w-3xl mx-auto"
+        className="text-center text-gray-600"
       >
-        <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600">
-          {programName} - Semester {semester}
-        </h2>
-        <p className="text-base sm:text-lg text-gray-600">
-          {subjects.length} {subjects.length === 1 ? 'Subject' : 'Subjects'} Available
-        </p>
-      </motion.div>
+        {subjects.length} {subjects.length === 1 ? 'Subject' : 'Subjects'} Available
+      </motion.p>
 
       {/* Subjects Grid */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-[1400px] mx-auto"
+        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 lg:gap-8"
       >
         {subjects.length > 0 ? (
           subjects.map((subject) => (
@@ -130,11 +122,6 @@ const SubjectList: React.FC<SubjectListProps> = ({
               <SubjectCard 
                 subject={subject} 
                 onClick={handleSubjectClick}
-                onDownload={(paper: QuestionPaper) => {
-                  if (paper.status === 'VERIFIED' && paper.file) {
-                    window.open(paper.file, '_blank');
-                  }
-                }}
               />
             </motion.div>
           ))
