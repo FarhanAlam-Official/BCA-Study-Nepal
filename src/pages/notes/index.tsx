@@ -14,7 +14,7 @@
  * - Loading states and error handling
  */
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronRight, BookOpen } from 'lucide-react';
+import { ChevronRight, BookOpen, ArrowRight, FileText } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { showError } from '../../utils/notifications';
@@ -318,50 +318,57 @@ const Notes: React.FC = () => {
                         key={subject.id}
                         variants={itemVariants}
                         onClick={() => handleSubjectClick(subject)}
-                        className="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100/50 
-                                 hover:border-indigo-300/80 shadow-lg hover:shadow-xl hover:shadow-indigo-500/10
+                        className="group relative bg-white hover:bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/20
+                                 rounded-xl border border-gray-100 hover:border-indigo-200 shadow-lg hover:shadow-xl
                                  transition-all duration-300 cursor-pointer overflow-hidden"
                       >
-                        {/* Card Visual Effects */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-purple-50/50 
-                                      opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        
                         {/* Decorative Background Elements */}
-                        <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-indigo-100/30 
-                                      rounded-full blur-2xl group-hover:bg-indigo-200/40 transition-colors duration-300" />
-                        <div className="absolute bottom-0 left-0 w-32 h-32 -ml-16 -mb-16 bg-purple-100/30 
-                                      rounded-full blur-2xl group-hover:bg-purple-200/40 transition-colors duration-300" />
+                        <div className="absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 bg-indigo-100/20 rounded-full blur-3xl group-hover:bg-indigo-200/30 transition-colors duration-300" />
+                        <div className="absolute bottom-0 left-0 w-40 h-40 -ml-20 -mb-20 bg-purple-100/20 rounded-full blur-3xl group-hover:bg-purple-200/30 transition-colors duration-300" />
                         
                         {/* Card Content */}
-                        <div className="relative p-6 flex flex-col h-full">
-                          {/* Card Header */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-indigo-100/50 rounded-lg group-hover:bg-indigo-100 
-                                          transition-colors duration-300">
-                              <BookOpen className="w-5 h-5 text-indigo-600" />
-                            </div>
-                            <div className="px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-100/50 
-                                          group-hover:bg-indigo-100 rounded-full transition-colors duration-300">
-                              Code: {subject.code}
-                            </div>
-                          </div>
-                          
-                          {/* Subject Title */}
+                        <div className="relative h-full p-6 flex flex-col">
                           <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 
-                                         transition-colors duration-300 mb-2 line-clamp-2">
-                              {subject.name}
-                            </h3>
+                            {/* Subject Code Badge */}
+                            <div className="absolute top-4 right-4">
+                              <div className="px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100/70 text-indigo-700 
+                                          group-hover:bg-indigo-100 transition-colors duration-300">
+                                {subject.code}
+                              </div>
+                            </div>
+
+                            {/* Title and Icon */}
+                            <div className="flex items-start gap-4 mb-3 pr-24">
+                              <div className="p-2 bg-indigo-50/80 rounded-lg group-hover:bg-indigo-100/80 transition-colors">
+                                <BookOpen className="w-5 h-5 text-indigo-600" />
+                              </div>
+                              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors min-h-[3.5rem] line-clamp-2">
+                                {subject.name}
+                              </h3>
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-sm text-gray-500 min-h-[2.5rem] line-clamp-2 group-hover:text-gray-600 transition-colors mb-4">
+                              Click to access all available notes for this subject
+                            </p>
                           </div>
-                          
-                          {/* Card Footer */}
-                          <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-100">
-                            <span className="text-sm font-semibold text-indigo-600">
-                              {subject.notes_count} {subject.notes_count === 1 ? 'Note' : 'Notes'}
-                            </span>
-                            <div className="flex items-center text-indigo-600 group-hover:text-indigo-700">
-                              <span className="text-sm font-medium mr-2">View Notes</span>
-                              <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+
+                          {/* Action Button */}
+                          <div className="pt-2 flex items-center justify-between border-t border-gray-100">
+                            <div className="px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-50 to-purple-50 
+                                        text-indigo-600 border border-indigo-100/50 group-hover:border-indigo-200
+                                        group-hover:from-indigo-100 group-hover:to-purple-100 group-hover:text-indigo-700
+                                        shadow-sm group-hover:shadow transition-all duration-300 flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>{subject.notes_count} {subject.notes_count === 1 ? 'Note' : 'Notes'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 transition-colors">
+                                View Notes
+                              </span>
+                              <div className="p-2 rounded-full bg-indigo-50/50 group-hover:bg-indigo-100/50 transition-all">
+                                <ArrowRight className="w-4 h-4 text-indigo-600 transform group-hover:translate-x-0.5 transition-transform" />
+                              </div>
                             </div>
                           </div>
                         </div>
