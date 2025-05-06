@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Book, ArrowRight, CheckCircle2, Download } from 'lucide-react';
-import { Subject, QuestionPaper } from '../../../types/question-papers/question-papers.types';
+import { Book, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Subject } from '../../../types/question-papers/question-papers.types';
 
 /**
  * Props for the SubjectCard component
@@ -9,7 +9,6 @@ import { Subject, QuestionPaper } from '../../../types/question-papers/question-
 interface SubjectCardProps {
   subject: Subject;
   onClick?: (subject: Subject) => void;
-  onDownload?: (paper: QuestionPaper) => void;
 }
 
 /**
@@ -19,8 +18,7 @@ interface SubjectCardProps {
  */
 const SubjectCard: React.FC<SubjectCardProps> = ({ 
   subject, 
-  onClick,
-  onDownload
+  onClick
 }) => {
   /**
    * Handles click events on the card
@@ -42,99 +40,87 @@ const SubjectCard: React.FC<SubjectCardProps> = ({
     }
   };
 
-  // Calculate paper statistics
-  const paperCount = subject.question_papers.length;
-  const verifiedPaperCount = subject.question_papers.filter(p => p.status === 'VERIFIED').length;
+  // Calculate verified papers count
+  const verifiedPapers = subject.question_papers.filter(p => p.status === 'VERIFIED').length;
+  const totalPapers = subject.question_papers.length;
 
   return (
     <motion.div
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      whileHover={{ scale: 1.01, y: -2 }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative h-[260px] bg-white hover:bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30
-                 rounded-lg border border-indigo-100/50 hover:border-indigo-200 shadow-sm hover:shadow-md
-                 transition-all duration-300 overflow-hidden group cursor-pointer"
+      className="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100/50 
+                hover:border-indigo-300/80 shadow-lg hover:shadow-xl hover:shadow-indigo-500/10
+                transition-all duration-300 cursor-pointer overflow-hidden p-6 h-[220px] flex flex-col"
       role="button"
       tabIndex={0}
       aria-label={`View question papers for ${subject.name}`}
     >
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-indigo-100/30 rounded-full blur-2xl group-hover:bg-indigo-200/40 transition-colors duration-300" />
-      <div className="absolute bottom-0 left-0 w-32 h-32 -ml-16 -mb-16 bg-purple-100/30 rounded-full blur-2xl group-hover:bg-purple-200/40 transition-colors duration-300" />
+      {/* Card Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-purple-50/50 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      {/* Decorative Blur Elements */}
+      <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-indigo-100/30 
+                    rounded-full blur-2xl group-hover:bg-indigo-200/40 transition-colors duration-300" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 -ml-16 -mb-16 bg-purple-100/30 
+                    rounded-full blur-2xl group-hover:bg-purple-200/40 transition-colors duration-300" />
 
       {/* Card Content */}
-      <div className="relative h-full p-6 flex flex-col">
+      <div className="relative z-10 flex flex-col flex-1">
         {/* Header Section */}
-        <div className="flex-none mb-auto">
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 bg-indigo-100/50 rounded-lg group-hover:bg-indigo-100 transition-colors duration-300">
-              <Book className="w-5 h-5 text-indigo-600" />
+        <div>
+          {/* First Line: Title and Code */}
+          <div className="flex items-start justify-between gap-4 mb-1">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="p-2 bg-indigo-50/80 rounded-lg group-hover:bg-indigo-100/80 transition-colors shrink-0">
+                <Book className="w-5 h-5 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight">
+                {subject.name}
+              </h3>
             </div>
-            <span className="inline-flex px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100/50 group-hover:bg-indigo-100 rounded-full transition-colors duration-300">
-              {subject.credit_hours} Credits
-            </span>
+            <div className="px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100/70 text-indigo-700 
+                          group-hover:bg-indigo-100 transition-colors duration-300 shrink-0">
+              {subject.code}
+            </div>
           </div>
 
-          <div className="space-y-2.5">
-            <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[48px]">
-              {subject.name}
-            </h3>
-            <p className="text-sm text-gray-500">
-              Code: <span className="font-medium">{subject.code}</span>
-            </p>
-          </div>
+          {/* Second Line: Verified Badge */}
+          {verifiedPapers > 0 && (
+            <div className="flex justify-end -mt-1 mb-2">
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100/70 text-green-700 
+                            group-hover:bg-green-100 transition-colors duration-300">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{verifiedPapers} Verified</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Footer Section */}
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-4">
-            {/* Total Papers Count */}
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {paperCount} {paperCount === 1 ? 'Paper' : 'Papers'}
-              </p>
-            </div>
+        {/* Description */}
+        <div className="flex-1">
+          <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors mt-2 line-clamp-3">
+            Click to access all available question papers for this subject.
+          </p>
+        </div>
 
-            {/* Verified Papers Count */}
-            <div className="flex items-center gap-1.5 bg-green-50/50 px-2.5 py-1 rounded-full">
-              <CheckCircle2 className={`w-4 h-4 ${verifiedPaperCount > 0 ? 'text-green-500' : 'text-gray-300'}`} />
-              <span className={`text-xs font-medium ${verifiedPaperCount > 0 ? 'text-green-600' : 'text-gray-400'}`}>
-                {verifiedPaperCount} Verified
-              </span>
-            </div>
+        {/* Action Button */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
+          <div className="px-3 py-1 rounded-full text-sm font-medium bg-indigo-100/70 text-indigo-700 
+                       group-hover:bg-indigo-100 transition-colors duration-300 min-w-[80px] text-center">
+            {totalPapers} Papers
           </div>
-
-          <div className="flex items-center gap-2">
-            {/* Download Button - Only show for verified papers */}
-            {verifiedPaperCount > 0 && onDownload && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click when clicking download
-                  const verifiedPaper = subject.question_papers.find(p => p.status === 'VERIFIED');
-                  if (verifiedPaper) {
-                    onDownload(verifiedPaper);
-                  }
-                }}
-                className="p-2 rounded-full bg-green-100/50 hover:bg-green-100 transition-colors duration-300"
-                aria-label="Download verified question paper"
-              >
-                <Download className="w-4 h-4 text-green-600" />
-              </motion.button>
-            )}
-
-            {/* Arrow Icon */}
-            <motion.div
-              whileHover={{ x: 3 }}
-              className="p-2 rounded-full bg-indigo-100/50 group-hover:bg-indigo-100 transition-colors duration-300"
-            >
-              <ArrowRight className="w-4 h-4 text-indigo-600" />
-            </motion.div>
-          </div>
+          <button className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/50 
+                         group-hover:bg-indigo-100/50 transition-all">
+            <span className="text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 transition-colors">
+              View Papers
+            </span>
+            <ArrowRight className="w-4 h-4 text-indigo-600 transform group-hover:translate-x-0.5 transition-transform" />
+          </button>
         </div>
       </div>
     </motion.div>

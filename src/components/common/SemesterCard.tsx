@@ -59,7 +59,7 @@ const SemesterCard: React.FC<SemesterCardProps> = ({
         }
       `}
     >
-      <div className="h-full flex flex-col p-5">
+      <div className="relative h-full p-6 flex flex-col">
         {/* Top Section */}
         <div className="mb-6">
           <div className={`
