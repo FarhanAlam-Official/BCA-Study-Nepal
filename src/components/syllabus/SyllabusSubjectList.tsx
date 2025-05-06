@@ -25,7 +25,6 @@ const SyllabusSubjectList: React.FC<SyllabusSubjectListProps> = ({
   programId,
   semester,
   isVisible,
-  programName,
 }) => {
   const [subjects, setSubjects] = React.useState<SyllabusSubject[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -99,53 +98,47 @@ const SyllabusSubjectList: React.FC<SyllabusSubjectListProps> = ({
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-8"
+      className="min-h-screen"
     >
-      {/* Subject count */}
-      <motion.p 
-        variants={itemVariants}
-        className="text-center text-gray-600"
-      >
-        {subjects.length} {subjects.length === 1 ? 'Subject' : 'Subjects'} Available
-      </motion.p>
-
       {/* Subjects Grid */}
-      <motion.div
-        variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 lg:gap-8"
-      >
-        {subjects.length > 0 ? (
-          subjects.map((subject) => (
-            <motion.div
-              key={subject.id}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <motion.div
+          variants={containerVariants}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {subjects.length > 0 ? (
+            subjects.map((subject) => (
+              <motion.div
+                key={subject.id}
+                variants={itemVariants}
+                className="h-full"
+              >
+                <SyllabusSubjectCard 
+                  subject={subject} 
+                  onClick={handleSubjectClick}
+                />
+              </motion.div>
+            ))
+          ) : (
+            <motion.div 
               variants={itemVariants}
-              className="h-full"
+              className="col-span-full text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100/50 shadow-lg"
             >
-              <SyllabusSubjectCard 
-                subject={subject} 
-                onClick={handleSubjectClick}
-              />
-            </motion.div>
-          ))
-        ) : (
-          <motion.div 
-            variants={itemVariants}
-            className="col-span-full text-center py-16 bg-white/80 rounded-xl border border-gray-100 shadow-sm"
-          >
-            <div className="max-w-sm mx-auto space-y-4">
-              <div className="p-3 bg-indigo-50 rounded-full w-fit mx-auto">
-                <Book className="w-6 h-6 text-indigo-600" />
+              <div className="max-w-sm mx-auto space-y-4">
+                <div className="p-3 bg-indigo-50 rounded-full w-fit mx-auto">
+                  <Book className="w-6 h-6 text-indigo-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  No Subjects Available
+                </h3>
+                <p className="text-gray-500 text-lg">
+                  We're currently working on adding subjects for this semester. Please check back later.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                No Subjects Available
-              </h3>
-              <p className="text-gray-500 text-lg">
-                We're currently working on adding subjects for this semester. Please check back later.
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </motion.div>
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
     </motion.div>
   );
 };
