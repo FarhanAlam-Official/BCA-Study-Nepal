@@ -16,7 +16,6 @@ import {
   Calculator,
   Clock,
   CheckSquare,
-  Calendar,
   LogIn,
   LogOut,
   Radar,
@@ -53,7 +52,6 @@ const navigation: NavItem[] = [
       { name: 'GPA Calculator', href: '/tools/gpa-calculator', icon: Calculator },
       { name: 'Pomodoro Timer', href: '/tools/pomodoro', icon: Clock },
       { name: 'Todo List', href: '/tools/todo', icon: CheckSquare },
-      { name: 'Deadline Tracker', href: '/tools/deadlines', icon: Calendar },
     ]
   },
   { name: 'Colleges', href: '/colleges', icon: School },
