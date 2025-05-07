@@ -283,25 +283,43 @@ export default function Navbar() {
               <div className="hidden sm:flex sm:items-center">
                 <Link
                   to="/profile"
-                  className="flex items-center text-gray-700 hover:text-indigo-600 focus:outline-none group"
+                  className="flex items-center text-gray-700 hover:text-indigo-600 focus:outline-none group relative"
                 >
                   {user?.profile_picture ? (
-                    <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-indigo-100 shadow-sm transition-all duration-200 group-hover:border-indigo-300 group-hover:shadow-md transform group-hover:scale-105">
-                      <img
-                        src={user.profile_picture}
-                        alt={user.username}
-                        className="h-full w-full object-cover transition-transform duration-200 will-change-transform"
-                        loading="eager"
-                      />
+                    <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-indigo-100 shadow-sm 
+                      transition-all duration-300 ease-out
+                      group-hover:border-indigo-300 group-hover:shadow-md"
+                    >
+                      <picture>
+                        <source
+                          srcSet={`${user.profile_picture} 2x`}
+                          type="image/jpeg"
+                        />
+                        <source
+                          srcSet={`${user.profile_picture} 2x`}
+                          type="image/png"
+                        />
+                        <img
+                          src={user.profile_picture}
+                          alt={user.username}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="eager"
+                          draggable="false"
+                        />
+                      </picture>
                     </div>
                   ) : (
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border-2 border-indigo-100 shadow-sm transition-all duration-200 group-hover:border-indigo-300 group-hover:shadow-md transform group-hover:scale-105">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 
+                      flex items-center justify-center border-2 border-indigo-100 shadow-sm 
+                      transition-all duration-300 ease-out transform 
+                      group-hover:scale-105 group-hover:border-indigo-300 group-hover:shadow-md"
+                    >
                       <span className="text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                         {getUserInitials(user)}
                       </span>
                     </div>
                   )}
-                  <span className="ml-2 text-sm font-medium">{user?.username || 'User'}</span>
+                  <span className="ml-2 text-sm font-medium transition-colors duration-300 ease-out">{user?.username || 'User'}</span>
                 </Link>
               </div>
             ) : (
@@ -390,16 +408,26 @@ export default function Navbar() {
                       onClick={() => setIsOpen(false)}
                     >
                       {user?.profile_picture ? (
-                        <div className="h-6 w-6 rounded-full overflow-hidden border border-indigo-100 shadow-sm">
-                          <img
-                            src={user.profile_picture}
-                            alt={user.username}
-                            className="h-full w-full object-cover will-change-transform"
-                            loading="eager"
-                          />
+                        <div className="relative h-8 w-8 rounded-full overflow-hidden border border-indigo-100 shadow-sm">
+                          <picture>
+                            <source
+                              srcSet={`${user.profile_picture} 2x`}
+                              type="image/jpeg"
+                            />
+                            <source
+                              srcSet={`${user.profile_picture} 2x`}
+                              type="image/png"
+                            />
+                            <img
+                              src={user.profile_picture}
+                              alt={user.username}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading="eager"
+                            />
+                          </picture>
                         </div>
                       ) : (
-                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border border-indigo-100">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border border-indigo-100">
                           <span className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                             {getUserInitials(user)}
                           </span>
