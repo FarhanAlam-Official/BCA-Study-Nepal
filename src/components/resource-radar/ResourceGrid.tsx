@@ -65,10 +65,26 @@ export const ResourceGrid = ({
         const favoritesArray = Array.isArray(favorites) ? favorites : favorites.results || [];
         
         // Extract and validate resources from favorites
-        data = favoritesArray
+        let filteredResources = favoritesArray
           .filter((fav: ResourceFavorite) => fav && (fav.resource || fav.id))
           .map((fav: ResourceFavorite) => fav.resource || fav)
           .filter((resource): resource is Resource => !!resource);
+
+        // Apply category filter if specified
+        if (category) {
+          filteredResources = filteredResources.filter(
+            resource => resource.category?.slug === category
+          );
+        }
+
+        // Apply tags filter if specified
+        if (tags.length > 0) {
+          filteredResources = filteredResources.filter(resource =>
+            tags.every(tag => resource.tags?.some(t => t.slug === tag))
+          );
+        }
+
+        data = filteredResources;
       } else {
         // Fetch regular resources with applied filters
         const searchTerm = currentSearch ? currentSearch.trim() : undefined;

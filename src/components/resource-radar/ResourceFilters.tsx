@@ -252,8 +252,8 @@ export const ResourceFilters = ({ onFilterChange }: ResourceFiltersProps) => {
             font-medium text-sm transition-all duration-300 
             border backdrop-blur-md sm:w-auto w-full relative group
             ${showFavorites 
-              ? 'bg-gradient-to-r from-indigo-100/90 to-indigo-50/80 text-indigo-600 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]' 
-              : 'bg-gradient-to-r from-white/80 to-white/60 text-gray-700 border-indigo-200/50 hover:border-indigo-500/70 hover:text-indigo-600 hover:shadow-[0_0_10px_rgba(99,102,241,0.3)]'}`}
+              ? 'bg-gradient-to-r from-red-100/90 to-red-50/80 text-red-600 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
+              : 'bg-gradient-to-r from-white/80 to-white/60 text-gray-700 border-red-200/50 hover:border-red-500/70 hover:text-red-600 hover:shadow-[0_0_10px_rgba(239,68,68,0.3)]'}`}
         >
           <div className="relative">
             {showFavorites ? (
