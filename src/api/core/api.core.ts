@@ -2,80 +2,94 @@ import axios, { AxiosResponse } from 'axios';
 import { College } from '../../types/colleges/college.types';
 import { redirectToAuth } from '../../utils/routing';
 import { NoteFilters } from '../../types/notes/notes.types';
+import { showError, showSuccess } from '../../utils/notifications';
 
+/**
+ * Base API URL from environment variables with fallback
+ * @constant {string}
+ */
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-console.log('API Base URL:', API_BASE_URL);
+// Remove console.log for production
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_BASE_URL);
+}
 
+/**
+ * Axios instance configured for the application
+ * Includes base configuration for headers and URL
+ */
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  // Don't include credentials by default - this causes CORS issues with wildcard origins
+  // Credentials disabled to prevent CORS issues with wildcard origins
   // withCredentials: true,
+  timeout: 15000, // 15 second timeout
 });
+
+/**
+ * List of authentication-related endpoints that should skip redirect
+ */
+const AUTH_ENDPOINTS = [
+  '/api/users/token/',
+  '/api/users/token/refresh/',
+  '/api/token/',
+  '/api/token/refresh/',
+  '/api/auth/token/',
+  '/api/auth/token/refresh/',
+  '/api/auth/login/',
+  '/api/users/login/'
+];
 
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add authorization header if token exists
     const token = localStorage.getItem('access_token');
-    console.log(`API Request to ${config.url}:`, config.data);
-    
     if (token) {
-      // Use Bearer token authentication - Django REST with JWT
       config.headers['Authorization'] = `Bearer ${token}`;
-      
-      // Comment out Token authentication since we're using JWT
-      // config.headers['Authorization'] = `Token ${token}`;
     }
     return config;
   },
-  (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
+  () => {
+    showError('Failed to prepare request');
+    return Promise.reject(new Error('Request preparation failed'));
   }
 );
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    console.log(`API Response from ${response.config.url}:`, response.data);
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error('Response error:', error.response ? {
-      url: error.config?.url,
-      status: error.response.status,
-      data: error.response.data
-    } : error);
-    
-    // Skip redirects for auth-related endpoints
-    const authEndpoints = [
-      '/api/users/token/',
-      '/api/users/token/refresh/',
-      '/api/token/',
-      '/api/token/refresh/',
-      '/api/auth/token/',
-      '/api/auth/token/refresh/',
-      '/api/auth/login/',
-      '/api/users/login/'
-    ];
-    
+    // Handle network errors
+    if (!error.response) {
+      showError('Network error. Please check your connection.');
+      return Promise.reject(error);
+    }
+
     // Handle 401 Unauthorized
-    if (error.response && error.response.status === 401 && 
-        !authEndpoints.some(endpoint => error.config.url?.includes(endpoint))) {
-      // Redirect to auth page instead of login
+    if (error.response?.status === 401 && 
+        !AUTH_ENDPOINTS.some(endpoint => error.config.url?.includes(endpoint))) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       redirectToAuth();
     }
+
+    // Handle other common errors
+    if (error.response.status === 403) {
+      showError('You do not have permission to perform this action');
+    } else if (error.response.status === 404) {
+      showError('The requested resource was not found');
+    } else if (error.response.status >= 500) {
+      showError('Server error. Please try again later');
+    }
+
     return Promise.reject(error);
   }
 );
 
-// User interfaces
+// Type definitions
 interface RegisterData {
   username: string;
   email: string;
@@ -101,69 +115,55 @@ interface ChangePasswordData {
   new_password: string;
 }
 
-// Auth endpoints
+/**
+ * Authentication related API endpoints
+ */
 export const auth = {
+  /**
+   * Register a new user
+   */
   register: (data: RegisterData) => api.post('/api/users/register/', data),
   
-  // Enhanced login function with raw fetch fallback
+  /**
+   * Enhanced login function with multiple authentication attempts
+   * Tries different credential formats and falls back to fetch if needed
+   */
   login: async (data: LoginData) => {
-    console.log('Starting login process with:', data);
-    
-    // First try all regular axios approaches
-    try {
-      // Try different credential formats since Django backends can vary
-      const formatsTried: string[] = [];
-      
-      // First try with username+password (most common)
-      if (data.username) {
-        try {
-          console.log('Trying login with username field');
-          formatsTried.push('username');
-          const response = await api.post('/api/users/token/', { 
+    const attempts = [
+      // Username-based login
+      async () => {
+        if (data.username) {
+          return await api.post('/api/users/token/', { 
             username: data.username,
             password: data.password
           });
-          return response;
-        } catch (error) {
-          console.log('Username login failed:', error);
         }
-      }
+        throw new Error('No username provided');
+      },
       
-      // Next try with email+password
-      if (data.email) {
-        try {
-          console.log('Trying login with email field');
-          formatsTried.push('email');
-          const response = await api.post('/api/users/token/', { 
+      // Email-based login
+      async () => {
+        if (data.email) {
+          return await api.post('/api/users/token/', { 
             email: data.email,
             password: data.password 
           });
-          return response;
-        } catch (error) {
-          console.log('Email login failed:', error);
         }
-      }
+        throw new Error('No email provided');
+      },
       
-      // Finally try with only the essential fields
-      try {
-        console.log('Trying login with minimal fields');
-        formatsTried.push('minimal');
-        
-        // Use email as username if username is not provided
+      // Minimal credentials login
+      async () => {
         const credentials = {
           username: data.username || data.email,
           password: data.password
         };
-        
-        const response = await api.post('/api/users/token/', credentials);
-        return response;
-      } catch (axiosError) {
-        console.log('All axios login attempts failed, trying direct fetch', axiosError);
-        
-        // If all axios approaches fail, try with raw fetch
-        // This bypasses axios interceptors which might be interfering
-        const baseUrl = API_BASE_URL;
-        const fetchResponse = await fetch(`${baseUrl}/api/users/token/`, {
+        return await api.post('/api/users/token/', credentials);
+      },
+      
+      // Fallback to fetch API
+      async () => {
+        const fetchResponse = await fetch(`${API_BASE_URL}/api/users/token/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -176,14 +176,11 @@ export const auth = {
         
         if (!fetchResponse.ok) {
           const errorText = await fetchResponse.text();
-          console.error('Fetch login failed:', errorText);
           throw new Error(`Login failed: ${fetchResponse.status} ${errorText}`);
         }
         
         const tokenData = await fetchResponse.json();
-        console.log('Fetch login succeeded:', tokenData);
         
-        // Convert to axios response format
         return {
           data: tokenData,
           status: fetchResponse.status,
@@ -192,43 +189,52 @@ export const auth = {
           config: {},
         } as AxiosResponse;
       }
-    } catch (error) {
-      console.error(`All login formats failed. Last error:`, error);
-      throw error;
+    ];
+
+    for (const attempt of attempts) {
+      try {
+        return await attempt();
+      } catch {
+        // Continue to next attempt
+        continue;
+      }
     }
+    
+    throw new Error('All login attempts failed');
   },
   
   refreshToken: (refresh: string) => api.post('/api/users/token/refresh/', { refresh }),
   logout: () => api.post('/api/users/logout/'),
   
-  // getCurrentUser now tries both Token and Bearer auth if needed
+  /**
+   * Get current user information with fallback auth methods
+   * Tries Bearer token first, then falls back to Token auth
+   */
   getCurrentUser: async () => {
     const token = localStorage.getItem('access_token');
-    if (!token) return Promise.reject(new Error('No token found'));
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
     
     try {
-      // Try with Bearer auth for JWT first
-      const response = await axios.get(`${API_BASE_URL}/api/users/me/`, {
+      // Try Bearer auth (JWT)
+      return await axios.get(`${API_BASE_URL}/api/users/me/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         }
       });
-      return response;
-    } catch (error) {
-      console.log('Bearer auth failed, trying Token auth:', error);
-      
-      // If Bearer auth fails, try Token auth
+    } catch {
+      // Fallback to Token auth
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/users/me/`, {
+        return await axios.get(`${API_BASE_URL}/api/users/me/`, {
           headers: {
             'Authorization': `Token ${token}`,
             'Content-Type': 'application/json',
           }
         });
-        return response;
       } catch (tokenError) {
-        console.error('Both auth methods failed:', tokenError);
+        showError('Failed to get user information');
         throw tokenError;
       }
     }
@@ -241,13 +247,12 @@ export const auth = {
   resendVerification: () => api.post('/api/users/resend-verification/'),
 };
 
-// Notes endpoints
+/**
+ * Notes-related API endpoints
+ */
 export const notes = {
   getAll: (page = 1, filters?: NoteFilters) => api.get('/api/notes/', { 
-    params: { 
-      page,
-      ...filters
-    } 
+    params: { page, ...filters } 
   }),
   getById: (id: number) => api.get(`/api/notes/${id}/`),
   create: (data: FormData) => api.post('/api/notes/', data),
@@ -255,35 +260,33 @@ export const notes = {
   delete: (id: number) => api.delete(`/api/notes/${id}/`),
   getPrograms: () => api.get('/api/notes/programs/'),
   getByProgram: (programId: number, page = 1) => api.get('/api/notes/', {
-    params: {
-      program_id: programId,
-      page
-    }
+    params: { program_id: programId, page }
   }),
   getProgramSubjects: (programId: number, semester?: number) => api.get('/api/notes/subjects_by_program/', {
-    params: {
-      program_id: programId,
-      semester
-    }
+    params: { program_id: programId, semester }
   }),
   getBySubject: (subjectId: number) => api.get('/api/notes/by-subject/', {
     params: { subject_id: subjectId }
   })
 };
 
-// Question Papers endpoints
+/**
+ * Question Papers API endpoints
+ */
 export const questionPapers = {
-    getAll: () => api.get('/api/question-papers/papers/'),
-    getById: (id: number) => api.get(`/api/question-papers/papers/${id}/`),
-    getQuestionPapers: (id: number) => api.get(`/api/question-papers/papers/${id}/papers/`),
-    getPrograms: () => api.get('/api/question-papers/programs/'),
-    getByProgram: (programId: number) => api.get(`/api/question-papers/programs/${programId}/subjects/`),
-    getBySubject: (subjectId: number, year?: number) => api.get(`/api/question-papers/papers/by-subject/`, {
-        params: { subject_id: subjectId, year }
-    })
+  getAll: () => api.get('/api/question-papers/papers/'),
+  getById: (id: number) => api.get(`/api/question-papers/papers/${id}/`),
+  getQuestionPapers: (id: number) => api.get(`/api/question-papers/papers/${id}/papers/`),
+  getPrograms: () => api.get('/api/question-papers/programs/'),
+  getByProgram: (programId: number) => api.get(`/api/question-papers/programs/${programId}/subjects/`),
+  getBySubject: (subjectId: number, year?: number) => api.get(`/api/question-papers/papers/by-subject/`, {
+    params: { subject_id: subjectId, year }
+  })
 };
 
-// Resources endpoints
+/**
+ * Resources API endpoints
+ */
 export const resources = {
   getAll: () => api.get('/api/resources/'),
   getById: (id: number) => api.get(`/api/resources/${id}/`),
@@ -292,6 +295,9 @@ export const resources = {
   delete: (id: number) => api.delete(`/api/resources/${id}/`),
 };
 
+/**
+ * College management API endpoints
+ */
 export const collegeService = {
   getAll: (): Promise<AxiosResponse<College[]>> => api.get('/api/colleges/'),
   getById: (id: string): Promise<AxiosResponse<College>> => api.get(`/api/colleges/${id}/`),
@@ -301,46 +307,48 @@ export const collegeService = {
   delete: (id: string): Promise<AxiosResponse<void>> => api.delete(`/api/colleges/${id}/`),
 };
 
-// Syllabus endpoints
+/**
+ * Syllabus API endpoints
+ */
 export const syllabus = {
-    getBySubject: (subjectId: number) => api.get(`/api/syllabus/by-subject/`, {
-        params: { subject_id: subjectId }
-    }),
-    incrementView: (syllabusId: number) => api.post(`/api/syllabus/${syllabusId}/increment_view/`),
-    download: (syllabusId: number) => api.get(`/api/syllabus/${syllabusId}/download/`)
+  getBySubject: (subjectId: number) => api.get(`/api/syllabus/by-subject/`, {
+    params: { subject_id: subjectId }
+  }),
+  incrementView: (syllabusId: number) => api.post(`/api/syllabus/${syllabusId}/increment_view/`),
+  download: (syllabusId: number) => api.get(`/api/syllabus/${syllabusId}/download/`)
 };
 
-// Add a test connection function
+/**
+ * Test API connectivity
+ * @returns {Promise<{success: boolean, data?: any, error?: any}>}
+ */
 export const testConnection = async () => {
   try {
-    // Try a simple GET request to check if the API is available
     const response = await api.get('/');
-    console.log('API connection test successful:', response.data);
+    showSuccess('API connection successful');
     return { success: true, data: response.data };
-  } catch (error) {
-    console.error('API connection test failed:', error);
-    return { success: false, error };
+  } catch {
+    showError('Failed to connect to API');
+    return { success: false, error: 'Connection failed' };
   }
 };
 
-// Function to discover available endpoints
+/**
+ * Discover available API endpoints
+ * Attempts to fetch API documentation from root and fallback endpoints
+ * @returns {Promise<{success: boolean, endpoints?: any, error?: any}>}
+ */
 export const discoverEndpoints = async () => {
   try {
-    // Try to get the API root to discover endpoints
     const response = await api.get('/');
-    console.log('Available API endpoints:', response.data);
     return { success: true, endpoints: response.data };
-  } catch (error) {
-    console.error('Failed to discover API endpoints:', error);
-    
-    // Try alternatives
+  } catch {
     try {
       const apiResponse = await api.get('/api/');
-      console.log('Alternative API endpoints found:', apiResponse.data);
       return { success: true, endpoints: apiResponse.data };
-    } catch (altError) {
-      console.error('Alternative API discovery failed:', altError);
-      return { success: false, error: altError };
+    } catch {
+      showError('Failed to discover API endpoints');
+      return { success: false, error: 'Failed to discover endpoints' };
     }
   }
 };
