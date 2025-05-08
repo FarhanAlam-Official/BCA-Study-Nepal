@@ -17,30 +17,54 @@ interface NoteProgramListProps {
   onProgramSelect: (program: NotesProgram) => void;
 }
 
+interface ErrorState {
+  message: string;
+  details?: string;
+  severity?: 'error' | 'warning' | 'info';
+}
+
 const NoteProgramList: React.FC<NoteProgramListProps> = ({ onProgramSelect }) => {
   const [programs, setPrograms] = useState<NotesProgram[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorState | null>(null);
+
+  const fetchPrograms = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await notes.getPrograms();
+      
+      if (Array.isArray(response.data)) {
+        if (response.data.length === 0) {
+          setError({
+            message: 'No programs available at the moment',
+            details: 'Our team is working on adding new programs. Please check back later.',
+            severity: 'info'
+          });
+        } else {
+          setPrograms(response.data);
+        }
+      } else {
+        setError({
+          message: 'Invalid response format from server',
+          details: 'The server response was not in the expected format. Please try again or contact support if the issue persists.',
+          severity: 'error'
+        });
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError({
+        message: 'Failed to load programs',
+        details: `Error details: ${errorMessage}. Please try again or contact support if the issue persists.`,
+        severity: 'error'
+      });
+      showError('Failed to load programs. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        setLoading(true);
-        const response = await notes.getPrograms();
-        
-        if (Array.isArray(response.data)) {
-          setPrograms(response.data);
-        } else {
-          setError('Invalid response format from server');
-        }
-      } catch {
-        setError('Failed to load programs. Please try again later.');
-        showError('Failed to load programs. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPrograms();
   }, []);
 
@@ -68,7 +92,20 @@ const NoteProgramList: React.FC<NoteProgramListProps> = ({ onProgramSelect }) =>
   };
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorDisplay message={error} />;
+  
+  if (error) {
+    return (
+      <ErrorDisplay 
+        message={error.message}
+        details={error.details}
+        severity={error.severity}
+        onRetry={fetchPrograms}
+        onDismiss={() => setError(null)}
+        autoDismiss={error.severity === 'info'}
+        autoDismissDuration={6000}
+      />
+    );
+  }
 
   return (
     <motion.div
