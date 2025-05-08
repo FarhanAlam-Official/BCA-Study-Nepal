@@ -1,3 +1,9 @@
+/**
+ * @file SyllabusList.tsx
+ * @description A component that displays a list of syllabus versions for a specific subject
+ * with options to view and download PDFs.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,7 +16,20 @@ import LoadingSpinner from '../common/LoadingSpinner';
 
 /**
  * SubjectSyllabusList Component
- * Displays a list of syllabus versions for a specific subject with options to view and download.
+ * Displays a list of syllabus versions for a specific subject with interactive features.
+ * 
+ * Features:
+ * - PDF viewing and downloading capabilities
+ * - Version tracking and management
+ * - View count tracking
+ * - Download count tracking
+ * - Error handling and notifications
+ * - Loading states
+ * - Animated UI elements
+ * - Responsive layout
+ * 
+ * @component
+ * @returns {React.ReactElement} Rendered component
  */
 const SubjectSyllabusList: React.FC = () => {
     const { subjectId, subjectName } = useParams();
@@ -20,7 +39,10 @@ const SubjectSyllabusList: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch syllabus data
+    /**
+     * Fetches syllabus data for the current subject
+     * Handles loading states and error scenarios
+     */
     useEffect(() => {
         const fetchSyllabus = async () => {
             if (!subjectId) {
@@ -46,7 +68,11 @@ const SubjectSyllabusList: React.FC = () => {
         fetchSyllabus();
     }, [subjectId]);
 
-    // Handle view action
+    /**
+     * Handles the view action for a syllabus
+     * Increments view count and displays PDF viewer
+     * @param {Syllabus} syllabus - The syllabus to view
+     */
     const handleView = async (syllabus: Syllabus) => {
         if (!syllabus.file_url) {
             showError('No file available for this syllabus');
@@ -60,7 +86,11 @@ const SubjectSyllabusList: React.FC = () => {
         }
     };
 
-    // Handle download action
+    /**
+     * Handles the download action for a syllabus
+     * Downloads the PDF file and increments download count
+     * @param {Syllabus} syllabus - The syllabus to download
+     */
     const handleDownload = async (syllabus: Syllabus) => {
         try {
             if (!syllabus.file_url) {
@@ -86,8 +116,9 @@ const SubjectSyllabusList: React.FC = () => {
             // Increment download count
             try {
                 await syllabusService.incrementDownload(syllabus.id);
-            } catch {
-                console.warn('Failed to increment download count');
+            } catch (err) {
+                // Log error but don't show to user as download was successful
+                console.warn('Failed to increment download count:', err);
             }
             
             showSuccess('Syllabus downloaded successfully');

@@ -1,3 +1,9 @@
+/**
+ * @file SyllabusProgramList.tsx
+ * @description A component that displays a grid of available academic programs with their details.
+ * Features smooth animations, error handling, and loading states.
+ */
+
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SyllabusProgram } from '../../types/syllabus/syllabus.types';
@@ -7,14 +13,25 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorDisplay from '../common/ErrorDisplay';
 import { showError } from '../../utils/notifications';
 
+/**
+ * Props interface for the SyllabusProgramList component
+ * @interface SyllabusProgramListProps
+ */
 interface SyllabusProgramListProps {
   /** Callback function triggered when a program is selected */
   onProgramSelect: (program: SyllabusProgram) => void;
 }
 
+/**
+ * Interface for error state management
+ * @interface ErrorState
+ */
 interface ErrorState {
+  /** Main error message */
   message: string;
+  /** Additional error details */
   details?: string;
+  /** Error severity level */
   severity?: 'error' | 'warning' | 'info';
 }
 

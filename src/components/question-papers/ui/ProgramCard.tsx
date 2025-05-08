@@ -38,7 +38,6 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
     description,
     duration_years,
     total_semesters,
-    student_count,
     isSelected,
     onSelect,
 }) => {

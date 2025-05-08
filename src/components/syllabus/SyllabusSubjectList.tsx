@@ -1,3 +1,9 @@
+/**
+ * @file SyllabusSubjectList.tsx
+ * @description A component that displays a grid of subjects for a specific program and semester.
+ * Features animated cards, error handling, and loading states.
+ */
+
 import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { SyllabusSubject } from '../../types/syllabus/syllabus.types';
@@ -9,17 +15,33 @@ import { useNavigate } from 'react-router-dom';
 import { showError } from '../../utils/notifications';
 import SyllabusSubjectCard from './SyllabusSubjectCard';
 
+/**
+ * Props interface for the SyllabusSubjectList component
+ * @interface SyllabusSubjectListProps
+ */
 interface SyllabusSubjectListProps {
+  /** ID of the selected program */
   programId: number;
+  /** Selected semester number */
   semester: number;
+  /** Visibility state of the component */
   isVisible: boolean;
+  /** Name of the selected program */
   programName: string;
 }
 
 /**
- * SyllabusSubjectList Component
  * Displays a grid of subject cards for a specific program and semester.
- * Each card shows the available syllabus versions and allows viewing/downloading.
+ * Features:
+ * - Animated subject cards with hover effects
+ * - Error handling with retry functionality
+ * - Loading states
+ * - Empty state handling
+ * - Navigation to subject details
+ * 
+ * @component
+ * @param {SyllabusSubjectListProps} props - Component props
+ * @returns {React.ReactElement | null} Rendered component or null if not visible
  */
 const SyllabusSubjectList: React.FC<SyllabusSubjectListProps> = ({
   programId,

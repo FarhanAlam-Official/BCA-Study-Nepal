@@ -1,23 +1,54 @@
+/**
+ * @file SyllabusSubjectCard.tsx
+ * @description A reusable card component for displaying subject information with animations and hover effects.
+ */
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Book, ArrowRight } from 'lucide-react';
 import { SyllabusSubject } from '../../types/syllabus/syllabus.types';
 
+/**
+ * Props interface for the SyllabusSubjectCard component
+ * @interface SyllabusSubjectCardProps
+ */
 interface SyllabusSubjectCardProps {
+  /** Subject data to display */
   subject: SyllabusSubject;
+  /** Optional click handler for the card */
   onClick?: (subject: SyllabusSubject) => void;
 }
 
+/**
+ * A card component that displays subject information with interactive animations.
+ * Features:
+ * - Smooth hover and tap animations
+ * - Gradient background effects
+ * - Accessibility support with keyboard navigation
+ * - Responsive layout
+ * - Visual feedback on interaction
+ * 
+ * @component
+ * @param {SyllabusSubjectCardProps} props - Component props
+ * @returns {React.ReactElement} Rendered component
+ */
 const SyllabusSubjectCard: React.FC<SyllabusSubjectCardProps> = ({ 
   subject, 
   onClick
 }) => {
+  /**
+   * Handles click events on the card
+   */
   const handleClick = () => {
     if (onClick) {
       onClick(subject);
     }
   };
 
+  /**
+   * Handles keyboard events for accessibility
+   * @param {React.KeyboardEvent} event - Keyboard event
+   */
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       if (onClick) {
