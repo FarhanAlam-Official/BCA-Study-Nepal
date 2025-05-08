@@ -23,7 +23,11 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBar from './SearchBar';
 import { useAuth } from '../../hooks/useAuth';
+import { showError } from '../../utils/notifications';
 
+/**
+ * Navigation item interface defining the structure of each nav item
+ */
 interface NavItem {
   name: string;
   href: string;
@@ -31,6 +35,10 @@ interface NavItem {
   children?: NavItem[];
 }
 
+/**
+ * Main navigation items configuration
+ * Each item can have children for dropdown menus
+ */
 const navigation: NavItem[] = [
   { name: 'Home', href: '/', icon: Home },
   { 
@@ -59,11 +67,18 @@ const navigation: NavItem[] = [
   { name: 'Contact', href: '/contact', icon: Mail },
 ];
 
+/**
+ * Props interface for NavLink component
+ */
 interface NavLinkProps {
   item: NavItem;
   mobile?: boolean;
 }
 
+/**
+ * NavLink component handles both regular links and dropdown menus
+ * Supports both desktop and mobile views
+ */
 const NavLink = ({ item, mobile = false }: NavLinkProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
@@ -72,29 +87,31 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
   const isActive = item.href === location.pathname || 
                   item.children?.some(child => child.href === location.pathname);
 
-  // Check if any child is active (for dropdown)
+  // Check if any child is active (for dropdown highlighting)
   const hasActiveChild = item.children?.some(child => child.href === location.pathname);
 
+  // Render dropdown menu if item has children
   if (item.children) {
     return (
       <div className="relative">
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: mobile ? 1 : 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className="relative"
           onMouseEnter={() => !mobile && setIsOpen(true)}
           onMouseLeave={() => !mobile && setIsOpen(false)}
         >
+          {/* Dropdown trigger button */}
           <button
             onClick={() => mobile && setIsOpen(!isOpen)}
             className={`group flex items-center transition-all duration-200 ${
               mobile
-                ? 'px-4 py-2 text-sm font-medium w-full'
-                : 'inline-flex items-center px-1 pt-1 text-sm font-medium'
+                ? 'px-4 py-3 text-sm font-medium w-full rounded-lg hover:bg-white/80'
+                : 'inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-50'
             } ${
               hasActiveChild 
-                ? 'text-indigo-600 bg-indigo-50/50' 
-                : 'text-gray-500 hover:text-gray-900'
+                ? 'text-indigo-600 bg-indigo-50/80' 
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             <item.icon
@@ -114,6 +131,7 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
             />
           </button>
 
+          {/* Dropdown menu with animation */}
           <AnimatePresence>
             {isOpen && (
               <motion.div
@@ -123,8 +141,8 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className={`${
                   mobile 
-                    ? 'mt-0 ml-6' 
-                    : 'absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 overflow-hidden'
+                    ? 'mt-1 ml-8 space-y-1' 
+                    : 'absolute left-0 mt-1 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black/5 backdrop-blur-sm backdrop-saturate-150'
                 }`}
               >
                 {item.children.map((child, index) => {
@@ -139,10 +157,12 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
                     >
                       <Link
                         to={child.href}
-                        className={`block px-4 py-2 text-sm transition-all duration-200 ${
+                        className={`block px-4 py-2.5 text-sm transition-all duration-200 ${
+                          mobile ? '' : 'first:rounded-t-lg last:rounded-b-lg'
+                        } ${
                           isChildActive
-                            ? 'bg-indigo-50 text-indigo-700'
-                            : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                            ? 'bg-indigo-50/80 text-indigo-700'
+                            : 'text-gray-600 hover:bg-gray-50/80 hover:text-indigo-700'
                         }`}
                         onClick={() => setIsOpen(false)}
                       >
@@ -172,21 +192,22 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
     );
   }
 
+  // Render regular link if item has no children
   return (
     <motion.div 
-      whileHover={{ scale: 1.05 }} 
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: mobile ? 1 : 1.02 }} 
+      whileTap={{ scale: 0.98 }}
     >
       <Link
         to={item.href}
         className={`group flex items-center transition-all duration-200 ${
           mobile
-            ? 'px-4 py-2 text-sm font-medium w-full'
-            : 'inline-flex items-center px-1 pt-1 text-sm font-medium'
+            ? 'px-4 py-3 text-sm font-medium w-full rounded-lg hover:bg-white/80'
+            : 'inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg hover:bg-gray-50'
         } ${
           isActive 
-            ? 'text-indigo-600 bg-indigo-50/50' 
-            : 'text-gray-500 hover:text-gray-900'
+            ? 'text-indigo-600 bg-indigo-50/80' 
+            : 'text-gray-600 hover:text-gray-900'
         }`}
       >
         <item.icon
@@ -208,18 +229,23 @@ const NavLink = ({ item, mobile = false }: NavLinkProps) => {
   );
 };
 
+/**
+ * Logo component with hover effects
+ */
 const Logo = () => (
   <div>
     <Link to="/" className="flex-shrink-0 flex items-center group">
-      <GraduationCap className="h-9 w-9 text-indigo-600 group-hover:text-black-700" />
-      <span className="ml-2 text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+      <GraduationCap className="h-10 w-10 text-indigo-600 group-hover:text-indigo-700 transition-colors duration-200" />
+      <span className="ml-2.5 text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
         BCA
       </span>
     </Link>
   </div>
 );
 
-// Define a User interface for better type safety
+/**
+ * User interface for type safety
+ */
 interface User {
   username?: string;
   first_name?: string;
@@ -227,7 +253,9 @@ interface User {
   profile_picture?: string;
 }
 
-// Add this utility function for user initials
+/**
+ * Utility function to generate user initials from name or username
+ */
 const getUserInitials = (user: User | null) => {
   if (!user) return '??';
   
@@ -243,12 +271,20 @@ const getUserInitials = (user: User | null) => {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 };
 
+/**
+ * Main Navbar component
+ * Handles responsive navigation, search, and user authentication
+ */
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      showError('Failed to logout. Please try again.');
+    }
   };
 
   return (
@@ -256,74 +292,83 @@ export default function Navbar() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 100 }}
-      className="bg-white shadow-lg sticky top-0 z-50"
+      className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100"
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+      {/* Main navbar container */}
+      <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between h-16 sm:h-[4.5rem]">
           {/* Left section - Logo and Desktop Navigation */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-4 sm:gap-6 lg:gap-8">
             <Logo />
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="hidden lg:flex lg:items-center lg:gap-4">
               {navigation.map((item) => (
                 <NavLink key={item.name} item={item} />
               ))}
             </div>
           </div>
 
-          {/* Right section - Search and Mobile Menu */}
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex sm:items-center sm:ml-28 sm:flex-1 sm:max-w-[400px]">
+          {/* Right section - Search and Profile */}
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+            {/* Search Bar - Hidden on mobile */}
+            <div className="hidden md:block md:w-[240px] lg:w-[300px] xl:w-[350px]">
               <SearchBar />
             </div>
             
             {/* Auth Buttons or User Profile */}
             {isAuthenticated ? (
-              <div className="hidden sm:flex sm:items-center">
+              <div className="hidden sm:flex sm:items-center sm:flex-shrink-0">
                 <Link
                   to="/profile"
-                  className="flex items-center text-gray-700 hover:text-indigo-600 focus:outline-none group relative"
+                  className="flex items-center text-gray-700 hover:text-indigo-600 focus:outline-none group relative px-2 sm:px-3 py-2"
                 >
+                  {/* User Avatar or Initials */}
                   {user?.profile_picture ? (
-                    <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-indigo-100 shadow-sm 
+                    <div className="flex-shrink-0 relative h-9 sm:h-10 md:h-11 w-9 sm:w-10 md:w-11 rounded-full overflow-hidden border-2 border-indigo-100 shadow-sm 
                       transition-all duration-300 ease-out
-                      group-hover:border-indigo-300 group-hover:shadow-md"
+                      group-hover:border-indigo-300 group-hover:shadow-md group-hover:scale-105"
                     >
-                      <picture>
-                        <source
-                          srcSet={`${user.profile_picture} 2x`}
-                          type="image/jpeg"
-                        />
-                        <source
-                          srcSet={`${user.profile_picture} 2x`}
-                          type="image/png"
-                        />
-                        <img
-                          src={user.profile_picture}
-                          alt={user.username}
-                          className="absolute inset-0 w-full h-full object-cover"
-                          loading="eager"
-                          draggable="false"
-                        />
-                      </picture>
+                      <img
+                        src={user?.profile_picture}
+                        alt={user?.username || 'User profile'}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="eager"
+                        draggable="false"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                          const parent = img.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `<span class="absolute inset-0 flex items-center justify-center text-sm sm:text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                              ${getUserInitials(user)}
+                            </span>`;
+                          }
+                        }}
+                      />
                     </div>
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 
+                    <div className="flex-shrink-0 h-9 sm:h-10 md:h-11 w-9 sm:w-10 md:w-11 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 
                       flex items-center justify-center border-2 border-indigo-100 shadow-sm 
                       transition-all duration-300 ease-out transform 
                       group-hover:scale-105 group-hover:border-indigo-300 group-hover:shadow-md"
                     >
-                      <span className="text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                      <span className="text-sm sm:text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                         {getUserInitials(user)}
                       </span>
                     </div>
                   )}
-                  <span className="ml-2 text-sm font-medium transition-colors duration-300 ease-out">{user?.username || 'User'}</span>
+                  {/* Username display with truncation */}
+                  <div className="ml-2 sm:ml-3 max-w-[80px] sm:max-w-[100px] md:max-w-[120px] lg:max-w-[180px] flex flex-col overflow-hidden">
+                    <span className="text-sm font-medium leading-tight line-clamp-2 transition-colors duration-300 ease-out break-all">
+                      {user?.username || 'User'}
+                    </span>
+                  </div>
                 </Link>
               </div>
             ) : (
-              <div className="hidden sm:flex sm:items-center sm:ml-6">
+              // Login button for non-authenticated users
+              <div className="hidden sm:flex sm:items-center">
                 <motion.div 
                   whileHover={{ scale: 1.02 }} 
                   whileTap={{ scale: 0.98 }}
@@ -331,9 +376,9 @@ export default function Navbar() {
                 >
                   <Link
                     to="/auth"
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200 hover:shadow-md"
+                    className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200 hover:shadow-md"
                   >
-                    <LogIn className="h-5 w-5" />
+                    <LogIn className="h-4 sm:h-5 w-4 sm:w-5" />
                     <span>Login</span>
                   </Link>
                   <div className="absolute inset-0 -z-10 bg-indigo-600/20 blur-md group-hover:bg-indigo-700/20 transition-all duration-200 rounded-lg" />
@@ -342,10 +387,10 @@ export default function Navbar() {
             )}
 
             {/* Mobile menu button */}
-            <div className="flex items-center sm:hidden">
+            <div className="flex items-center lg:hidden">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                className="inline-flex items-center justify-center p-2 sm:p-2.5 rounded-lg text-gray-500 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
                 aria-expanded={isOpen}
                 aria-controls="mobile-menu"
               >
@@ -353,9 +398,9 @@ export default function Navbar() {
                   {isOpen ? 'Close main menu' : 'Open main menu'}
                 </span>
                 {isOpen ? (
-                  <X className="h-6 w-6" aria-hidden="true" />
+                  <X className="h-5 sm:h-6 w-5 sm:w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="h-6 w-6" aria-hidden="true" />
+                  <Menu className="h-5 sm:h-6 w-5 sm:w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -371,10 +416,11 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="sm:hidden"
+            className="lg:hidden bg-gray-50/50 border-t border-gray-100"
             id="mobile-menu"
           >
-            <div className="pt-2 pb-3 space-y-1">
+            {/* Mobile navigation items */}
+            <div className="pt-2 pb-3 space-y-1.5 px-3 sm:px-4">
               {navigation.map((item, index) => (
                 <motion.div
                   key={item.name}
@@ -386,15 +432,19 @@ export default function Navbar() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Mobile search bar */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="px-4 pb-3"
+              className="px-3 sm:px-4 pb-3"
             >
               <SearchBar />
             </motion.div>
-            <div className="px-4 pb-4 pt-2 flex flex-col gap-3">
+
+            {/* Mobile auth buttons */}
+            <div className="px-3 sm:px-4 pb-4 pt-2 flex flex-col gap-2 sm:gap-3">
               {isAuthenticated ? (
                 <>
                   <motion.div
@@ -409,31 +459,33 @@ export default function Navbar() {
                     >
                       {user?.profile_picture ? (
                         <div className="relative h-8 w-8 rounded-full overflow-hidden border border-indigo-100 shadow-sm">
-                          <picture>
-                            <source
-                              srcSet={`${user.profile_picture} 2x`}
-                              type="image/jpeg"
-                            />
-                            <source
-                              srcSet={`${user.profile_picture} 2x`}
-                              type="image/png"
-                            />
-                            <img
-                              src={user.profile_picture}
-                              alt={user.username}
-                              className="absolute inset-0 w-full h-full object-cover"
-                              loading="eager"
-                            />
-                          </picture>
+                          <img
+                            src={user?.profile_picture}
+                            alt={user?.username || 'User profile'}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            loading="eager"
+                            draggable="false"
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              img.style.display = 'none';
+                              const parent = img.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<span class="absolute inset-0 flex items-center justify-center text-sm sm:text-base font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                  ${getUserInitials(user)}
+                                </span>`;
+                              }
+                            }}
+                          />
                         </div>
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border border-indigo-100">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 
+                          flex items-center justify-center border border-indigo-100 shadow-sm">
                           <span className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                             {getUserInitials(user)}
                           </span>
                         </div>
                       )}
-                      <span>Profile</span>
+                      <span className="truncate max-w-[200px]">{user?.username || 'Profile'}</span>
                     </Link>
                   </motion.div>
                   <motion.div
@@ -454,22 +506,20 @@ export default function Navbar() {
                   </motion.div>
                 </>
               ) : (
-                <>
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <Link
+                    to="/auth"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    onClick={() => setIsOpen(false)}
                   >
-                    <Link
-                      to="/auth"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <LogIn className="h-5 w-5" />
-                      <span>Login</span>
-                    </Link>
-                  </motion.div>
-                </>
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </Link>
+                </motion.div>
               )}
             </div>
           </motion.div>
