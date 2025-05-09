@@ -1,3 +1,14 @@
+/**
+ * PomodoroSettings Component
+ * 
+ * A modal component for configuring Pomodoro timer settings including:
+ * - Timer durations (pomodoro, short break, long break)
+ * - Auto-start preferences
+ * - Sound settings
+ * - Long break intervals
+ * 
+ * Uses Headless UI's Dialog for accessibility and Framer Motion for animations.
+ */
 import React from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -5,6 +16,11 @@ import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { usePomodoroTimer } from '../../../hooks/usePomodoroTimer';
 
+/**
+ * Props interface for the PomodoroSettings component
+ * @property {boolean} isOpen - Controls the visibility of the settings modal
+ * @property {() => void} onClose - Callback function to close the modal
+ */
 interface PomodoroSettingsProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,6 +29,11 @@ interface PomodoroSettingsProps {
 const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) => {
   const { settings, setSettings } = usePomodoroTimer();
 
+  /**
+   * Handles changes to any setting value
+   * @param key - The setting key to update
+   * @param value - The new value for the setting
+   */
   const handleChange = (key: keyof typeof settings, value: number | boolean) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
@@ -20,6 +41,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
+        {/* Backdrop */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -34,6 +56,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+            {/* Modal Content */}
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -44,6 +67,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="w-full max-w-lg sm:max-w-xl transform overflow-hidden rounded-2xl bg-white/90 backdrop-blur-md p-4 sm:p-6 shadow-xl transition-all">
+                {/* Header */}
                 <div className="flex justify-between items-center mb-4">
                   <Dialog.Title className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
                     Timer Settings
@@ -53,16 +77,18 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
                     className="text-gray-500 hover:text-red-600 transition-colors"
+                    aria-label="Close settings"
                   >
                     <X className="w-5 h-5" />
                   </motion.button>
                 </div>
 
                 <div className="space-y-6">
-                  {/* Time Settings */}
+                  {/* Timer Duration Settings */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Time (minutes)</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Pomodoro Duration */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Pomodoro
@@ -78,8 +104,11 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
                           whileHover={{ scale: 1.02 }}
                           whileFocus={{ scale: 1.02 }}
+                          aria-label="Pomodoro duration in minutes"
                         />
                       </div>
+
+                      {/* Short Break Duration */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Short Break
@@ -95,8 +124,11 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
                           whileHover={{ scale: 1.02 }}
                           whileFocus={{ scale: 1.02 }}
+                          aria-label="Short break duration in minutes"
                         />
                       </div>
+
+                      {/* Long Break Duration */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Long Break
@@ -112,6 +144,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
                           whileHover={{ scale: 1.02 }}
                           whileFocus={{ scale: 1.02 }}
+                          aria-label="Long break duration in minutes"
                         />
                       </div>
                     </div>
@@ -121,6 +154,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Auto Start</h3>
                     <div className="space-y-2">
+                      {/* Auto Start Breaks Toggle */}
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Auto Start Breaks
@@ -134,10 +168,13 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                             checked={settings.autoStartBreaks}
                             onChange={(e) => handleChange('autoStartBreaks', e.target.checked)}
                             className="sr-only peer"
+                            aria-label="Auto start breaks toggle"
                           />
                           <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                         </motion.label>
                       </div>
+
+                      {/* Auto Start Pomodoros Toggle */}
                       <div className="flex items-center justify-between">
                         <label className="text-sm font-medium text-gray-700">
                           Auto Start Pomodoros
@@ -151,6 +188,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                             checked={settings.autoStartPomodoros}
                             onChange={(e) => handleChange('autoStartPomodoros', e.target.checked)}
                             className="sr-only peer"
+                            aria-label="Auto start pomodoros toggle"
                           />
                           <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                         </motion.label>
@@ -174,13 +212,14 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                           checked={settings.soundEnabled}
                           onChange={(e) => handleChange('soundEnabled', e.target.checked)}
                           className="sr-only peer"
+                          aria-label="Timer sound toggle"
                         />
                         <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                       </motion.label>
                     </div>
                   </div>
 
-                  {/* Long Break Interval */}
+                  {/* Long Break Interval Settings */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Long Break Interval</h3>
                     <div>
@@ -195,6 +234,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                         className="w-full px-4 py-2.5 rounded-2xl border border-gray-200/50 bg-white/50 text-base outline-none focus:ring-2 focus:ring-indigo-600/30 focus:border-indigo-600 transition-all duration-200"
                         whileHover={{ scale: 1.02 }}
                         whileFocus={{ scale: 1.02 }}
+                        aria-label="Number of pomodoros before long break"
                       />
                       <p className="mt-1 text-sm text-gray-500">
                         Number of pomodoros before a long break
@@ -202,7 +242,7 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                     </div>
                   </div>
                   
-                  {/* Save and Cancel Buttons */}
+                  {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
                     <motion.button
                       whileHover={{ scale: 1.05, boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)' }}
@@ -227,7 +267,6 @@ const PomodoroSettings: React.FC<PomodoroSettingsProps> = ({ isOpen, onClose }) 
                       Cancel
                     </motion.button>
                   </div>
-
                 </div>
               </Dialog.Panel>
             </Transition.Child>

@@ -1,40 +1,56 @@
+/**
+ * InfoModal Component
+ * 
+ * A modal component that provides information about the Pomodoro Technique,
+ * including its methodology, benefits, and tips for successful implementation.
+ * Uses Headless UI's Dialog for accessibility and animations.
+ */
 import React from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { X, Clock, Brain, Coffee, CheckCircle2 } from 'lucide-react';
 
+/**
+ * Props interface for the InfoModal component
+ * @property {boolean} isOpen - Controls the visibility of the modal
+ * @property {() => void} onClose - Callback function to close the modal
+ */
 interface InfoModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
-  const benefits = [
-    {
-      title: 'Enhanced Focus',
-      description: 'Work in focused 25-minute intervals to maintain high concentration levels',
-      icon: Brain
-    },
-    {
-      title: 'Better Time Management',
-      description: 'Break work into manageable chunks and track your productivity',
-      icon: Clock
-    },
-    {
-      title: 'Regular Breaks',
-      description: 'Take structured breaks to prevent mental fatigue and maintain energy',
-      icon: Coffee
-    },
-    {
-      title: 'Improved Productivity',
-      description: 'Complete more tasks with better quality by avoiding distractions',
-      icon: CheckCircle2
-    }
-  ];
+/**
+ * Array of benefits describing the advantages of using the Pomodoro Technique
+ */
+const benefits = [
+  {
+    title: 'Enhanced Focus',
+    description: 'Work in focused 25-minute intervals to maintain high concentration levels',
+    icon: Brain
+  },
+  {
+    title: 'Better Time Management',
+    description: 'Break work into manageable chunks and track your productivity',
+    icon: Clock
+  },
+  {
+    title: 'Regular Breaks',
+    description: 'Take structured breaks to prevent mental fatigue and maintain energy',
+    icon: Coffee
+  },
+  {
+    title: 'Improved Productivity',
+    description: 'Complete more tasks with better quality by avoiding distractions',
+    icon: CheckCircle2
+  }
+];
 
+const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
+        {/* Backdrop */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -49,6 +65,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
+            {/* Modal Content */}
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -59,6 +76,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-8 shadow-xl transition-all">
+                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                   <Dialog.Title className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-900">
                     The Pomodoro Technique
@@ -66,20 +84,21 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
                   <button
                     onClick={onClose}
                     className="text-gray-500 hover:text-gray-700 transition-colors"
+                    aria-label="Close modal"
                   >
                     <X className="w-6 h-6" />
                   </button>
                 </div>
 
                 <div className="space-y-8">
-                  {/* Introduction */}
+                  {/* Introduction Section */}
                   <div className="prose prose-indigo">
                     <p className="text-gray-600">
                       The Pomodoro Technique is a time management method that uses a timer to break work into focused intervals, traditionally 25 minutes in length, separated by short breaks. Each interval is known as a "pomodoro," named after the tomato-shaped kitchen timer.
                     </p>
                   </div>
 
-                  {/* How it Works */}
+                  {/* How it Works Section */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">How it Works</h3>
                     <ol className="space-y-4 text-gray-600">
@@ -102,7 +121,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
                     </ol>
                   </div>
 
-                  {/* Benefits */}
+                  {/* Benefits Section */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Benefits</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -118,7 +137,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
                     </div>
                   </div>
 
-                  {/* Tips */}
+                  {/* Tips Section */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips for Success</h3>
                     <ul className="space-y-2 text-gray-600">

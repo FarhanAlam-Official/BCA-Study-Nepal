@@ -1,11 +1,34 @@
+/**
+ * PomodoroTimer Component
+ * 
+ * A feature-rich Pomodoro timer implementation with:
+ * - Customizable work/break intervals
+ * - Task tracking
+ * - Sound notifications
+ * - Progress tracking
+ * - Animated UI elements
+ * 
+ * Uses Framer Motion for animations and custom hooks for timer logic.
+ */
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import {RotateCcw,Settings,Volume2,VolumeX,Clock,Brain,Coffee,HelpCircle,Sparkles} from "lucide-react";
+import {
+  RotateCcw,
+  Settings,
+  Volume2,
+  VolumeX,
+  Clock,
+  Brain,
+  Coffee,
+  HelpCircle,
+  Sparkles
+} from "lucide-react";
 import { usePomodoroTimer } from "../../../hooks/usePomodoroTimer";
 import PomodoroSettings from "./PomodoroSettings";
 import InfoModal from "./InfoModal";
 
 const PomodoroTimer: React.FC = () => {
+  // Timer state and controls from custom hook
   const {
     mode,
     setMode,
@@ -20,21 +43,24 @@ const PomodoroTimer: React.FC = () => {
     setCurrentTask,
   } = usePomodoroTimer();
 
+  // Modal visibility states
   const [showSettings, setShowSettings] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
-  // Format time for display
+  /**
+   * Formats seconds into MM:SS display format
+   * @param seconds - Number of seconds to format
+   * @returns Formatted time string (e.g., "25:00")
+   */
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white relative overflow-hidden">
-      {/* Floating Elements */}
+      {/* Animated Floating Elements */}
       <motion.div
         animate={{
           y: [0, -30, 0],
@@ -115,7 +141,7 @@ const PomodoroTimer: React.FC = () => {
       {/* Main Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          {/* Header */}
+          {/* Header Section */}
           <div className="flex flex-col items-center justify-center gap-2">
             <div className="flex items-center justify-center gap-3">
               <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
@@ -126,6 +152,7 @@ const PomodoroTimer: React.FC = () => {
                   onClick={() => setShowInfo(true)}
                   className="text-gray-400 hover:text-indigo-600 transition-all duration-200 hover:scale-110"
                   title="Learn about the Pomodoro Technique"
+                  aria-label="Show information about Pomodoro Technique"
                 >
                   <HelpCircle className="w-6 h-6" />
                 </button>
@@ -138,27 +165,25 @@ const PomodoroTimer: React.FC = () => {
 
           {/* Main Timer Card */}
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm p-8">
-            {/* Task Input */}
+            {/* Task Input Section */}
             <div className="mb-12">
-  <label
-    htmlFor="task"
-    className="block text-center mb-4 text-base font-semibold text-indigo-500 tracking-wide"
-  >
-    What's Your Main Focus Today?
-  </label>
+              <label
+                htmlFor="task"
+                className="block text-center mb-4 text-base font-semibold text-indigo-500 tracking-wide"
+              >
+                What's Your Main Focus Today?
+              </label>
 
-  <input
-    id="task"
-    type="text"
-    value={currentTask}
-    onChange={(e) => setCurrentTask(e.target.value)}
-    placeholder="e.g., Complete project presentation..."
-    className="w-full max-w-xl mx-auto block bg-indigo-50 text-gray-800 border border-indigo-100 rounded-2xl px-6 py-4 placeholder-indigo-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-300/30 focus:border-indigo-400 text-center text-lg transition-all duration-300"
-  />
-</div>
-
-
-
+              <input
+                id="task"
+                type="text"
+                value={currentTask}
+                onChange={(e) => setCurrentTask(e.target.value)}
+                placeholder="e.g., Complete project presentation..."
+                className="w-full max-w-xl mx-auto block bg-indigo-50 text-gray-800 border border-indigo-100 rounded-2xl px-6 py-4 placeholder-indigo-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-300/30 focus:border-indigo-400 text-center text-lg transition-all duration-300"
+                aria-label="Enter your current task"
+              />
+            </div>
 
             {/* Timer Mode Selection */}
             <div className="flex justify-center space-x-4 mb-8">
@@ -174,6 +199,8 @@ const PomodoroTimer: React.FC = () => {
                         ? "bg-indigo-600 text-white shadow-lg"
                         : "text-gray-600 hover:bg-indigo-50"
                     }`}
+                    aria-label={`Switch to ${timerMode} mode`}
+                    aria-pressed={mode === timerMode}
                   >
                     {timerMode === "pomodoro"
                       ? "Pomodoro"
@@ -187,104 +214,106 @@ const PomodoroTimer: React.FC = () => {
 
             {/* Timer Display */}
             <div className="text-center mb-8">
-              <div className="text-8xl md:text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-mono tracking-wider mb-8">
+              <div className="text-8xl md:text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-mono tracking-wider mb-8" aria-label={`${formatTime(timeLeft)} remaining`}>
                 {formatTime(timeLeft)}
               </div>
 
               {/* Timer Controls */}
               <div className="flex justify-center items-center space-x-4 flex-wrap gap-4 sm:gap-6 mt-8 px-4">
-      {/* Start/Pause Button */}
-      <motion.button
-        whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(79, 70, 229, 0.4)' }}
-        whileTap={{ scale: 0.95 }}
-        onClick={toggleTimer}
-        className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-16 sm:px-16 py-6 rounded-2xl font-semibold text-xl shadow-lg hover:shadow-xl transition-all duration-300"
-      >
-        {isRunning ? 'Pause' : 'Start'}
-      </motion.button>
+                {/* Start/Pause Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(79, 70, 229, 0.4)' }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={toggleTimer}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-16 sm:px-16 py-6 rounded-2xl font-semibold text-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  aria-label={isRunning ? 'Pause timer' : 'Start timer'}
+                >
+                  {isRunning ? 'Pause' : 'Start'}
+                </motion.button>
 
-      {/* Reset Button */}
-      <motion.button
-        whileHover={{
-          scale: 1.1,
-          rotate: 360,
-          backgroundColor: 'rgba(238, 242, 255, 1)',
-          color: 'rgba(79, 70, 229, 1)',
-          boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)',
-        }}
-        whileTap={{ scale: 0.9 }}
-        onClick={resetTimer}
-        className="bg-white text-gray-600 p-6 rounded-2xl shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-indigo-600 transition-all duration-500"
-        title="Reset Timer"
-      >
-        <motion.div
-          animate={{ rotate: isRunning ? [0, 360] : 0 }}
-          transition={{ duration: 2, repeat: isRunning ? Infinity : 0, ease: 'linear' }}
-        >
-          <RotateCcw className="w-7 h-7" />
-        </motion.div>
-      </motion.button>
+                {/* Reset Button */}
+                <motion.button
+                  whileHover={{
+                    scale: 1.1,
+                    rotate: 360,
+                    backgroundColor: 'rgba(238, 242, 255, 1)',
+                    color: 'rgba(79, 70, 229, 1)',
+                    boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)',
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={resetTimer}
+                  className="bg-white text-gray-600 p-6 rounded-2xl shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-indigo-600 transition-all duration-500"
+                  title="Reset Timer"
+                  aria-label="Reset timer"
+                >
+                  <motion.div
+                    animate={{ rotate: isRunning ? [0, 360] : 0 }}
+                    transition={{ duration: 2, repeat: isRunning ? Infinity : 0, ease: 'linear' }}
+                  >
+                    <RotateCcw className="w-7 h-7" />
+                  </motion.div>
+                </motion.button>
 
-      {/* Settings Button */}
-      <motion.button
-        whileHover={{
-          scale: 1.1,
-          backgroundColor: 'rgba(238, 242, 255, 1)',
-          color: 'rgba(79, 70, 229, 1)',
-          boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)',
-        }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setShowSettings(true)}
-        className="bg-white text-gray-600 p-6 rounded-2xl shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-indigo-600 transition-all duration-300"
-        title="Settings"
-      >
-        <motion.div
-          whileHover={{ rotate: [0, 90, 0] }}
-          transition={{ duration: 0.4 }}
-        >
-          <Settings className="w-7 h-7" />
-        </motion.div>
-      </motion.button>
+                {/* Settings Button */}
+                <motion.button
+                  whileHover={{
+                    scale: 1.1,
+                    backgroundColor: 'rgba(238, 242, 255, 1)',
+                    color: 'rgba(79, 70, 229, 1)',
+                    boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)',
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowSettings(true)}
+                  className="bg-white text-gray-600 p-6 rounded-2xl shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-indigo-600 transition-all duration-300"
+                  title="Settings"
+                  aria-label="Open settings"
+                >
+                  <motion.div
+                    whileHover={{ rotate: [0, 90, 0] }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <Settings className="w-7 h-7" />
+                  </motion.div>
+                </motion.button>
 
-      {/* Sound Toggle Button */}
-      <motion.button
-        whileHover={{
-          scale: 1.1,
-          rotate: settings.soundEnabled ? 0 : 180,
-          backgroundColor: 'rgba(238, 242, 255, 1)',
-          boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)',
-        }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() =>
-          setSettings((s) => ({
-            ...s,
-            soundEnabled: !s.soundEnabled,
-          }))
-        }
-        className={`bg-white ${
-          settings.soundEnabled ? 'text-indigo-600' : 'text-gray-600'
-        } p-6 rounded-2xl shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-indigo-600 transition-all duration-300`}
-        title={settings.soundEnabled ? 'Sound On' : 'Sound Off'}
-      >
-        <motion.div
-          initial={{ scale: 1 }}
-          animate={{ scale: settings.soundEnabled ? [1, 1.2, 1] : 1 }}
-          transition={{ duration: 0.3, repeat: settings.soundEnabled ? 1 : 0 }}
-        >
-          {settings.soundEnabled ? (
-            <Volume2 className="w-7 h-7" />
-          ) : (
-            <VolumeX className="w-7 h-7" />
-          )}
-        </motion.div>
-      </motion.button>
-    </div>
-
-
-
+                {/* Sound Toggle Button */}
+                <motion.button
+                  whileHover={{
+                    scale: 1.1,
+                    rotate: settings.soundEnabled ? 0 : 180,
+                    backgroundColor: 'rgba(238, 242, 255, 1)',
+                    boxShadow: '0 0 12px rgba(79, 70, 229, 0.3)',
+                  }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() =>
+                    setSettings((s) => ({
+                      ...s,
+                      soundEnabled: !s.soundEnabled,
+                    }))
+                  }
+                  className={`bg-white ${
+                    settings.soundEnabled ? 'text-indigo-600' : 'text-gray-600'
+                  } p-6 rounded-2xl shadow-md border border-gray-100/50 backdrop-blur-sm hover:text-indigo-600 transition-all duration-300`}
+                  title={settings.soundEnabled ? 'Sound On' : 'Sound Off'}
+                  aria-label={`${settings.soundEnabled ? 'Disable' : 'Enable'} sound`}
+                  aria-pressed={settings.soundEnabled}
+                >
+                  <motion.div
+                    initial={{ scale: 1 }}
+                    animate={{ scale: settings.soundEnabled ? [1, 1.2, 1] : 1 }}
+                    transition={{ duration: 0.3, repeat: settings.soundEnabled ? 1 : 0 }}
+                  >
+                    {settings.soundEnabled ? (
+                      <Volume2 className="w-7 h-7" />
+                    ) : (
+                      <VolumeX className="w-7 h-7" />
+                    )}
+                  </motion.div>
+                </motion.button>
+              </div>
             </div>
 
-            {/* Progress Info */}
+            {/* Progress Information */}
             <div className="mt-8 flex justify-between items-center">
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-3 rounded-xl">
                 <span className="text-gray-600">Completed:</span>{" "}
@@ -304,6 +333,7 @@ const PomodoroTimer: React.FC = () => {
         </div>
       </div>
 
+      {/* Modals */}
       <PomodoroSettings
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
