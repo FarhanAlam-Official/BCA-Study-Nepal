@@ -10,6 +10,7 @@ from .auth import (
     GoogleAuthCallbackView,
     InitializeGmailOAuthView,
     GmailOAuthCallbackView,
+    CheckGmailConnectionView,
 )
 from .otp import (
     RegisterView,
@@ -29,6 +30,7 @@ __all__ = [
     'GoogleAuthCallbackView',
     'InitializeGmailOAuthView',
     'GmailOAuthCallbackView',
+    'CheckGmailConnectionView',
     'RegisterView',
     'VerifyOTPView',
     'ResendOTPView',

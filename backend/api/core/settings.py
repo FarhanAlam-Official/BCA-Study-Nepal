@@ -282,7 +282,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Google OAuth Settings
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
-GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/users/google/callback'
+GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/auth/google/callback'
 
 # OAuth2 Scopes
 GOOGLE_OAUTH2_SCOPES = [
