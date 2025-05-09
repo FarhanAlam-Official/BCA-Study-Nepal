@@ -1,3 +1,15 @@
+/**
+ * NotificationContext
+ * 
+ * A comprehensive notification system that handles both in-app toast notifications
+ * and browser notifications. It provides functionality for:
+ * - Toast notifications with different severity levels
+ * - Browser notifications with sound support
+ * - Due date reminders for tasks
+ * - Notification preferences management
+ * - Persistent storage of notification settings
+ */
+
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { Todo } from '../components/tools/TodoList/types';
 import {
@@ -8,6 +20,7 @@ import {
 } from '../components/tools/TodoList/notificationTypes';
 import { toast, ToastContainer } from 'react-toastify';
 
+// Create context without initial value to enforce usage with provider
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 /**
@@ -48,7 +61,9 @@ const NotificationComponents = {
       }
     });
 
-    // Persist preferences to localStorage
+    /**
+     * Persist preferences to localStorage whenever they change
+     */
     useEffect(() => {
       try {
         localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(preferences));
@@ -57,7 +72,9 @@ const NotificationComponents = {
       }
     }, [preferences]);
 
-    // Persist notification history to localStorage
+    /**
+     * Persist notification history to localStorage whenever it changes
+     */
     useEffect(() => {
       try {
         localStorage.setItem(STORAGE_KEYS.LAST_NOTIFICATIONS, JSON.stringify(lastNotificationTimes));
@@ -81,7 +98,7 @@ const NotificationComponents = {
 
       const containerId = isGlobal ? "global-notifications" : "todo-notifications";
 
-      // Show toast notification
+      // Show toast notification with appropriate styling and behavior
       toast(message, { 
         type,
         position: "top-right",
@@ -94,7 +111,7 @@ const NotificationComponents = {
         theme: "colored"
       });
 
-      // Show browser notification for important alerts
+      // Show browser notification for important alerts if permission is granted
       if ((type === 'warning' || type === 'error') && Notification.permission === 'granted') {
         try {
           new Notification('Todo Reminder', {
@@ -109,7 +126,7 @@ const NotificationComponents = {
         }
       }
 
-      // Play notification sound if enabled
+      // Play notification sound if enabled and tab is visible
       if (preferences.soundEnabled && document.hasFocus() && document.visibilityState === 'visible') {
         try {
           const audio = new Audio('/assets/sounds/notification.mp3');
@@ -127,7 +144,9 @@ const NotificationComponents = {
 
     /**
      * Checks for due tasks and sends notifications based on preferences
-     * @param todos - Array of todos to check
+     * Implements cooldown periods to prevent notification spam
+     * 
+     * @param todos - Array of todos to check for due dates
      */
     const checkAndNotifyDueTasks = useCallback((todos: Todo[]) => {
       if (!preferences.enabled || !preferences.dueDateReminders.enabled) return;
@@ -135,7 +154,7 @@ const NotificationComponents = {
       const now = new Date();
       const currentTime = now.getTime();
 
-      // Notification cooldown periods
+      // Define notification cooldown periods to prevent spam
       const COOLDOWN = {
         BEFORE_DUE: 1 * 60 * 1000,     // 1 minute for upcoming reminders
         WHEN_DUE: 1 * 60 * 1000,       // 1 minute for due soon reminders
@@ -182,6 +201,7 @@ const NotificationComponents = {
           requiredCooldown = COOLDOWN.BEFORE_DUE;
         }
 
+        // Send notification if conditions are met and cooldown period has passed
         if (shouldNotify && timeSinceLastNotification >= requiredCooldown) {
           showNotification(message, notificationType, true);
           setLastNotificationTimes(prev => ({
@@ -192,7 +212,9 @@ const NotificationComponents = {
       });
     }, [preferences, lastNotificationTimes, showNotification]);
 
-    // Watch for notification permission changes
+    /**
+     * Watch for notification permission changes and handle accordingly
+     */
     useEffect(() => {
       if (!('Notification' in window)) return;
 
@@ -200,7 +222,7 @@ const NotificationComponents = {
         const granted = Notification.permission === 'granted';
         setHasPermission(granted);
         
-        // If permissions are revoked, disable notifications
+        // Disable notifications if permissions are revoked
         if (!granted) {
           setPreferences(prev => ({ 
             ...prev, 
@@ -224,16 +246,18 @@ const NotificationComponents = {
       }
     }, []);
 
-    // Add periodic check for due tasks
+    /**
+     * Add periodic check for due tasks when notifications are enabled
+     */
     useEffect(() => {
       if (!preferences.enabled || !preferences.dueDateReminders.enabled) {
         return;
       }
 
-      // Check immediately
+      // Check immediately on mount or preferences change
       checkAndNotifyDueTasks(window.__TODOS__ || []);
 
-      // Then check every minute
+      // Set up periodic check every minute
       const interval = setInterval(() => {
         checkAndNotifyDueTasks(window.__TODOS__ || []);
       }, 60 * 1000);
