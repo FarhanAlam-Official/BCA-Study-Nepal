@@ -1,3 +1,17 @@
+/**
+ * PomodoroContext
+ * 
+ * A comprehensive context for managing Pomodoro timer functionality.
+ * Features include:
+ * - Timer modes (pomodoro, short break, long break)
+ * - Configurable timer settings
+ * - Sound notifications
+ * - Auto-start options
+ * - Session tracking
+ * - Persistent state management
+ * - Mini timer display
+ */
+
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Pause, X } from 'lucide-react';
@@ -8,18 +22,27 @@ import TimerCompletionModal from '../components/tools/Pomodoro/TimerCompletionMo
 // const SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869.wav';
 const SOUND_URL = '../../assets/sounds/notification.mp3';
 
+/**
+ * Available timer modes
+ */
 type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
 
+/**
+ * Timer settings configuration interface
+ */
 interface TimerSettings {
-  pomodoro: number;
-  shortBreak: number;
-  longBreak: number;
-  autoStartBreaks: boolean;
-  autoStartPomodoros: boolean;
-  longBreakInterval: number;
-  soundEnabled: boolean;
+  pomodoro: number;          // Duration of pomodoro session in minutes
+  shortBreak: number;        // Duration of short break in minutes
+  longBreak: number;         // Duration of long break in minutes
+  autoStartBreaks: boolean;  // Whether to auto-start breaks
+  autoStartPomodoros: boolean; // Whether to auto-start pomodoros
+  longBreakInterval: number; // Number of pomodoros before long break
+  soundEnabled: boolean;     // Whether to play sound notifications
 }
 
+/**
+ * Context type definition for Pomodoro timer functionality
+ */
 export interface PomodoroContextType {
   mode: TimerMode;
   setMode: (mode: TimerMode) => void;
@@ -34,6 +57,9 @@ export interface PomodoroContextType {
   setCurrentTask: (task: string) => void;
 }
 
+/**
+ * Default timer settings
+ */
 const defaultSettings: TimerSettings = {
   pomodoro: 25,
   shortBreak: 5,
@@ -68,6 +94,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const savedState = loadSavedState();
 
+  // State initialization
   const [mode, setMode] = useState<TimerMode>(savedState.mode);
   const [settings, setSettings] = useState<TimerSettings>(savedState.settings);
   const [timeLeft, setTimeLeft] = useState(savedState.timeLeft);
@@ -80,6 +107,9 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Preload audio for notifications
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
+  /**
+   * Initialize and preload audio for notifications
+   */
   useEffect(() => {
     const audio = new Audio(SOUND_URL);
     audio.preload = 'auto';
@@ -102,16 +132,26 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, []);
 
-  // Save state to localStorage whenever it changes
+  /**
+   * Persist state to localStorage whenever it changes
+   */
   useEffect(() => {
-    localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
-    localStorage.setItem('pomodoroTimeLeft', timeLeft.toString());
-    localStorage.setItem('pomodoroMode', mode);
-    localStorage.setItem('pomodoroIsRunning', isRunning.toString());
-    localStorage.setItem('pomodoroCompleted', completedPomodoros.toString());
-    localStorage.setItem('pomodoroCurrentTask', currentTask);
+    try {
+      localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+      localStorage.setItem('pomodoroTimeLeft', timeLeft.toString());
+      localStorage.setItem('pomodoroMode', mode);
+      localStorage.setItem('pomodoroIsRunning', isRunning.toString());
+      localStorage.setItem('pomodoroCompleted', completedPomodoros.toString());
+      localStorage.setItem('pomodoroCurrentTask', currentTask);
+    } catch (error) {
+      console.error('Error saving pomodoro state:', error);
+    }
   }, [settings, timeLeft, mode, isRunning, completedPomodoros, currentTask]);
 
+  /**
+   * Play notification sound
+   * Handles sound playing with proper cleanup
+   */
   const playSound = useCallback(() => {
     if (settings.soundEnabled && audioRef.current) {
       const audio = audioRef.current;
@@ -121,23 +161,33 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       audio.loop = true;
       
       const playForDuration = async () => {
-        await audio.play();
-        setTimeout(() => {
-          audio.loop = false;
-          audio.pause();
-          audio.currentTime = 0;
-        }, 2000);
+        try {
+          await audio.play();
+          setTimeout(() => {
+            audio.loop = false;
+            audio.pause();
+            audio.currentTime = 0;
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to play timer notification sound:', err);
+        }
       };
       
-      playForDuration().catch(err => console.error('Failed to play timer notification sound:', err));
+      playForDuration();
     }
   }, [settings.soundEnabled]);
 
+  /**
+   * Handle snooze action from completion modal
+   */
   const handleSnooze = (minutes: number) => {
     setTimeLeft(minutes * 60);
     setIsRunning(true);
   };
 
+  /**
+   * Handle starting next session from completion modal
+   */
   const handleStartNext = () => {
     if (mode === 'pomodoro') {
       const needsLongBreak = (completedPomodoros + 1) % settings.longBreakInterval === 0;
@@ -149,24 +199,35 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsRunning(true);
   };
 
+  /**
+   * Handle finishing current session
+   */
   const handleFinish = () => {
     setTimeLeft(settings[mode] * 60);
     setIsRunning(false);
     setShowMiniTimer(false);
   };
 
+  /**
+   * Format time in seconds to MM:SS display format
+   */
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  /**
+   * Reset timer to initial state for current mode
+   */
   const resetTimer = useCallback(() => {
     setIsRunning(false);
     setTimeLeft(settings[mode] * 60);
   }, [mode, settings]);
 
-  // Timer logic - simplified to focus on pause/resume
+  /**
+   * Timer countdown logic
+   */
   useEffect(() => {
     let timerId: number | undefined;
     
@@ -183,7 +244,10 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [isRunning, timeLeft]);
 
-  // Handle timer completion separately
+  /**
+   * Handle timer completion
+   * Manages mode transitions and notifications
+   */
   useEffect(() => {
     if (timeLeft === 0) {
       setIsRunning(false);
@@ -218,7 +282,10 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [timeLeft, mode, settings, completedPomodoros, playSound]);
 
-  // Only reset timer on mode or settings change, not on pause
+  /**
+   * Handle mode or settings changes
+   * Resets timer when appropriate
+   */
   const lastMode = useRef(mode);
   const lastSettings = useRef(settings);
 
@@ -239,12 +306,18 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [mode, settings]);
 
+  /**
+   * Toggle timer running state
+   */
   const toggleTimer = useCallback(() => {
     setIsRunning(prev => !prev);
     setShowMiniTimer(true);
   }, []);
 
-  // Mini Timer Portal Component
+  /**
+   * Mini Timer Component
+   * Displays a floating timer when minimized
+   */
   const MiniTimer = () => {
     if (!showMiniTimer) return null;
     
