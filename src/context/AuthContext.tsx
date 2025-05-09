@@ -1,7 +1,24 @@
+/**
+ * AuthContext
+ * 
+ * A comprehensive authentication context that manages user authentication state
+ * and provides authentication-related functionality. Features include:
+ * - User authentication (login/register)
+ * - Session management
+ * - Token refresh handling
+ * - Error handling
+ * - User profile management
+ * - Persistent authentication state
+ */
+
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService, { LoginData, RegisterData } from '../services/auth/auth.service';
 
+/**
+ * User interface representing authenticated user data
+ * Contains both basic user information and extended profile data
+ */
 interface User {
   id: number;
   username: string;
@@ -9,7 +26,7 @@ interface User {
   first_name: string;
   last_name: string;
   is_verified: boolean;
-  // Additional fields for profile
+  // Profile information
   phone_number?: string;
   college?: string;
   semester?: number;
@@ -20,11 +37,15 @@ interface User {
   twitter_url?: string;
   linkedin_url?: string;
   github_url?: string;
-  // Additional meta information
+  // Additional metadata
   interests?: string[];
   skills?: string[];
 }
 
+/**
+ * Auth context type definition
+ * Provides authentication state and methods for auth operations
+ */
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -38,6 +59,10 @@ export interface AuthContextType {
   updateUser: (userData: User) => void;
 }
 
+/**
+ * API error response type
+ * Represents possible error response formats from the auth API
+ */
 interface ApiErrorResponse {
   status?: number;
   data?: {
@@ -47,8 +72,13 @@ interface ApiErrorResponse {
   };
 }
 
+// Create context without initial value to enforce usage with provider
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Auth Provider Component
+ * Manages authentication state and provides auth functionality to children
+ */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,9 +86,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
   
-  // Calculate isAuthenticated based on token presence and user data
+  // Calculate authentication status based on token presence and user data
   const isAuthenticated = !!localStorage.getItem('access_token') && !!user;
 
+  /**
+   * Check authentication status on mount and token changes
+   * Handles token refresh and user data fetching
+   */
   useEffect(() => {
     // Check if user is already logged in
     const checkAuthStatus = async () => {
@@ -121,6 +155,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkAuthStatus();
   }, []);
 
+  /**
+   * Handle user login
+   * Validates credentials and manages authentication state
+   * 
+   * @param credentials - User login credentials
+   */
   const login = async (credentials: LoginData) => {
     setIsLoading(true);
     setError(null);
@@ -133,7 +173,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('No access token received');
       }
 
-      // Validate the token immediately after receiving it
+      // Validate token immediately after receiving it
       const isValid = await authService.testTokenValidity();
       if (!isValid) {
         throw new Error('Invalid credentials');
@@ -210,6 +250,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  /**
+   * Handle user registration
+   * Creates new user account and manages registration state
+   * 
+   * @param userData - User registration data
+   */
   const register = async (userData: RegisterData) => {
     setIsLoading(true);
     setError(null);
@@ -267,21 +313,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  /**
+   * Handle user logout
+   * Clears authentication state and redirects to login
+   */
   const logout = () => {
     authService.logout();
     setUser(null);
     navigate('/auth', { replace: true });
   };
-  
+
+  /**
+   * Reset error and success messages
+   */
   const resetMessages = () => {
     setError(null);
     setSuccess(null);
   };
 
+  /**
+   * Update user data
+   * Updates local user state with new data
+   * 
+   * @param userData - Updated user data
+   */
   const updateUser = (userData: User) => {
     setUser(userData);
   };
 
+  // Provide context value
   const value = {
     user,
     isAuthenticated,
