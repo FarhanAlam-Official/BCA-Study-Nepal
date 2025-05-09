@@ -1,5 +1,10 @@
 import { GradeScaleItem } from './types';
 
+/**
+ * Calculates the grade and grade points for Tribhuvan University (TU) grading system
+ * @param marks - Numeric marks obtained (0-100)
+ * @returns Object containing the letter grade and corresponding grade points
+ */
 export const calculateTUGrade = (marks: number): { grade: string; points: number } => {
   if (marks >= 90) return { grade: 'A', points: 4.0 };
   if (marks >= 80) return { grade: 'A-', points: 3.7 };
@@ -9,6 +14,11 @@ export const calculateTUGrade = (marks: number): { grade: string; points: number
   return { grade: 'F', points: 0 };
 };
 
+/**
+ * Calculates the grade and grade points for Pokhara University (PU) grading system
+ * @param marks - Numeric marks obtained (0-100)
+ * @returns Object containing the letter grade and corresponding grade points
+ */
 export const calculatePUGrade = (marks: number): { grade: string; points: number } => {
   if (marks >= 90) return { grade: 'A', points: 4.0 };
   if (marks >= 85) return { grade: 'A-', points: 3.7 };
@@ -23,6 +33,10 @@ export const calculatePUGrade = (marks: number): { grade: string; points: number
   return { grade: 'F', points: 0.0 };
 };
 
+/**
+ * Grade scale reference for Tribhuvan University (TU)
+ * Includes grade ranges, points, and remarks for each grade level
+ */
 export const tuGradeScale: GradeScaleItem[] = [
   { grade: 'A', range: '90-100', points: '4.0', remarks: 'Distinction' },
   { grade: 'A-', range: '80-89.9', points: '3.7', remarks: 'Very Good' },
@@ -32,6 +46,10 @@ export const tuGradeScale: GradeScaleItem[] = [
   { grade: 'F', range: 'Below 50', points: '0', remarks: 'Fail' },
 ];
 
+/**
+ * Grade scale reference for Pokhara University (PU)
+ * Includes grade ranges and points for each grade level
+ */
 export const puGradeScale: GradeScaleItem[] = [
   { grade: 'A', range: '90-100', points: '4.0' },
   { grade: 'A-', range: '85-89', points: '3.7' },

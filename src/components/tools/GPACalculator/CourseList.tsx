@@ -1,8 +1,19 @@
+/**
+ * CourseList Component
+ * Manages a list of courses for GPA calculation, allowing users to add, remove,
+ * and modify course details including name, credits, and marks.
+ */
 import React from 'react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Course } from './types';
 import { calculateTUGrade, calculatePUGrade } from './gradeUtils';
 
+/**
+ * Props interface for the CourseList component
+ * @property {Course[]} courses - Array of course objects
+ * @property {boolean} isTU - Flag indicating if TU grading system is selected
+ * @property {function} onCoursesChange - Callback function when courses are modified
+ */
 interface CourseListProps {
   courses: Course[];
   isTU: boolean;
@@ -10,6 +21,11 @@ interface CourseListProps {
 }
 
 const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange }) => {
+  /**
+   * Handles changes to course marks and updates grade/points accordingly
+   * @param id - Course ID
+   * @param marks - New marks value
+   */
   const handleMarksChange = (id: number, marks: string) => {
     onCoursesChange(
       courses.map(course => {
@@ -23,6 +39,11 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
     );
   };
 
+  /**
+   * Handles changes to course credit hours
+   * @param id - Course ID
+   * @param credits - New credits value
+   */
   const handleCreditsChange = (id: number, credits: string) => {
     onCoursesChange(
       courses.map(course => {
@@ -34,6 +55,11 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
     );
   };
 
+  /**
+   * Handles changes to course name
+   * @param id - Course ID
+   * @param name - New course name
+   */
   const handleNameChange = (id: number, name: string) => {
     onCoursesChange(
       courses.map(course => {
@@ -45,6 +71,9 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
     );
   };
 
+  /**
+   * Adds a new empty course to the list
+   */
   const addCourse = () => {
     const newId = courses.length > 0 ? Math.max(...courses.map(c => c.id)) + 1 : 1;
     onCoursesChange([
@@ -53,6 +82,10 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
     ]);
   };
 
+  /**
+   * Removes a course from the list if there's more than one course
+   * @param id - ID of the course to remove
+   */
   const removeCourse = (id: number) => {
     if (courses.length > 1) {
       onCoursesChange(courses.filter(course => course.id !== id));
@@ -73,6 +106,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
       {/* Course Rows */}
       {courses.map((course) => (
         <div key={course.id} className="grid grid-cols-12 gap-4 items-center">
+          {/* Course Name Input */}
           <div className="col-span-12 sm:col-span-4">
             <input
               type="text"
@@ -83,6 +117,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
             />
           </div>
 
+          {/* Credits Input */}
           <div className="col-span-6 sm:col-span-2">
             <input
               type="number"
@@ -94,6 +129,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
             />
           </div>
 
+          {/* Marks Input */}
           <div className="col-span-6 sm:col-span-2">
             <input
               type="number"
@@ -106,17 +142,20 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
             />
           </div>
 
+          {/* Grade Display */}
           <div className="col-span-6 sm:col-span-2">
             <span className="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-100 rounded-lg">
               {course.grade}
             </span>
           </div>
 
+          {/* Remove Course Button */}
           <div className="col-span-6 sm:col-span-2">
             <button
               onClick={() => removeCourse(course.id)}
               className="text-red-600 hover:text-red-700 transition-colors"
               disabled={courses.length === 1}
+              aria-label="Remove course"
             >
               <TrashIcon className="w-5 h-5" />
             </button>
@@ -128,6 +167,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, isTU, onCoursesChange 
       <button
         onClick={addCourse}
         className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
+        aria-label="Add new course"
       >
         <PlusIcon className="w-5 h-5" />
         <span>Add Course</span>
