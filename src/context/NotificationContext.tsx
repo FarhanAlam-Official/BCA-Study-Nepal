@@ -113,7 +113,7 @@ const NotificationComponents = {
       if (preferences.soundEnabled && document.hasFocus() && document.visibilityState === 'visible') {
         try {
           const audio = new Audio('/assets/sounds/notification.mp3');
-          audio.volume = 0.5;
+          audio.volume = 0.4;
           audio.play().catch(error => {
             if (error.name !== 'NotAllowedError') {
               console.error('Failed to play notification sound:', error);

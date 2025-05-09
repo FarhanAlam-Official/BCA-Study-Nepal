@@ -1,3 +1,19 @@
+/**
+ * NotificationButton Component
+ * A comprehensive notification settings button and popup panel.
+ * Features include:
+ * - Master notification toggle
+ * - Due date reminder settings
+ * - Sound effect settings
+ * - Daily summary preferences
+ * - Stale task reminder settings
+ * - Permission management
+ * - Responsive design
+ * - Animated transitions
+ * 
+ * @module NotificationButton
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,24 +22,34 @@ import NotificationComponents from '../../../../context/NotificationContext';
 
 /**
  * Interface for reminder option items
+ * Used to populate the reminder interval dropdown
+ * @interface ReminderOption
  */
 interface ReminderOption {
+  /** Time in minutes for the reminder */
   value: number;
+  /** Human-readable label for the option */
   label: string;
 }
 
 /**
  * NotificationButton component provides a UI for managing notification preferences
  * Includes a button that shows notification status and a popup settings panel
+ * 
+ * @component
  */
 const NotificationButton: React.FC = () => {
+  // State management
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Refs for positioning and click detection
   const buttonRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const [popupPosition, setPopupPosition] = useState({ top: 0, right: 0 });
 
+  // Notification context
   const { 
     preferences, 
     updatePreferences, 

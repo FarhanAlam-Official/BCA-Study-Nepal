@@ -387,7 +387,7 @@ const TodoComponents = {
         showNotification(errorMessage, 'error');
       } else {
         dispatch({ type: 'DELETE_TODO', payload: id });
-        showNotification('Task deleted', 'error');
+        showNotification('Task deleted Sucessfully', 'error');
       }
     }, [dispatch, showNotification]);
 
@@ -425,78 +425,161 @@ const TodoComponents = {
 
     const addSubtask = useCallback(async (todoId: string, title: string) => {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.addSubtask(todoId, title);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else if (response.data) {
-        const todoResponse = await TodoApi.getAllTodos();
-        if (todoResponse.data) {
-          dispatch({ type: 'SET_TODOS', payload: todoResponse.data });
-          showNotification('Subtask added successfully', 'success');
+      try {
+        const response = await TodoApi.addSubtask(todoId, title);
+        if (response.error) {
+          dispatch({ type: 'SET_ERROR', payload: response.error });
+          showNotification(response.error, 'error');
+          return;
         }
+        
+        if (response.data) {
+          // Find the current todo
+          const currentTodo = state.todos.find(todo => todo.id === todoId);
+          if (currentTodo) {
+            // Create updated todo with new subtask while preserving other properties
+            const updatedTodo = {
+              ...currentTodo,
+              subtasks: [...currentTodo.subtasks, response.data]
+            };
+            dispatch({ type: 'UPDATE_TODO', payload: updatedTodo });
+            showNotification('Subtask added successfully', 'success');
+          }
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to add subtask';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+        showNotification(errorMessage, 'error');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }, [dispatch, showNotification]);
+    }, [dispatch, showNotification, state.todos]);
 
     const toggleSubtask = useCallback(async (todoId: string, subtaskId: string) => {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.toggleSubtask(todoId, subtaskId);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else if (response.data) {
-        const todoResponse = await TodoApi.getAllTodos();
-        if (todoResponse.data) {
-          dispatch({ type: 'SET_TODOS', payload: todoResponse.data });
-          showNotification('Subtask status updated', 'success');
+      try {
+        const response = await TodoApi.toggleSubtask(todoId, subtaskId);
+        if (response.error) {
+          dispatch({ type: 'SET_ERROR', payload: response.error });
+          showNotification(response.error, 'error');
+          return;
         }
+        
+        if (response.data) {
+          // Find the current todo
+          const currentTodo = state.todos.find(todo => todo.id === todoId);
+          if (currentTodo) {
+            // Create updated todo with toggled subtask while preserving other properties
+            const updatedTodo = {
+              ...currentTodo,
+              subtasks: currentTodo.subtasks.map(subtask =>
+                subtask.id === subtaskId ? { ...subtask, isCompleted: !subtask.isCompleted } : subtask
+              )
+            };
+            dispatch({ type: 'UPDATE_TODO', payload: updatedTodo });
+            showNotification('Subtask status updated', 'success');
+          }
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to toggle subtask';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+        showNotification(errorMessage, 'error');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }, [dispatch, showNotification]);
+    }, [dispatch, showNotification, state.todos]);
 
     const deleteSubtask = useCallback(async (todoId: string, subtaskId: string) => {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.deleteSubtask(todoId, subtaskId);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else {
-        const todoResponse = await TodoApi.getAllTodos();
-        if (todoResponse.data) {
-          dispatch({ type: 'SET_TODOS', payload: todoResponse.data });
+      try {
+        const response = await TodoApi.deleteSubtask(todoId, subtaskId);
+        if (response.error) {
+          dispatch({ type: 'SET_ERROR', payload: response.error });
+          showNotification(response.error, 'error');
+          return;
+        }
+        
+        // Find the current todo
+        const currentTodo = state.todos.find(todo => todo.id === todoId);
+        if (currentTodo) {
+          // Create updated todo without the deleted subtask while preserving other properties
+          const updatedTodo = {
+            ...currentTodo,
+            subtasks: currentTodo.subtasks.filter(subtask => subtask.id !== subtaskId)
+          };
+          dispatch({ type: 'UPDATE_TODO', payload: updatedTodo });
           showNotification('Subtask deleted successfully', 'success');
         }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete subtask';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+        showNotification(errorMessage, 'error');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }, [dispatch, showNotification]);
+    }, [dispatch, showNotification, state.todos]);
 
     const addComment = useCallback(async (todoId: string, content: string) => {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.addComment(todoId, content);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else if (response.data) {
-        const todoResponse = await TodoApi.getAllTodos();
-        if (todoResponse.data) {
-          dispatch({ type: 'SET_TODOS', payload: todoResponse.data });
-          showNotification('Comment added successfully', 'success');
+      try {
+        const response = await TodoApi.addComment(todoId, content);
+        if (response.error) {
+          dispatch({ type: 'SET_ERROR', payload: response.error });
+          showNotification(response.error, 'error');
+          return;
         }
+        
+        if (response.data) {
+          // Find the current todo
+          const currentTodo = state.todos.find(todo => todo.id === todoId);
+          if (currentTodo) {
+            // Create updated todo with new comment while preserving other properties
+            const updatedTodo = {
+              ...currentTodo,
+              comments: [...currentTodo.comments, response.data]
+            };
+            dispatch({ type: 'UPDATE_TODO', payload: updatedTodo });
+            showNotification('Comment added successfully', 'success');
+          }
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to add comment';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+        showNotification(errorMessage, 'error');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }, [dispatch, showNotification]);
+    }, [dispatch, showNotification, state.todos]);
 
     const deleteComment = useCallback(async (todoId: string, commentId: string) => {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await TodoApi.deleteComment(todoId, commentId);
-      if (response.error) {
-        dispatch({ type: 'SET_ERROR', payload: response.error });
-        showNotification(response.error, 'error');
-      } else {
-        const todoResponse = await TodoApi.getAllTodos();
-        if (todoResponse.data) {
-          dispatch({ type: 'SET_TODOS', payload: todoResponse.data });
+      try {
+        const response = await TodoApi.deleteComment(todoId, commentId);
+        if (response.error) {
+          dispatch({ type: 'SET_ERROR', payload: response.error });
+          showNotification(response.error, 'error');
+          return;
+        }
+        
+        // Find the current todo
+        const currentTodo = state.todos.find(todo => todo.id === todoId);
+        if (currentTodo) {
+          // Create updated todo without the deleted comment while preserving other properties
+          const updatedTodo = {
+            ...currentTodo,
+            comments: currentTodo.comments.filter(comment => comment.id !== commentId)
+          };
+          dispatch({ type: 'UPDATE_TODO', payload: updatedTodo });
           showNotification('Comment deleted successfully', 'success');
         }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+        showNotification(errorMessage, 'error');
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }, [dispatch, showNotification]);
+    }, [dispatch, showNotification, state.todos]);
 
     const value = {
       todos: state.todos,

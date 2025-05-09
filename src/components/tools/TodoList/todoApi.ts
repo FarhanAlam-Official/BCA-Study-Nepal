@@ -1,20 +1,28 @@
 import { Todo, SubTask, Comment } from './types';
 
-// Base API URL from environment variables
+/**
+ * Base API configuration
+ * Uses environment variables for API URL with fallback to localhost
+ */
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_TODO_PREFIX = '/api/todos';
 
 /**
- * Interface for API responses
+ * Interface for standardized API responses
+ * @template T - Type of the expected response data
  */
 interface ApiResponse<T> {
+  /** The response data if successful */
   data?: T;
+  /** Error message if the request failed */
   error?: string;
+  /** HTTP status code of the response */
   status?: number;
 }
 
 /**
  * TodoApi class handles all API interactions for todo operations
+ * Provides authentication management and CRUD operations for todos
  */
 class TodoApi {
   private static TOKEN_KEY = 'access_token';
@@ -22,7 +30,8 @@ class TodoApi {
 
   /**
    * Retrieves authentication token from storage
-   * Checks localStorage first, then sessionStorage
+   * Checks localStorage first, then sessionStorage as fallback
+   * @returns {string | null} The stored authentication token or null if not found
    */
   private static getAuthToken() {
     let token = localStorage.getItem(this.TOKEN_KEY);
@@ -35,7 +44,7 @@ class TodoApi {
   /**
    * Sets authentication token in storage
    * @param token - The authentication token to store
-   * @param remember - If true, stores in localStorage; otherwise in sessionStorage
+   * @param remember - If true, stores in localStorage for persistence; otherwise uses sessionStorage
    */
   private static setAuthToken(token: string, remember: boolean = true) {
     if (remember) {
@@ -47,6 +56,7 @@ class TodoApi {
 
   /**
    * Clears all authentication tokens from storage
+   * Used during logout or when tokens become invalid
    */
   private static clearAuthToken() {
     localStorage.removeItem(this.TOKEN_KEY);
@@ -57,9 +67,9 @@ class TodoApi {
 
   /**
    * Attempts to refresh the authentication token
-   * @returns boolean indicating success of refresh attempt
+   * @returns {Promise<boolean>} True if refresh successful, false otherwise
    */
-  private static async refreshToken() {
+  private static async refreshToken(): Promise<boolean> {
     const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY) || 
                         sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
     
@@ -79,6 +89,7 @@ class TodoApi {
       }
       return false;
     } catch (error) {
+      // Keep this error log as it's essential for debugging authentication issues
       console.error('Token refresh failed:', error);
       return false;
     }
@@ -86,6 +97,8 @@ class TodoApi {
 
   /**
    * Makes an authenticated request to the API
+   * Handles token refresh and authentication redirects
+   * @template T - Type of the expected response data
    * @param endpoint - API endpoint to call
    * @param options - Request options
    * @returns Promise with the API response
@@ -129,7 +142,6 @@ class TodoApi {
         return { error: errorMessage, status: response.status };
       }
 
-      // Handle 204 No Content responses
       if (response.status === 204) {
         return { status: response.status };
       }
@@ -137,6 +149,7 @@ class TodoApi {
       const data = await response.json();
       return { data, status: response.status };
     } catch (error) {
+      // Keep this error log as it's essential for debugging API issues
       console.error('API request error:', error);
       return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
@@ -144,6 +157,8 @@ class TodoApi {
 
   /**
    * Retrieves all todos for the authenticated user
+   * Handles both array and paginated responses
+   * @returns Promise with array of todos or error
    */
   static async getAllTodos(): Promise<ApiResponse<Todo[]>> {
     const response = await this.request<Todo[] | { results: Todo[] }>('/');

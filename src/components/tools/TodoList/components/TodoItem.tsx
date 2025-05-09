@@ -1,3 +1,19 @@
+/**
+ * TodoItem Component
+ * A comprehensive todo item component that displays and manages a single todo.
+ * Features include:
+ * - Completion status toggle
+ * - Priority visualization
+ * - Due date display
+ * - Subtask management
+ * - Comment system
+ * - Delete confirmation
+ * - Animated transitions
+ * - Error handling with notifications
+ * 
+ * @module TodoItem
+ */
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Todo, Priority } from '../types';
@@ -35,6 +51,7 @@ interface TodoItemProps {
 /**
  * Color mappings for different priority levels
  * Uses Tailwind CSS classes for consistent styling
+ * @const priorityColors
  */
 const priorityColors: Record<Priority, string> = {
   low: 'bg-green-100 text-green-800 border border-green-200',
@@ -44,7 +61,7 @@ const priorityColors: Record<Priority, string> = {
 
 /**
  * Framer Motion animation variants for list items
- * Handles entry, exit, and visibility states
+ * Handles entry, exit, and visibility states with smooth transitions
  */
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -120,6 +137,8 @@ const buttonVariants = {
 const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit }) => {
   const { addSubtask, toggleSubtask, deleteSubtask, addComment, deleteComment } = TodoComponents.useTodos();
   const { showNotification } = NotificationComponents.useNotifications();
+  
+  // State management
   const [isExpanded, setIsExpanded] = useState(false);
   const [newSubtask, setNewSubtask] = useState('');
   const [newComment, setNewComment] = useState('');
@@ -248,7 +267,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete, onEdit })
     try {
       await toggleSubtask(todo.id, subtaskId);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update subtask status';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to toggle subtask';
       showNotification(errorMessage, 'error');
     }
   };

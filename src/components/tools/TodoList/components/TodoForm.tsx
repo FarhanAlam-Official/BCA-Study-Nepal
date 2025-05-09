@@ -1,3 +1,19 @@
+/**
+ * TodoForm Component
+ * A comprehensive form component for creating and editing todo items.
+ * Features include:
+ * - Title and description input
+ * - Priority selection
+ * - Due date and time picker
+ * - Category assignment
+ * - Subtask management
+ * - Animated UI elements
+ * - Form validation
+ * - Limit checking for maximum todos
+ * 
+ * @module TodoForm
+ */
+
 import React, { useState } from 'react';
 import { TodoData, Todo, Priority } from '../types';
 import { 
@@ -16,14 +32,17 @@ import TodoComponents from '../../../../context/TodoContext';
 /**
  * Interface for HTML5 datetime input showPicker method
  * This is needed because TypeScript doesn't include this experimental feature
+ * @interface DateTimeInput
  */
 interface DateTimeInput {
+  /** Native method to show the date/time picker UI */
   showPicker: () => void;
 }
 
 /**
  * Shows the native date picker for the input element
- * @param input - The HTML input element to show the picker for
+ * Falls back gracefully if the showPicker API is not available
+ * @param {HTMLInputElement} input - The HTML input element to show the picker for
  */
 const showDatePicker = (input: HTMLInputElement) => {
   if ('showPicker' in input) {
@@ -33,6 +52,7 @@ const showDatePicker = (input: HTMLInputElement) => {
 
 /**
  * Animation variants for the form container
+ * Provides smooth entry and exit animations
  */
 const formVariants = {
   hidden: { 
@@ -55,6 +75,7 @@ const formVariants = {
 
 /**
  * Animation variants for form inputs
+ * Provides interactive feedback for focus and hover states
  */
 const inputVariants = {
   focus: { 
@@ -75,6 +96,7 @@ const inputVariants = {
 
 /**
  * Props for the TodoForm component
+ * @interface TodoFormProps
  */
 interface TodoFormProps {
   /** Callback function to handle form submission */
@@ -87,6 +109,7 @@ interface TodoFormProps {
 
 /**
  * Form data interface for managing todo item fields
+ * @interface TodoFormData
  */
 interface TodoFormData {
   /** Title of the todo item */
@@ -105,13 +128,15 @@ interface TodoFormData {
   subtasks: string[];
 }
 
-const MAX_TODOS = 15; // Maximum number of todos allowed per user
+/** Maximum number of active todos allowed per user */
+const MAX_TODOS = 15;
 
 /**
  * Floating decorative elements component
- * Adds animated background elements to the form
+ * Adds animated background elements to enhance the form's visual appeal
+ * @component
  */
-const FloatingElements = () => (
+const FloatingElements: React.FC = () => (
   <>
     <motion.div
       animate={{ 
@@ -210,6 +235,9 @@ const FloatingElements = () => (
 /**
  * TodoForm Component
  * Handles creation and editing of todo items with a rich UI
+ * 
+ * @component
+ * @param {TodoFormProps} props - The props for the TodoForm component
  */
 export const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, initialData, isEditing = false }) => {
   const { todos } = TodoComponents.useTodos();

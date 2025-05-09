@@ -10,6 +10,7 @@ import NotificationButton from './components/NotificationButton';
 
 /**
  * Animation variants for the container
+ * Defines entry and exit animations for the todo list container
  */
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -23,6 +24,7 @@ const containerVariants = {
 
 /**
  * Animation variants for individual items
+ * Defines smooth entry animations for each todo item
  */
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -31,10 +33,14 @@ const itemVariants = {
 
 /**
  * Main content component for the todo list
+ * Handles todo management, filtering, sorting, and animations
  */
 const TodoListContent: React.FC = () => {
+  // Context hooks for todo and notification management
   const { todos, addTodo, updateTodo, deleteTodo, toggleTodo } = TodoComponents.useTodos();
   const { checkAndNotifyDueTasks } = NotificationComponents.useNotifications();
+
+  // State management for UI interactions
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [filter, setFilter] = useState<{
     status: 'all' | 'active' | 'completed';
@@ -53,6 +59,7 @@ const TodoListContent: React.FC = () => {
 
   /**
    * Handles adding a new todo
+   * @param formData - The data for the new todo item
    */
   const handleAddTodo = (formData: TodoData) => {
     addTodo({
@@ -67,6 +74,7 @@ const TodoListContent: React.FC = () => {
 
   /**
    * Handles updating an existing todo
+   * @param formData - The updated data for the todo item
    */
   const handleUpdateTodo = (formData: TodoData) => {
     if (editingTodo) {
@@ -84,6 +92,7 @@ const TodoListContent: React.FC = () => {
 
   /**
    * Handles toggling a todo's completion status
+   * @param id - The ID of the todo to toggle
    */
   const handleToggleTodo = (id: string) => {
     const todo = todos.find((t: Todo) => t.id === id);
@@ -94,6 +103,7 @@ const TodoListContent: React.FC = () => {
 
   /**
    * Handles deleting a todo
+   * @param id - The ID of the todo to delete
    */
   const handleDeleteTodo = (id: string) => {
     deleteTodo(id);
@@ -101,12 +111,14 @@ const TodoListContent: React.FC = () => {
 
   /**
    * Memoized sorted and filtered todos
+   * Applies current filter and sort settings to the todo list
    */
   const sortedAndFilteredTodos = useMemo(() => {
     if (!Array.isArray(todos)) {
       return [];
     }
 
+    // Apply filters
     const result = todos.filter(todo => {
       const statusMatch =
         filter.status === 'all' ||
@@ -122,6 +134,7 @@ const TodoListContent: React.FC = () => {
       return statusMatch && priorityMatch && categoryMatch;
     });
 
+    // Apply sorting
     return result.sort((a, b) => {
       const direction = sort.direction === 'asc' ? 1 : -1;
       
@@ -138,7 +151,6 @@ const TodoListContent: React.FC = () => {
             }
             return direction * (aDate.getTime() - bDate.getTime());
           } catch {
-            // Invalid date format, return 0 for equal sorting
             return 0;
           }
         }
@@ -165,19 +177,23 @@ const TodoListContent: React.FC = () => {
 
   // Set up notification checking
   useEffect(() => {
+    // Initial check for due tasks
     checkAndNotifyDueTasks(todos);
 
+    // Set up event listener for manual notification checks
     const handleNotificationCheck = () => {
       checkAndNotifyDueTasks(todos);
     };
 
     window.addEventListener('check-todo-notifications', handleNotificationCheck);
     
+    // Cleanup event listener on unmount
     return () => {
       window.removeEventListener('check-todo-notifications', handleNotificationCheck);
     };
   }, [todos, checkAndNotifyDueTasks]);
 
+  // Make todos available globally for debugging if needed
   useEffect(() => {
     window.__TODOS__ = todos;
   }, [todos]);
@@ -191,6 +207,7 @@ const TodoListContent: React.FC = () => {
           animate="show"
           className="space-y-8"
         >
+          {/* Header Section */}
           <motion.div variants={itemVariants} className="text-center relative">
             <div className="absolute right-0 top-1/2 -translate-y-1/2">
               <NotificationButton />
@@ -207,6 +224,7 @@ const TodoListContent: React.FC = () => {
             <p className="mt-2 text-gray-600">Stay organized and boost your productivity</p>
           </motion.div>
 
+          {/* Edit Form Section */}
           {editingTodo ? (
             <motion.div
               variants={itemVariants}
@@ -243,10 +261,12 @@ const TodoListContent: React.FC = () => {
             </motion.div>
           )}
 
+          {/* Todo List Section */}
           <motion.div
             variants={itemVariants}
             className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:border-indigo-100 transition-all duration-300"
           >
+            {/* Filter and Sort Controls */}
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <div className="flex items-center gap-2">
                 <FunnelIcon className="w-5 h-5 text-indigo-400" />
@@ -350,6 +370,10 @@ const TodoListContent: React.FC = () => {
   );
 };
 
+/**
+ * Main TodoList component wrapper
+ * Provides error boundary and loading states if needed
+ */
 const TodoList = () => {
   return <TodoListContent />;
 };
