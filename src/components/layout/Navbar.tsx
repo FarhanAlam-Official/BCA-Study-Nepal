@@ -360,9 +360,22 @@ export default function Navbar() {
                   )}
                   {/* Username display with truncation */}
                   <div className="ml-2 sm:ml-3 max-w-[80px] sm:max-w-[100px] md:max-w-[120px] lg:max-w-[180px] flex flex-col overflow-hidden">
-                    <span className="text-sm font-medium leading-tight line-clamp-2 transition-colors duration-300 ease-out break-all">
-                      {user?.username || 'User'}
-                    </span>
+                    {user?.username ? (
+                      <>
+                        <span className="text-sm font-medium leading-tight transition-colors duration-300 ease-out">
+                          {user.username.slice(0, 10)}
+                        </span>
+                        {user.username.length > 10 && (
+                          <span className="text-sm font-medium leading-tight transition-colors duration-300 ease-out">
+                            {user.username.slice(10, 20)}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-sm font-medium leading-tight transition-colors duration-300 ease-out">
+                        User
+                      </span>
+                    )}
                   </div>
                 </Link>
               </div>
