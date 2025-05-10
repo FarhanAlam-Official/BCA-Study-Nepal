@@ -1,12 +1,18 @@
 /**
  * OTP Verification Component
  * 
- * Handles email verification through OTP with features including:
- * - 6-digit OTP input with auto-focus
+ * A secure and user-friendly OTP verification system that provides:
+ * - 6-digit OTP input with auto-focus navigation
+ * - Clipboard paste support for convenience
  * - Rate-limited resend functionality
- * - Paste support for OTP
- * - Cancellation with confirmation
- * - Loading states and error handling
+ * - Real-time validation and error handling
+ * - Animated transitions and loading states
+ * - Cancellation flow with confirmation
+ * - Accessibility features
+ * - Toast notifications for user feedback
+ * 
+ * @module Authentication
+ * @category Components
  */
 
 import React, { useState, useEffect } from 'react';
@@ -18,6 +24,12 @@ import { AxiosError } from 'axios';
 
 /**
  * Props interface for OTPVerification component
+ * @interface OTPVerificationProps
+ * @property {string} email - User's email address for verification
+ * @property {() => void} onVerificationSuccess - Callback for successful verification
+ * @property {() => Promise<void>} onResendOTP - Callback to request new OTP
+ * @property {() => void} onCancel - Callback to cancel verification
+ * @property {boolean} isLoading - Loading state from parent component
  */
 interface OTPVerificationProps {
   email: string;
@@ -29,6 +41,9 @@ interface OTPVerificationProps {
 
 /**
  * Interface for API error response data
+ * @interface ErrorResponseData
+ * @property {string} [message] - Optional error message
+ * @property {string} [detail] - Optional error detail
  */
 interface ErrorResponseData {
   message?: string;
@@ -37,7 +52,9 @@ interface ErrorResponseData {
 }
 
 /**
- * Animation variants for form transitions
+ * Animation configuration for form transitions
+ * Provides smooth enter/exit animations with easing
+ * @constant
  */
 const formVariants = {
   enter: {

@@ -1,12 +1,19 @@
 /**
  * Reset Password Component
  * 
- * Handles password reset functionality with features including:
- * - Password strength validation
+ * A secure password reset system that provides:
+ * - Token-based password reset verification
+ * - Password strength meter with visual feedback
+ * - Real-time password validation
  * - Password visibility toggle
- * - Animated UI elements
- * - Token-based reset verification
- * - Error handling and user feedback
+ * - Animated UI elements for better UX
+ * - Comprehensive error handling
+ * - Security measures against brute force
+ * - Responsive design with decorative elements
+ * - Toast notifications for user feedback
+ * 
+ * @module Authentication
+ * @category Pages
  */
 
 import React, { useState } from 'react';
@@ -18,7 +25,9 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import authService from '../../services/auth/auth.service';
 
 /**
- * Animation variants for form transitions
+ * Animation configuration for form transitions
+ * Provides smooth enter/exit animations with easing
+ * @constant
  */
 const formVariants = {
     initial: {
@@ -35,7 +44,11 @@ const formVariants = {
 };
 
 /**
- * Password strength levels with corresponding styles
+ * Password strength configuration with visual indicators
+ * @constant
+ * @property {Object} WEAK - Styling for weak passwords
+ * @property {Object} MEDIUM - Styling for medium-strength passwords
+ * @property {Object} STRONG - Styling for strong passwords
  */
 const PASSWORD_STRENGTH = {
     WEAK: { label: 'Weak', color: 'text-red-500 border-red-500' },
@@ -45,6 +58,12 @@ const PASSWORD_STRENGTH = {
 
 /**
  * Props interface for the FloatingIcon component
+ * @interface FloatingIconProps
+ * @property {React.ElementType} Icon - The icon component to render
+ * @property {string} className - CSS classes for styling
+ * @property {string} [size] - Optional size override
+ * @property {AnimationProps['animate']} animate - Animation configuration
+ * @property {AnimationProps['transition']} transition - Transition configuration
  */
 interface FloatingIconProps {
     Icon: React.ElementType;

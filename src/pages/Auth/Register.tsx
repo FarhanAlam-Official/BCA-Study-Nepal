@@ -1,13 +1,19 @@
 /**
  * Registration Page Component
  * 
- * Handles user registration with features including:
- * - Form validation
- * - Password strength checking
- * - OTP verification
- * - Social login options
- * - Form persistence
- * - Rate limiting for submissions
+ * A comprehensive registration system that provides:
+ * - User registration with email verification
+ * - Form validation with real-time feedback
+ * - Password strength meter with visual indicators
+ * - Social registration options
+ * - Form data persistence
+ * - Rate-limited submissions
+ * - Animated UI elements
+ * - Error handling with toast notifications
+ * - OTP verification integration
+ * 
+ * @module Authentication
+ * @category Pages
  */
 
 import { useState, useEffect } from 'react';
@@ -22,10 +28,16 @@ import { RegisterData } from '../../services/auth/auth.service';
 import authService from '../../services/auth/auth.service';
 import OTPVerification from './OTPVerification';
 
-// Constants for rate limiting
+/**
+ * Constants for rate limiting and validation
+ * @constant
+ */
 const SUBMIT_COOLDOWN = 2000; // 2 seconds cooldown between submissions
 
-// Password strength levels with corresponding styles
+/**
+ * Password strength configuration with visual indicators
+ * @constant
+ */
 const PASSWORD_STRENGTH = {
   WEAK: { label: 'Weak', color: 'text-red-500 border-red-500' },
   MEDIUM: { label: 'Medium', color: 'text-yellow-500 border-yellow-500' },
@@ -34,6 +46,7 @@ const PASSWORD_STRENGTH = {
 
 /**
  * Props interface for the FloatingIcon component
+ * @interface FloatingIconProps
  */
 interface FloatingIconProps {
     Icon: React.ElementType;

@@ -1,11 +1,18 @@
 /**
  * Forgot Password Page Component
  * 
- * Handles the password reset request process with features including:
- * - Email validation
- * - Rate limiting for resend requests
- * - Animated UI elements
- * - Error handling and user feedback
+ * A secure password recovery system that provides:
+ * - Email-based password reset
+ * - Real-time email validation
+ * - Rate-limited resend functionality
+ * - Animated UI elements for better UX
+ * - Comprehensive error handling
+ * - Toast notifications for user feedback
+ * - Security measures against brute force
+ * - Responsive design with decorative elements
+ * 
+ * @module Authentication
+ * @category Pages
  */
 
 import React, { useState, useEffect } from 'react';
@@ -16,7 +23,9 @@ import { Mail, KeyRound, ShieldCheck, Undo2, MailQuestion, SendHorizonal } from 
 import authService from '../../services/auth/auth.service';
 
 /**
- * Animation variants for form transitions
+ * Animation configuration for form transitions
+ * Provides smooth enter/exit animations with easing
+ * @constant
  */
 const formVariants = {
     initial: {
@@ -34,6 +43,12 @@ const formVariants = {
 
 /**
  * Props interface for the FloatingIcon component
+ * @interface FloatingIconProps
+ * @property {React.ElementType} Icon - The icon component to render
+ * @property {string} className - CSS classes for styling
+ * @property {string} [size] - Optional size override
+ * @property {AnimationProps['animate']} animate - Animation configuration
+ * @property {AnimationProps['transition']} transition - Transition configuration
  */
 interface FloatingIconProps {
     Icon: React.ElementType;

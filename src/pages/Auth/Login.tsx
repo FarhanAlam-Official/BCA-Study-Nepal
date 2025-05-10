@@ -1,7 +1,17 @@
 /**
  * Authentication Page Component
- * This file handles user authentication with both email/password and social login options
- * Features include form validation, loading states, and animated decorative elements
+ * 
+ * A comprehensive login page that provides multiple authentication methods:
+ * - Email/password authentication
+ * - Social login (Google, GitHub, LinkedIn)
+ * - Form validation with real-time feedback
+ * - Animated UI elements for enhanced user experience
+ * - Error handling with toast notifications
+ * - Remember me functionality
+ * - Password visibility toggle
+ * 
+ * @module Authentication
+ * @category Pages
  */
 
 // Essential imports for React and routing
@@ -30,13 +40,21 @@ import {
     Lock 
 } from 'lucide-react';
 
-// TypeScript interface for form validation errors
+/**
+ * Interface for form validation errors
+ * @interface FormErrors
+ * @property {string} email - Error message for email field
+ * @property {string} password - Error message for password field
+ */
 interface FormErrors {
     email: string;
     password: string;
 }
 
-// TypeScript interface for the FloatingIcon component props
+/**
+ * Props interface for the FloatingIcon component
+ * @interface FloatingIconProps
+ */
 interface FloatingIconProps {
     Icon: React.ElementType;
     className: string;
