@@ -23,11 +23,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import authService, { User as AuthUser } from '../../services/auth/auth.service';
 import { UserCircle, Mail, Phone, School, BookOpen, LogOut, Edit2, UserIcon, FileText, Share2, Facebook, Twitter, Linkedin, Github, Brain, Code, Heart, X, Save, ImageIcon } from 'lucide-react';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import type { AnimationProps } from 'framer-motion';
 import { motion } from 'framer-motion';
 import imageCompression from 'browser-image-compression';
+import { showSuccess, showError } from '../../utils/notifications';
 
 /**
  * Props for the FloatingIcon component
@@ -419,13 +418,13 @@ const Profile = () => {
       // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!validTypes.includes(file.type)) {
-        toast.error('Please upload a valid image file (JPG, PNG, or GIF)');
+        showError('Please upload a valid image file (JPG, PNG, or GIF)');
         return;
       }
 
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size should not exceed 5MB');
+        showError('File size should not exceed 5MB');
         return;
       }
 
@@ -443,7 +442,7 @@ const Profile = () => {
         }));
       } catch (error) {
         console.error('Error handling file:', error);
-        toast.error('Error processing image. Please try again.');
+        showError('Error processing image. Please try again.');
       }
     }
   };
@@ -499,15 +498,7 @@ const Profile = () => {
       
       // Prevent scroll jump by waiting for state updates
       setTimeout(() => {
-        toast.success('Profile updated successfully!', {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored"
-        });
+        showSuccess('Profile updated successfully!');
       }, 100);
       
       // Smooth scroll to top after update
@@ -520,16 +511,7 @@ const Profile = () => {
         // Handle authentication errors
         if ('message' in err && typeof err.message === 'string' && 
             (err.message.includes('authentication') || err.message.includes('token'))) {
-          toast.error('Authentication failed. Please log in again.', {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored"
-          });
-          
+          showError('Authentication failed. Please log in again.');
           setTimeout(() => logout(), 2000);
           return;
         }
@@ -540,16 +522,7 @@ const Profile = () => {
           
           // Handle authentication errors (401/403)
           if (errorResponse.status === 401 || errorResponse.status === 403) {
-            toast.error('Authorization failed. Please log in again.', {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              theme: "colored"
-            });
-            
+            showError('Authorization failed. Please log in again.');
             setTimeout(() => logout(), 2000);
             return;
           }
@@ -571,36 +544,12 @@ const Profile = () => {
               .join('\n');
           }
           
-          toast.error(errorMessage || 'Update failed. Please try again.', {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored"
-          });
+          showError(errorMessage || 'Update failed. Please try again.');
         } else {
-          toast.error('Network error. Please try again later.', {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored"
-          });
+          showError('Network error. Please try again later.');
         }
       } else {
-        toast.error('An unexpected error occurred.', {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored"
-        });
+        showError('An unexpected error occurred.');
       }
     } finally {
       setProfileLoading(false);
@@ -1502,20 +1451,6 @@ const Profile = () => {
           </div>
       </div>
     </motion.div>
-      
-      {/* Toast Container */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
     </>
   );
 };
