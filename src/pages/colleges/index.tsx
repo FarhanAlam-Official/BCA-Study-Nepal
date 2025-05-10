@@ -1,3 +1,15 @@
+/**
+ * College Explorer Page Component
+ * 
+ * A comprehensive college search and filter interface that provides an interactive
+ * way to explore educational institutions. Features include:
+ * - Real-time search with debouncing
+ * - Advanced filtering options
+ * - Animated UI elements
+ * - Scroll position persistence
+ * - Responsive design
+ */
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { CollegeGrid } from "../../components/college/CollegeGrid";
 import { CollegeFilters } from "../../components/college/CollegeFilters";
@@ -15,14 +27,22 @@ import {
 import debounce from "lodash/debounce";
 import { CollegeFilters as CollegeFiltersType } from "../../types/colleges/college.types";
 
+/**
+ * Props interface for the FloatingIcon component
+ * Defines the required properties for creating animated floating icons
+ */
 interface FloatingIconProps {
-  Icon: LucideIcon;
-  className?: string;
-  size?: string;
-  animate: AnimationProps["animate"];
-  transition: AnimationProps["transition"];
+  Icon: LucideIcon;          // The icon component to be rendered
+  className?: string;        // Optional CSS classes
+  size?: string;            // Optional size override
+  animate: AnimationProps["animate"];       // Framer-motion animation props
+  transition: AnimationProps["transition"]; // Framer-motion transition props
 }
 
+/**
+ * FloatingIcon Component
+ * Renders an animated icon with customizable motion effects and styling
+ */
 const FloatingIcon = ({
   Icon,
   className,
@@ -40,6 +60,7 @@ const FloatingIcon = ({
 );
 
 export default function CollegePage() {
+  // State Management
   const [filters, setFilters] = useState<CollegeFiltersType>({
     search: "",
     location: undefined,
@@ -56,14 +77,16 @@ export default function CollegePage() {
   const [searchInput, setSearchInput] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Scroll restoration
+  /**
+   * Scroll Position Management
+   * Preserves and restores scroll position when navigating away and returning
+   * to the college list page
+   */
   useEffect(() => {
-    // Save scroll position before navigating away
     const handleBeforeUnload = () => {
       sessionStorage.setItem('collegeListScrollPos', window.scrollY.toString());
     };
 
-    // Restore scroll position when returning
     const savedPosition = sessionStorage.getItem('collegeListScrollPos');
     if (savedPosition !== null) {
       window.scrollTo(0, parseInt(savedPosition));
@@ -76,7 +99,11 @@ export default function CollegePage() {
     };
   }, []);
 
-  // Debounced search function
+  /**
+   * Search Debouncing Implementation
+   * Prevents excessive filter updates during rapid typing by debouncing the search
+   * operation with a 300ms delay
+   */
   const debouncedSearch = useCallback(
     (value: string) => {
       setFilters(prev => ({
@@ -93,14 +120,18 @@ export default function CollegePage() {
     [debouncedSearch]
   );
 
-  // Cleanup debounce on unmount
+  // Cleanup debounced search on component unmount
   useEffect(() => {
     return () => {
       debouncedSearchWithDelay.cancel();
     };
   }, [debouncedSearchWithDelay]);
 
-  // Add global styles for shine effect
+  /**
+   * Shine Effect Styles
+   * Adds global CSS for the search bar shine animation effect
+   * The effect is triggered when the search input is focused
+   */
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
@@ -140,15 +171,17 @@ export default function CollegePage() {
     };
   }, []);
 
-  // Handle search input change
+  /**
+   * Search Input Handler
+   * Manages the search input state and triggers debounced search
+   * Provides immediate feedback for empty searches
+   */
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setSearchInput(newValue);
     
-    // Cancel any pending debounced searches
     debouncedSearchWithDelay.cancel();
     
-    // If search is cleared, update immediately
     if (!newValue.trim()) {
       setIsSearching(false);
       setFilters(prev => ({
@@ -158,30 +191,42 @@ export default function CollegePage() {
       return;
     }
     
-    // Only show loading state and trigger search if there's actual input
     setIsSearching(true);
     debouncedSearchWithDelay(newValue);
   };
 
-  // Stabilize handleFilterChange with useCallback
+  /**
+   * Filter Change Handler
+   * Updates filter state while preserving the search term
+   * Memoized to prevent unnecessary re-renders
+   */
   const handleFilterChange = useCallback((newFilters: CollegeFiltersType) => {
     setFilters(prev => ({
       ...prev,
       ...newFilters,
-      // Preserve search from previous state since it's managed separately
       search: prev.search
     }));
   }, []);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white overflow-hidden font-poppins">
-      {/* Background Effects */}
+      {/* 
+       * Background Effects Container
+       * Houses all decorative background elements including gradients,
+       * animated waves, and floating icons
+       */}
       <div className="absolute inset-0 z-0">
-        {/* Gradient Overlay */}
+        {/* 
+         * Layered Background Effects
+         * Creates depth through multiple overlapping gradients and patterns
+         */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_10%,transparent_70%)] opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-purple-500/5" />
 
-        {/* Animated Background Wave */}
+        {/* 
+         * Animated Background Wave
+         * Provides subtle movement in the background through scale and rotation
+         */}
         <motion.div
           className="absolute inset-0"
           animate={{ scale: [1, 1.1, 1], rotate: [0, 3, -3, 0] }}
@@ -191,7 +236,10 @@ export default function CollegePage() {
           <div className="absolute top-2/3 -left-1/3 w-[166%] h-32 bg-gradient-to-r from-white/0 via-white/20 to-white/0 blur-3xl opacity-20" />
         </motion.div>
 
-        {/* Shimmering Effect */}
+        {/* 
+         * Shimmering Effect
+         * Adds a subtle moving gradient overlay for visual interest
+         */}
         <motion.div
           className="absolute inset-0 opacity-10"
           animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
@@ -203,10 +251,14 @@ export default function CollegePage() {
           }}
         />
 
-        {/* Grid Pattern */}
+        {/* Grid Pattern - Adds texture to the background */}
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.1]" />
 
-        {/* Floating Icons */}
+        {/* 
+         * Floating Icons Section
+         * Animated decorative icons that float around the page
+         * Each icon has unique animation parameters for natural movement
+         */}
         <FloatingIcon
           Icon={Building2}
           className="absolute h-24 w-24 right-[15%] top-[8%] z-10"
@@ -276,9 +328,15 @@ export default function CollegePage() {
         />
       </div>
 
-      {/* Main Content */}
+      {/* 
+       * Main Content Container
+       * Contains the actual college explorer interface components
+       */}
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 z-20 flex flex-col items-center min-h-screen">
-        {/* Header Section */}
+        {/* 
+         * Header Section
+         * Animated entrance with title and description
+         */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -293,7 +351,10 @@ export default function CollegePage() {
           </p>
         </motion.div>
 
-        {/* Search Bar */}
+        {/* 
+         * Search Bar Section
+         * Features an animated search input with glow effects and loading state
+         */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -304,13 +365,11 @@ export default function CollegePage() {
             whileHover={{ scale: 1.015 }}
             className="relative group transition-all duration-300"
           >
-            {/* Glow ring */}
+            {/* Interactive glow effects */}
             <div className="absolute -inset-[2px] bg-gradient-to-r from-indigo-500 to-blue-600 rounded-full opacity-20 group-hover:opacity-30 group-focus-within:opacity-30 transition-all duration-300 blur-lg z-0" />
-
-            {/* Subtle ambient glow */}
             <div className="absolute -inset-[1px] bg-gradient-to-r from-indigo-400/30 via-blue-500/30 to-indigo-400/30 rounded-full opacity-30 blur-md z-0 transition-all duration-300" />
 
-            {/* Input field */}
+            {/* Search input field */}
             <input
               type="text"
               placeholder="Search colleges by name, location, or programs..."
@@ -319,7 +378,10 @@ export default function CollegePage() {
               className="relative z-10 w-full pl-6 pr-14 py-3.5 rounded-full bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md border border-gray-200/60 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200/50 focus:outline-none transition-all duration-300 shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-lg hover:bg-white/90 hover:backdrop-blur-lg placeholder:text-gray-400 text-gray-800 text-base"
             />
 
-            {/* Search Icon */}
+            {/* 
+             * Search Icon with Loading Animation
+             * Displays a loading animation when search is in progress
+             */}
             <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20">
               <motion.button
                 type="button"
@@ -352,6 +414,7 @@ export default function CollegePage() {
                     <MagnifyingGlassIcon className="h-5 w-5 pointer-events-none text-indigo-600 z-10" />
                   </motion.div>
 
+                  {/* Loading spinner animation */}
                   {isSearching && (
                     <motion.div
                       className="absolute -inset-1 rounded-full border-2 border-transparent border-t-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]"
@@ -370,7 +433,10 @@ export default function CollegePage() {
           </motion.div>
         </motion.div>
 
-        {/* Filters */}
+        {/* 
+         * Filters Section
+         * Contains advanced filtering options for college search
+         */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -380,7 +446,10 @@ export default function CollegePage() {
           <CollegeFilters onFilterChange={handleFilterChange} />
         </motion.div>
 
-        {/* College Grid */}
+        {/* 
+         * College Grid Section
+         * Displays the filtered college results in a responsive grid layout
+         */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
