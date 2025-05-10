@@ -10,12 +10,18 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { showError } from '../../utils/notifications';
 
 /**
- * Represents the current view state of the syllabus page
+ * ViewState Type Definition
+ * Represents the navigation states in the syllabus interface:
+ * - PROGRAMS: Display list of available academic programs
+ * - SEMESTERS: Show available semesters for selected program
+ * - SUBJECTS: Display subjects for selected semester
  */
 type ViewState = 'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS';
 
 /**
- * Animation configuration for page transitions
+ * Page Transition Animation Configuration
+ * Defines smooth animations for transitioning between views
+ * Uses scale and opacity for a subtle and professional effect
  */
 const pageTransition = {
     initial: { opacity: 0, scale: 0.98 },
@@ -26,20 +32,36 @@ const pageTransition = {
 
 /**
  * SyllabusList Component
- * Main component for the syllabus page that manages navigation between
- * programs, semesters, and subjects.
+ * Main component for browsing and accessing program syllabi through a hierarchical navigation:
+ * Programs → Semesters → Subjects
+ * 
+ * Features:
+ * - URL-based state management for shareable/bookmarkable pages
+ * - Animated transitions between views
+ * - Breadcrumb navigation for easy backtracking
+ * - Browser history integration
+ * - Error handling with user notifications
+ * - Subject count tracking per semester
  */
 const SyllabusList: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [viewState, setViewState] = useState<ViewState>('PROGRAMS');
     
-    // Data state
+    /**
+     * Core State Management
+     * Tracks selected program, semester, and subject counts
+     * Used to manage navigation flow and display appropriate content
+     */
     const [selectedProgram, setSelectedProgram] = useState<SyllabusProgram | null>(null);
     const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
     const [subjectCounts, setSubjectCounts] = useState<Record<number, number>>({});
 
-    // Fetch subject counts for the selected program
+    /**
+     * Subject Count Fetcher
+     * Retrieves and updates the number of subjects available for each semester
+     * in the currently selected program
+     */
     const fetchSubjectCounts = useCallback(async () => {
         if (!selectedProgram) return;
 
@@ -55,7 +77,11 @@ const SyllabusList: React.FC = () => {
         }
     }, [selectedProgram]);
 
-    // Initialize state from URL parameters
+    /**
+     * URL State Synchronization
+     * Initializes component state based on URL parameters
+     * Enables direct navigation to specific views via URL
+     */
     useEffect(() => {
         const programId = searchParams.get('program');
         const semester = searchParams.get('semester');
@@ -83,7 +109,11 @@ const SyllabusList: React.FC = () => {
         }
     }, [searchParams]);
 
-    // Update URL parameters when state changes
+    /**
+     * URL Update Effect
+     * Keeps URL parameters synchronized with component state
+     * Enables bookmarking and sharing of specific views
+     */
     useEffect(() => {
         const params = new URLSearchParams();
         if (selectedProgram) {
@@ -96,12 +126,16 @@ const SyllabusList: React.FC = () => {
         setSearchParams(params, { replace: true });
     }, [viewState, selectedProgram, selectedSemester, setSearchParams]);
 
-    // Fetch subject counts when program changes
+    // Fetch subject counts whenever selected program changes
     useEffect(() => {
         fetchSubjectCounts();
     }, [fetchSubjectCounts]);
 
-    // Handle program selection
+    /**
+     * Program Selection Handler
+     * Updates state and fetches subject counts when a program is selected
+     * Manages transition to semester view
+     */
     const handleProgramSelect = async (program: SyllabusProgram) => {
         try {
             setSelectedProgram(program);
@@ -117,13 +151,21 @@ const SyllabusList: React.FC = () => {
         }
     };
 
-    // Handle semester selection
+    /**
+     * Semester Selection Handler
+     * Updates state and navigates to subjects view
+     * Converts semester to number type for consistency
+     */
     const handleSemesterSelect = (semester: string | number) => {
         setSelectedSemester(Number(semester));
         setViewState('SUBJECTS');
     };
 
-    // Handle breadcrumb navigation
+    /**
+     * Breadcrumb Navigation Handler
+     * Manages state reset and navigation when using breadcrumb links
+     * Ensures proper cleanup of irrelevant states during navigation
+     */
     const handleBreadcrumbClick = (view: ViewState) => {
         switch (view) {
             case 'PROGRAMS':
@@ -142,7 +184,11 @@ const SyllabusList: React.FC = () => {
         }
     };
 
-    // Handle browser back button and gesture navigation
+    /**
+     * Browser Navigation Handler
+     * Manages state transitions for browser back/forward navigation
+     * Provides intuitive navigation flow through the hierarchy
+     */
     useEffect(() => {
         const handlePopState = () => {
             if (viewState === 'SUBJECTS') {
@@ -153,7 +199,7 @@ const SyllabusList: React.FC = () => {
                 setSelectedProgram(null);
                 setSubjectCounts({});
             } else {
-                navigate(-1); // Go back to previous page if on programs view
+                navigate(-1); // Exit to previous page if on programs view
             }
         };
 
@@ -161,7 +207,10 @@ const SyllabusList: React.FC = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [navigate, setSelectedProgram, setSelectedSemester, setSubjectCounts, setViewState, viewState]);
 
-    // Get header text based on current view
+    /**
+     * Dynamic Header Text Generator
+     * Returns appropriate heading text based on current view state
+     */
     const getHeaderText = () => {
         switch (viewState) {
             case 'PROGRAMS':
@@ -175,7 +224,11 @@ const SyllabusList: React.FC = () => {
         }
     };
 
-    // Format semester data for the grid
+    /**
+     * Semester Data Formatter
+     * Transforms raw subject counts into structured data for SemesterGrid component
+     * Creates an array of semester objects with their respective subject counts
+     */
     const formatSemesterData = (subjectCounts: Record<number, number>) => {
         return Array.from({ length: 8 }, (_, i) => i + 1).map(semester => ({
             semester,
@@ -186,7 +239,7 @@ const SyllabusList: React.FC = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white px-6 py-8">
             <div className="max-w-7xl mx-auto relative">
-                {/* Page title */}
+                {/* Dynamic Page Title */}
                 <motion.h1 
                     className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600"
                     initial={{ opacity: 0, y: -20 }}
@@ -196,7 +249,7 @@ const SyllabusList: React.FC = () => {
                     {getHeaderText()}
                 </motion.h1>
 
-                {/* Breadcrumb navigation */}
+                {/* Interactive Breadcrumb Navigation */}
                 <nav className="flex items-center space-x-2 mb-8 text-sm">
                     <button
                         onClick={() => handleBreadcrumbClick('PROGRAMS')}
@@ -233,7 +286,7 @@ const SyllabusList: React.FC = () => {
                     )}
                 </nav>
 
-                {/* Main content area */}
+                {/* Main Content Area with View Transitions */}
                 <div className="relative z-10">
                     <AnimatePresence mode="wait">
                         {viewState === 'PROGRAMS' && (
