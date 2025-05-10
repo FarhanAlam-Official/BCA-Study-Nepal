@@ -14,6 +14,16 @@ import {
 } from "lucide-react";
 import debounce from "lodash/debounce";
 
+/**
+ * Filter Configuration Interface
+ * Defines the structure of filter options available in the Resource Radar:
+ * - category: Selected resource category (e.g., 'Books', 'Videos')
+ * - tags: Array of selected tag filters
+ * - search: Current search query
+ * - showBookmarked: Toggle for bookmarked resources
+ * - showFeatured: Toggle for featured resources
+ * - sortOrder: Current sort order preference
+ */
 interface Filters {
   category: string | null;
   tags: string[];
@@ -23,6 +33,15 @@ interface Filters {
   sortOrder: 'newest' | 'popular';
 }
 
+/**
+ * Floating Icon Component Props
+ * Configuration for animated floating icons in the background:
+ * - Icon: The Lucide icon component to render
+ * - className: Optional CSS classes
+ * - size: Icon size (defaults to 100%)
+ * - animate: Framer Motion animation configuration
+ * - transition: Animation transition settings
+ */
 interface FloatingIconProps {
   Icon: LucideIcon;
   className?: string;
@@ -31,6 +50,11 @@ interface FloatingIconProps {
   transition: AnimationProps["transition"];
 }
 
+/**
+ * FloatingIcon Component
+ * Renders an animated icon with customizable motion effects
+ * Used to create the dynamic background elements of the Resource Radar
+ */
 const FloatingIcon = ({
   Icon,
   className,
@@ -47,7 +71,20 @@ const FloatingIcon = ({
   </motion.div>
 );
 
+/**
+ * ResourceRadarPage Component
+ * Main component for the Resource Radar feature that allows users to discover
+ * and filter through educational resources.
+ * 
+ * Features:
+ * - Advanced filtering system with multiple criteria
+ * - Debounced search functionality
+ * - Animated UI elements and transitions
+ * - Dynamic background effects
+ * - Responsive grid layout
+ */
 export default function ResourceRadarPage() {
+  // State Management
   const [filters, setFilters] = useState<Filters>({
     category: null,
     tags: [],
@@ -60,7 +97,11 @@ export default function ResourceRadarPage() {
   const [searchInput, setSearchInput] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Debounced search function
+  /**
+   * Debounced Search Implementation
+   * Delays search execution to prevent excessive API calls
+   * Provides immediate feedback for empty searches
+   */
   const debouncedSearch = useCallback(
     (value: string) => {
       setFilters(prev => ({
@@ -77,14 +118,21 @@ export default function ResourceRadarPage() {
     [debouncedSearch]
   );
 
-  // Cleanup debounce on unmount
+  /**
+   * Cleanup Effect
+   * Cancels any pending debounced searches on component unmount
+   */
   useEffect(() => {
     return () => {
       debouncedSearchWithDelay.cancel();
     };
   }, [debouncedSearchWithDelay]);
 
-  // Add global styles for shine effect
+  /**
+   * Shine Effect Setup
+   * Adds global CSS for shine animation effects
+   * Cleans up styles on component unmount
+   */
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.textContent = `
@@ -124,12 +172,15 @@ export default function ResourceRadarPage() {
     };
   }, []);
 
-  // Handle search input change
+  /**
+   * Search Input Handler
+   * Manages search state and triggers debounced search
+   * Provides immediate feedback for empty searches
+   */
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setSearchInput(newValue);
     
-    // Cancel any pending debounced searches
     debouncedSearchWithDelay.cancel();
     
     // If search is cleared, update immediately
@@ -147,21 +198,24 @@ export default function ResourceRadarPage() {
     debouncedSearchWithDelay(newValue);
   };
 
-  // Stabilize handleFilterChange with useCallback
+  /**
+   * Filter Change Handler
+   * Updates filter state while preserving search input
+   * Memoized to prevent unnecessary re-renders
+   */
   const handleFilterChange = useCallback((newFilters: Filters) => {
     setFilters(prev => ({
       ...prev,
       ...newFilters,
-      // Preserve search from previous state since it's managed separately
       search: prev.search
     }));
-  }, []); // Empty dependency array since it only uses setFilters which is stable
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white overflow-hidden font-poppins">
-      {/* Background Effects */}
+      {/* Background Effects Layer */}
       <div className="absolute inset-0 z-0">
-        {/* Gradient Overlay */}
+        {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_10%,transparent_70%)] opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-purple-500/5" />
 
@@ -175,7 +229,7 @@ export default function ResourceRadarPage() {
           <div className="absolute top-2/3 -left-1/3 w-[166%] h-32 bg-gradient-to-r from-white/0 via-white/20 to-white/0 blur-3xl opacity-20" />
         </motion.div>
 
-        {/* Shimmering Effect */}
+        {/* Dynamic Shimmer Effect */}
         <motion.div
           className="absolute inset-0 opacity-10"
           animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
@@ -187,21 +241,19 @@ export default function ResourceRadarPage() {
           }}
         />
 
-        {/* Grid Pattern */}
+        {/* Decorative Grid Pattern */}
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.1]" />
 
-        {/* Floating Icons */}
+        {/* Animated Floating Icons */}
         <FloatingIcon
           Icon={ShieldCheck}
           className="absolute h-24 w-24 right-[15%] top-[8%] z-10"
-          size="100%"
           animate={{ y: [0, -50, 0], x: [0, 40, 0], rotate: [0, 12, -12, 0] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
         <FloatingIcon
           Icon={BookOpen}
           className="absolute h-24 w-24 left-[20%] top-[10%] z-10"
-          size="100%"
           animate={{ y: [0, 50, 0], x: [0, -40, 0], rotate: [0, -12, 12, 0] }}
           transition={{
             duration: 8,
@@ -213,7 +265,6 @@ export default function ResourceRadarPage() {
         <FloatingIcon
           Icon={KeyRound}
           className="absolute h-24 w-24 right-[20%] bottom-[8%] z-10"
-          size="100%"
           animate={{ y: [0, -40, 0], x: [0, -30, 0], rotate: [0, 6, -6, 0] }}
           transition={{
             duration: 7,
@@ -225,7 +276,6 @@ export default function ResourceRadarPage() {
         <FloatingIcon
           Icon={FileCheck}
           className="absolute h-24 w-24 left-[15%] bottom-[10%] z-10"
-          size="100%"
           animate={{ y: [0, 45, 0], x: [0, 30, 0], rotate: [0, -10, 10, 0] }}
           transition={{
             duration: 8,
@@ -237,7 +287,6 @@ export default function ResourceRadarPage() {
         <FloatingIcon
           Icon={Brain}
           className="absolute h-24 w-24 right-[5%] top-[40%] z-10"
-          size="100%"
           animate={{ y: [0, -45, 0], x: [0, 25, 0], rotate: [0, 10, -10, 0] }}
           transition={{
             duration: 9,
@@ -248,11 +297,10 @@ export default function ResourceRadarPage() {
         />
         <FloatingIcon
           Icon={UserPlus}
-          className="absolute h-24 w-24 left-[5%] top-[50%] z-10"
-          size="100%"
-          animate={{ y: [0, 40, 0], x: [0, -25, 0], rotate: [0, -6, 6, 0] }}
+          className="absolute h-24 w-24 left-[5%] top-[45%] z-10"
+          animate={{ y: [0, 35, 0], x: [0, -20, 0], rotate: [0, -8, 8, 0] }}
           transition={{
-            duration: 7,
+            duration: 8,
             repeat: Infinity,
             ease: "easeInOut",
             delay: 2.5,
