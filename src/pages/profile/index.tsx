@@ -194,46 +194,28 @@ const truncateBio = (bio: string, maxLength: number = 200) => {
 const ProfileCompletionBadge: React.FC<{ user: AuthUser }> = ({ user }) => {
   const completion = calculateProfileCompletion(user);
   
-  if (completion.isComplete) {
-    return (
-      <div className="absolute -bottom-2 -right-2 group/badge">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="bg-green-500 rounded-full shadow-lg p-2 cursor-help"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        </motion.div>
-        
-        <div className="absolute bottom-full right-0 mb-2 hidden group-hover/badge:block">
-          <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 shadow-lg whitespace-nowrap">
-            Profile Complete!
-            <div className="absolute bottom-0 right-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
   return (
     <div className="absolute -bottom-2 -right-2 group/badge">
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3 }}
-        className="bg-white rounded-full shadow-lg p-2 cursor-help"
+        className={`${completion.isComplete ? 'bg-green-500' : 'bg-white'} rounded-full shadow-lg p-2 cursor-help`}
       >
-        <div className="text-sm font-semibold" style={{ color: completion.color }}>
-          {completion.percentage}%
-        </div>
+        {completion.isComplete ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        ) : (
+          <div className="text-sm font-semibold" style={{ color: completion.color }}>
+            {completion.percentage}%
+          </div>
+        )}
       </motion.div>
       
       <div className="absolute bottom-full right-0 mb-2 hidden group-hover/badge:block">
         <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 shadow-lg whitespace-nowrap">
-          Profile Completion
+          {completion.isComplete ? 'Profile Complete!' : 'Profile Completion'}
           <div className="absolute bottom-0 right-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
         </div>
       </div>
@@ -800,20 +782,6 @@ const Profile = () => {
 
                 {/* Profile Completion Badge */}
                 <ProfileCompletionBadge user={user} />
-
-                {/* Verified Badge */}
-                {user.is_verified && (
-                  <motion.div 
-                    className="absolute -right-2 top-0 bg-green-500 text-white p-2 rounded-full shadow-lg border-2 border-white"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.3, type: "spring" }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </motion.div>
-                )}
               </motion.div>
               
               <div className="flex-1 text-center md:text-left space-y-4">
