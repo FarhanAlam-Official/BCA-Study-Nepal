@@ -9,16 +9,22 @@ import { showError, showSuccess } from '../../utils/notifications';
 
 /**
  * SubjectPapersPage Component
- * Displays a list of question papers for a specific subject with options to view and download.
+ * Displays and manages question papers for a specific subject with interactive features
  * 
- * Features:
- * - PDF viewer integration
- * - Download functionality
- * - Loading and error states
- * - Animated UI elements
- * - Responsive grid layout
+ * Key Features:
+ * - PDF viewer integration for in-browser document preview
+ * - Download functionality with proper file naming
+ * - Loading states with animated indicators
+ * - Error handling with user feedback
+ * - Responsive grid layout for paper listings
+ * - Animated UI elements for visual engagement
+ * 
+ * URL Parameters:
+ * @param {string} subjectId - The ID of the subject to display papers for
+ * @param {string} subjectName - The name of the subject for display purposes
  */
 const SubjectPapersPage = () => {
+  // State management for papers and UI
   const { subjectId, subjectName } = useParams();
   const navigate = useNavigate();
   const [papers, setPapers] = useState<QuestionPaper[]>([]);
@@ -27,8 +33,9 @@ const SubjectPapersPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Fetches question papers for the current subject
-   * Handles loading states and error scenarios
+   * Data Fetching Effect
+   * Retrieves question papers for the specified subject on component mount
+   * Handles loading states and error scenarios with appropriate user feedback
    */
   React.useEffect(() => {
     const fetchPapers = async () => {
@@ -59,9 +66,12 @@ const SubjectPapersPage = () => {
   }, [subjectId]);
 
   /**
-   * Opens the PDF viewer for the selected paper
+   * PDF Viewer Handler
+   * Opens the selected paper in the integrated PDF viewer
+   * Validates file availability before attempting to display
+   * 
    * @param paper - The question paper to view
-   * @param e - Mouse event
+   * @param e - Mouse event object
    */
   const handleView = (paper: QuestionPaper, e: React.MouseEvent) => {
     e.preventDefault();
@@ -73,8 +83,14 @@ const SubjectPapersPage = () => {
   };
 
   /**
-   * Downloads the selected paper
-   * Handles file download and error scenarios
+   * Paper Download Handler
+   * Manages the file download process with proper error handling
+   * Features:
+   * - Validates file availability
+   * - Creates meaningful filename based on subject and paper details
+   * - Handles download through browser's native functionality
+   * - Provides user feedback on success/failure
+   * 
    * @param paper - The question paper to download
    */
   const handleDownload = async (paper: QuestionPaper) => {
@@ -105,8 +121,9 @@ const SubjectPapersPage = () => {
   };
 
   /**
-   * Animation variants for container and items
-   * Used to create staggered animations for list items
+   * Animation Configuration
+   * Defines animation variants for container and list items
+   * Creates staggered animation effects for enhanced visual appeal
    */
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -131,7 +148,10 @@ const SubjectPapersPage = () => {
     }
   };
 
-  // Loading state with animated spinner
+  /**
+   * Loading State Component
+   * Displays an animated loading indicator with a centered book icon
+   */
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white">
@@ -145,7 +165,11 @@ const SubjectPapersPage = () => {
     );
   }
 
-  // Error state with retry option
+  /**
+   * Error State Component
+   * Displays error message with retry option
+   * Features animated entrance and hover effects
+   */
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 via-purple-50 to-white px-4">
@@ -172,7 +196,11 @@ const SubjectPapersPage = () => {
     );
   }
 
-  // PDF Viewer state
+  /**
+   * PDF Viewer State
+   * Renders the PDF viewer component when a paper is selected
+   * Provides navigation back to the paper list
+   */
   if (selectedPaper) {
     return (
       <PDFViewer 
@@ -185,11 +213,13 @@ const SubjectPapersPage = () => {
     );
   }
 
-  // Main content with paper grid
+  // Main content with paper grid and floating decorative elements
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white relative overflow-hidden">
-      {/* Decorative floating elements */}
+      {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent via-indigo-50/20 to-blue-50/20 pointer-events-none"></div>
+
+      {/* Animated floating decorative elements */}
       <motion.div
         animate={{ 
           y: [0, -30, 0],

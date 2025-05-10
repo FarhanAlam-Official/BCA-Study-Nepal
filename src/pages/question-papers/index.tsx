@@ -11,15 +11,18 @@ import { showError } from '../../utils/notifications';
 import ErrorDisplay from '../../components/common/ErrorDisplay';
 
 /**
- * Represents the current view state of the question papers page
- * PROGRAMS: Shows list of available programs
- * SEMESTERS: Shows semesters for selected program
- * SUBJECTS: Shows subjects for selected semester
+ * ViewState Type Definition
+ * Represents the possible navigation states in the question papers interface:
+ * - PROGRAMS: Display available academic programs
+ * - SEMESTERS: Show semesters for a selected program
+ * - SUBJECTS: List subjects for a selected semester
  */
 type ViewState = 'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS';
 
 /**
- * Animation configuration for page transitions
+ * Page Transition Animation Configuration
+ * Defines smooth spring animations for page transitions with carefully tuned parameters
+ * for optimal visual feedback and user experience
  */
 const pageTransition = {
   initial: { opacity: 0, scale: 0.98 },
@@ -34,7 +37,10 @@ const pageTransition = {
 };
 
 /**
- * Floating decoration elements component
+ * FloatingElements Component
+ * Renders decorative animated icons in the background
+ * Uses Framer Motion for continuous floating animations that add visual interest
+ * without distracting from the main content
  */
 const FloatingElements = () => (
   <>
@@ -74,15 +80,19 @@ const FloatingElements = () => (
 
 /**
  * QuestionPaperList Component
- * Main component for the question papers page that manages the navigation between
- * programs, semesters, and subjects. Features include:
- * - URL-based state management
+ * Main component for browsing and accessing question papers through a hierarchical navigation:
+ * Programs → Semesters → Subjects
+ * 
+ * Features:
+ * - URL-based state management for shareable/bookmarkable pages
  * - Animated transitions between views
- * - Breadcrumb navigation
+ * - Breadcrumb navigation for easy backtracking
  * - Error handling with user notifications
- * - Loading states
+ * - Loading states for async operations
+ * - Subject count tracking per semester
  */
 const QuestionPaperList: React.FC = () => {
+    // URL and navigation state management
     const [searchParams, setSearchParams] = useSearchParams();
     const [viewState, setViewState] = useState<ViewState>('PROGRAMS');
     const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
@@ -91,8 +101,9 @@ const QuestionPaperList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     /**
-     * Fetches the number of subjects for each semester in the selected program
-     * Updates the subjectCounts state and handles errors with notifications
+     * Fetches and updates the number of subjects available for each semester
+     * in the currently selected program. Updates the subjectCounts state object
+     * where keys are semester numbers and values are subject counts.
      */
     const fetchSubjectCounts = useCallback(async () => {
         if (!selectedProgram) return;
@@ -112,8 +123,9 @@ const QuestionPaperList: React.FC = () => {
     }, [selectedProgram]);
 
     /**
-     * Initializes component state from URL parameters
-     * Handles program selection and semester navigation
+     * URL State Synchronization
+     * Initializes component state based on URL parameters to support
+     * direct navigation and browser history
      */
     useEffect(() => {
         const programId = searchParams.get('program');
@@ -143,8 +155,9 @@ const QuestionPaperList: React.FC = () => {
     }, [searchParams]);
 
     /**
-     * Updates URL parameters when state changes
-     * Maintains navigation history and enables bookmarking
+     * URL Update Effect
+     * Keeps URL parameters synchronized with component state
+     * Enables bookmarking and sharing of specific views
      */
     useEffect(() => {
         const params = new URLSearchParams();
@@ -158,14 +171,14 @@ const QuestionPaperList: React.FC = () => {
         setSearchParams(params, { replace: true });
     }, [viewState, selectedProgram, selectedSemester, setSearchParams]);
 
-    // Fetch subject counts when program changes
+    // Fetch subject counts whenever selected program changes
     useEffect(() => {
         fetchSubjectCounts();
     }, [fetchSubjectCounts]);
 
     /**
-     * Handles program selection
-     * Updates state and navigates to semester view
+     * Program Selection Handler
+     * Updates state and fetches subject counts when a program is selected
      */
     const handleProgramSelect = async (program: Program) => {
         try {
@@ -183,7 +196,7 @@ const QuestionPaperList: React.FC = () => {
     };
 
     /**
-     * Handles semester selection
+     * Semester Selection Handler
      * Updates state and navigates to subjects view
      */
     const handleSemesterSelect = (semester: string | number) => {
@@ -192,8 +205,8 @@ const QuestionPaperList: React.FC = () => {
     };
 
     /**
-     * Handles breadcrumb navigation
-     * Allows direct navigation to previous views
+     * Breadcrumb Navigation Handler
+     * Manages state reset and navigation when using breadcrumb links
      */
     const handleBreadcrumbClick = (view: ViewState) => {
         switch (view) {
@@ -217,7 +230,8 @@ const QuestionPaperList: React.FC = () => {
     };
 
     /**
-     * Gets the header text based on current view state
+     * Dynamic Header Text Generator
+     * Returns appropriate heading text based on current view state
      */
     const getHeaderText = () => {
         switch (viewState) {
@@ -233,8 +247,8 @@ const QuestionPaperList: React.FC = () => {
     };
 
     /**
-     * Formats semester data for the SemesterGrid component
-     * Creates an array of semester objects with subject counts
+     * Semester Data Formatter
+     * Transforms raw subject counts into structured data for SemesterGrid component
      */
     const formatSemesterData = (subjectCounts: Record<number, number>) => {
         return Array.from({ length: 8 }, (_, i) => i + 1).map(semester => ({
