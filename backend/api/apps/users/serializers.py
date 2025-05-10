@@ -28,7 +28,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'username': {
                 'error_messages': {
-                    'unique': 'User with that username already exists. Please choose a different username.'
+                    'unique': 'User with that username already exists. Please choose a different username.',
+                    'max_length': 'Username must not exceed 20 characters.',
+                    'min_length': 'Username must be at least 3 characters.'
                 }
             },
             'email': {
