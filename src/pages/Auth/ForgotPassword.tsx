@@ -17,10 +17,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { motion, AnimationProps } from 'framer-motion';
 import { Mail, KeyRound, ShieldCheck, Undo2, MailQuestion, SendHorizonal } from 'lucide-react';
 import authService from '../../services/auth/auth.service';
+import {showError, showInfo } from '../../utils/notifications';
 
 /**
  * Animation configuration for form transitions
@@ -168,12 +168,12 @@ const ForgotPassword = () => {
         
         try {
             const response = await authService.forgotPassword(email);
-            toast.info(response.detail, {
+            showInfo(response.detail, {
                 position: "top-center",
                 autoClose: 6000
             });
         } catch {
-            toast.error('Failed to resend email. Please try again later.');
+            showError('Failed to resend email. Please try again later.');
         } finally {
             setIsLoading(false);
         }
@@ -196,7 +196,7 @@ const ForgotPassword = () => {
             setEmailSent(true);
             setResendCountdown(RESEND_COOLDOWN);
             setCanResend(false);
-            toast.info(response.detail, {
+            showInfo(response.detail, {
                 position: "top-center",
                 autoClose: 6000
             });
@@ -212,9 +212,9 @@ const ForgotPassword = () => {
             };
             
             if (isApiError(error)) {
-                toast.error(error.detail);
+                showError(error.detail);
             } else {
-                toast.error('An unexpected error occurred. Please try again later.');
+                showError('An unexpected error occurred. Please try again later.');
             }
             
             setEmailSent(false);

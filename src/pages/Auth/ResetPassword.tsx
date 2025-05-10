@@ -18,11 +18,11 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { motion, AnimationProps } from 'framer-motion';
 import { Lock, KeyRound, ShieldCheck, Fingerprint, Key, RefreshCcw } from 'lucide-react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import authService from '../../services/auth/auth.service';
+import { showSuccess, showError } from '../../utils/notifications';
 
 /**
  * Animation configuration for form transitions
@@ -193,22 +193,22 @@ const ResetPassword = () => {
         }
 
         if (!uidb64 || !token) {
-            toast.error('Invalid reset link');
+            showError('Invalid reset link');
             return;
         }
 
         setIsLoading(true);
         try {
             await authService.resetPassword(uidb64, token, newPassword);
-            toast.success('Password has been reset successfully');
+            showSuccess('Password has been reset successfully');
             navigate('/auth');
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
-            toast.error(errorMessage);
+            showError(errorMessage);
             if (typeof errorMessage === 'string' && 
                 (errorMessage.toLowerCase().includes('invalid') || 
                 errorMessage.toLowerCase().includes('expired'))) {
-                toast.error('The password reset link is invalid or has expired');
+                showError('The password reset link is invalid or has expired');
             }
         } finally {
             setIsLoading(false);
