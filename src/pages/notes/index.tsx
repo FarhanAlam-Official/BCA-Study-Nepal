@@ -1,18 +1,33 @@
 /**
  * Notes Page Component
  * 
- * A hierarchical navigation system for browsing educational notes organized by:
- * - Programs (e.g., BCA, BBA)
- * - Semesters (1-8)
- * - Subjects within each semester
+ * A comprehensive educational notes management system that provides hierarchical navigation
+ * through programs, semesters, and subjects. The component implements a three-level
+ * navigation structure with state persistence through URL parameters.
  * 
- * Features:
- * - URL-based state persistence
- * - Animated transitions between views
- * - Breadcrumb navigation
- * - Responsive grid layouts
+ * Key Features:
+ * - Hierarchical Navigation:
+ *   - Programs (BCA, BBA, etc.)
+ *   - Semesters (1-8)
+ *   - Subjects within each semester
+ * 
+ * Technical Features:
+ * - URL-based state persistence for deep linking
+ * - Animated transitions between views using Framer Motion
+ * - Responsive grid layouts with Tailwind CSS
+ * - Dynamic breadcrumb navigation
  * - Loading states and error handling
+ * - Subject count tracking per semester
+ * 
+ * @component
+ * @example
+ * return (
+ *   <Routes>
+ *     <Route path="/notes" element={<Notes />} />
+ *   </Routes>
+ * )
  */
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronRight, BookOpen, ArrowRight, FileText } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -25,12 +40,26 @@ import { NotesProgram, SemesterData, SubjectData } from '../../types/notes/notes
 import { notes } from '../../api/core/api.core';
 
 /**
- * Possible view states for the notes page navigation
+ * ViewState Type
+ * Defines the possible navigation states of the notes page
+ * 
+ * @typedef {'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS'} ViewState
+ * PROGRAMS - Displays list of available programs
+ * SEMESTERS - Shows semesters for selected program
+ * SUBJECTS - Lists subjects for selected semester
  */
 type ViewState = 'PROGRAMS' | 'SEMESTERS' | 'SUBJECTS';
 
 /**
- * Animation configuration for page transitions between views
+ * Page Transition Animation Configuration
+ * Defines smooth transitions between different views
+ * 
+ * @constant
+ * @type {Object}
+ * @property {Object} initial - Starting state of animation
+ * @property {Object} animate - Target state of animation
+ * @property {Object} exit - State when component is being removed
+ * @property {Object} transition - Animation timing configuration
  */
 const pageTransition = {
   initial: { opacity: 0, scale: 0.98 },
@@ -40,19 +69,28 @@ const pageTransition = {
 };
 
 const Notes: React.FC = () => {
-  // URL and navigation state
+  /**
+   * URL and Navigation State Management
+   * Handles routing and deep linking functionality
+   */
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewState, setViewState] = useState<ViewState>('PROGRAMS');
   const navigate = useNavigate();
   
-  // Data management state
+  /**
+   * Data Management State
+   * Tracks selected items and loading states
+   */
   const [selectedProgram, setSelectedProgram] = useState<NotesProgram | null>(null);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
   const [subjectCounts, setSubjectCounts] = useState<Record<number, number>>({});
   const [subjects, setSubjects] = useState<SubjectData[]>([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
-  // Animation configuration for list items
+  /**
+   * Animation Configuration
+   * Defines smooth transitions for list items
+   */
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -66,7 +104,12 @@ const Notes: React.FC = () => {
   };
 
   /**
-   * Fetches the number of subjects available for each semester in the selected program
+   * Fetches and updates the number of subjects available for each semester
+   * in the currently selected program.
+   * 
+   * @async
+   * @function fetchSubjectCounts
+   * @throws {Error} When API call fails
    */
   const fetchSubjectCounts = useCallback(async () => {
     if (!selectedProgram) return;
@@ -84,8 +127,9 @@ const Notes: React.FC = () => {
   }, [selectedProgram]);
 
   /**
-   * Initializes component state from URL parameters
-   * Handles deep linking and browser navigation
+   * URL State Management
+   * Initializes component state from URL parameters for deep linking
+   * and browser navigation support
    */
   useEffect(() => {
     const programId = searchParams.get('program');
@@ -115,8 +159,9 @@ const Notes: React.FC = () => {
   }, [searchParams]);
 
   /**
-   * Updates URL parameters when navigation state changes
-   * Enables browser history and bookmarking
+   * URL Sync Effect
+   * Keeps URL parameters synchronized with component state
+   * Enables browser history and bookmarking functionality
    */
   useEffect(() => {
     const params = new URLSearchParams();
@@ -131,7 +176,8 @@ const Notes: React.FC = () => {
   }, [viewState, selectedProgram, selectedSemester, setSearchParams]);
 
   /**
-   * Fetches subjects for the selected semester when it changes
+   * Subject Data Fetching
+   * Loads subjects when semester selection changes
    */
   useEffect(() => {
     if (selectedProgram && selectedSemester) {
@@ -155,6 +201,13 @@ const Notes: React.FC = () => {
   /**
    * Event Handlers
    */
+
+  /**
+   * Handles program selection
+   * Loads subject counts and updates view state
+   * 
+   * @param {NotesProgram} program - Selected program object
+   */
   const handleProgramSelect = async (program: NotesProgram) => {
     try {
       setSelectedProgram(program);
@@ -170,14 +223,22 @@ const Notes: React.FC = () => {
     }
   };
 
+  /**
+   * Handles semester selection
+   * Updates state and transitions to subjects view
+   * 
+   * @param {string | number} semester - Selected semester number
+   */
   const handleSemesterSelect = (semester: string | number) => {
     setSelectedSemester(Number(semester));
     setViewState('SUBJECTS');
   };
 
   /**
-   * Handles navigation through breadcrumb clicks
-   * Resets appropriate state based on the selected view
+   * Handles breadcrumb navigation
+   * Resets appropriate state based on selected view
+   * 
+   * @param {ViewState} view - Target view state
    */
   const handleBreadcrumbClick = (view: ViewState) => {
     switch (view) {
@@ -198,7 +259,13 @@ const Notes: React.FC = () => {
   };
 
   /**
-   * Returns the appropriate header text based on current view state
+   * Helper Functions
+   */
+
+  /**
+   * Generates appropriate header text based on current view state
+   * 
+   * @returns {string} Header text for current view
    */
   const getHeaderText = () => {
     switch (viewState) {
@@ -214,7 +281,11 @@ const Notes: React.FC = () => {
   };
 
   /**
-   * Formats semester data for the grid component
+   * Formats semester data for grid display
+   * Maps semester numbers to their subject counts
+   * 
+   * @param {Record<number, number>} subjectCounts - Map of semester numbers to subject counts
+   * @returns {Array<{semester: number, count: number}>} Formatted semester data
    */
   const formatSemesterData = (subjectCounts: Record<number, number>) => {
     return Array.from({ length: 8 }, (_, i) => i + 1).map(semester => ({
@@ -224,7 +295,10 @@ const Notes: React.FC = () => {
   };
 
   /**
-   * Navigates to the subject notes page when a subject is clicked
+   * Handles subject selection
+   * Navigates to the subject detail page
+   * 
+   * @param {SubjectData} subject - Selected subject data
    */
   const handleSubjectClick = (subject: SubjectData) => {
     navigate(`/notes/subject/${subject.id}/${encodeURIComponent(subject.name)}`);
@@ -233,7 +307,7 @@ const Notes: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50/80 via-blue-50/50 to-white px-6 py-8">
       <div className="max-w-7xl mx-auto relative">
-        {/* Animated Page Title */}
+        {/* Dynamic Page Title with Animation */}
         <motion.h1 
           className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600"
           initial={{ opacity: 0, y: -20 }}
@@ -243,7 +317,7 @@ const Notes: React.FC = () => {
           {getHeaderText()}
         </motion.h1>
 
-        {/* Interactive Breadcrumb Navigation */}
+        {/* Interactive Breadcrumb Navigation with Dynamic Highlighting */}
         <nav className="flex items-center space-x-2 mb-8 text-sm">
           <button
             onClick={() => handleBreadcrumbClick('PROGRAMS')}
@@ -283,14 +357,14 @@ const Notes: React.FC = () => {
         {/* Main Content Area with View State Management */}
         <div className="relative z-10">
           <AnimatePresence mode="wait">
-            {/* Programs View */}
+            {/* Programs View - List of Available Programs */}
             {viewState === 'PROGRAMS' && (
               <motion.div key="programs" {...pageTransition}>
                 <NoteProgramList onProgramSelect={handleProgramSelect} />
               </motion.div>
             )}
 
-            {/* Semesters View */}
+            {/* Semesters View - Grid of Available Semesters */}
             {viewState === 'SEMESTERS' && selectedProgram && (
               <motion.div key="semesters" {...pageTransition}>
                 <SemesterGrid
@@ -302,17 +376,17 @@ const Notes: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Subjects View */}
+            {/* Subjects View - Grid of Available Subjects */}
             {viewState === 'SUBJECTS' && selectedProgram && selectedSemester && (
               <motion.div key="subjects" {...pageTransition}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Loading State */}
+                  {/* Loading State Indicator */}
                   {loadingSubjects ? (
                     <div className="col-span-full flex justify-center py-12">
                       <LoadingSpinner />
                     </div>
                   ) : subjects.length > 0 ? (
-                    // Subject Cards Grid
+                    // Subject Cards Grid with Animations
                     subjects.map(subject => (
                       <motion.div
                         key={subject.id}
@@ -322,14 +396,14 @@ const Notes: React.FC = () => {
                                  rounded-xl border border-gray-100 hover:border-indigo-200 shadow-lg hover:shadow-xl
                                  transition-all duration-300 cursor-pointer overflow-hidden"
                       >
-                        {/* Decorative Background Elements */}
+                        {/* Decorative Background Gradients */}
                         <div className="absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 bg-indigo-100/20 rounded-full blur-3xl group-hover:bg-indigo-200/30 transition-colors duration-300" />
                         <div className="absolute bottom-0 left-0 w-40 h-40 -ml-20 -mb-20 bg-purple-100/20 rounded-full blur-3xl group-hover:bg-purple-200/30 transition-colors duration-300" />
                         
-                        {/* Card Content */}
+                        {/* Card Content Layout */}
                         <div className="relative h-full p-6 flex flex-col">
                           <div className="flex-1">
-                            {/* Subject Code Badge */}
+                            {/* Subject Code Display */}
                             <div className="absolute top-4 right-4">
                               <div className="px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100/70 text-indigo-700 
                                           group-hover:bg-indigo-100 transition-colors duration-300">
@@ -337,7 +411,7 @@ const Notes: React.FC = () => {
                               </div>
                             </div>
 
-                            {/* Title and Icon */}
+                            {/* Subject Title and Icon */}
                             <div className="flex items-start gap-4 mb-3 pr-24">
                               <div className="p-2 bg-indigo-50/80 rounded-lg group-hover:bg-indigo-100/80 transition-colors">
                                 <BookOpen className="w-5 h-5 text-indigo-600" />
@@ -347,13 +421,13 @@ const Notes: React.FC = () => {
                               </h3>
                             </div>
 
-                            {/* Description */}
+                            {/* Subject Description */}
                             <p className="text-sm text-gray-500 min-h-[2.5rem] line-clamp-2 group-hover:text-gray-600 transition-colors mb-4">
                               Click to access all available notes for this subject
                             </p>
                           </div>
 
-                          {/* Action Button */}
+                          {/* Card Footer with Note Count and Action Button */}
                           <div className="pt-2 flex items-center justify-between border-t border-gray-100">
                             <div className="px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-50 to-purple-50 
                                         text-indigo-600 border border-indigo-100/50 group-hover:border-indigo-200
@@ -375,7 +449,7 @@ const Notes: React.FC = () => {
                       </motion.div>
                     ))
                   ) : (
-                    // Empty State
+                    // Empty State Display
                     <div className="col-span-full text-center py-12">
                       <div className="p-3 bg-indigo-50 rounded-full w-fit mx-auto mb-4">
                         <BookOpen className="w-6 h-6 text-indigo-600" />
@@ -394,7 +468,7 @@ const Notes: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* Floating Decorative Element */}
+        {/* Decorative Floating Book Icon */}
         <motion.div
           animate={{
             y: [0, -30, 0],
