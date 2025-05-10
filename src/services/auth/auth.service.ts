@@ -1,12 +1,28 @@
+/**
+ * Authentication Service Module
+ * Handles all authentication-related operations including user registration, login,
+ * token management, and profile updates.
+ */
+
 import axios, { AxiosError } from 'axios';
 
+// API configuration
 const API_URL = 'http://localhost:8000';
+
+/**
+ * List of possible endpoints for fetching user profile data
+ * Tried in sequence until a successful response is received
+ */
 const USER_PROFILE_ENDPOINTS = [
   '/api/users/me/',
   '/api/users/profile/',
   '/api/users/current/'
 ];
 
+/**
+ * User interface representing the structure of user data
+ * throughout the application
+ */
 export interface User {
   id?: number;
   username: string;
@@ -29,11 +45,17 @@ export interface User {
   created_at?: string;
 }
 
+/**
+ * Login request data structure
+ */
 export interface LoginData {
   email: string;
   password: string;
 }
 
+/**
+ * Registration request data structure
+ */
 export interface RegisterData {
   username: string;
   email: string;
@@ -43,6 +65,9 @@ export interface RegisterData {
   last_name: string;
 }
 
+/**
+ * Authentication response structure containing user data and tokens
+ */
 export interface AuthResponse {
   user: {
     id: number;
@@ -56,6 +81,9 @@ export interface AuthResponse {
   refresh: string;
 }
 
+/**
+ * Standard error response structure from the API
+ */
 interface ErrorResponse {
     detail?: string;
     message?: string;
@@ -64,23 +92,27 @@ interface ErrorResponse {
 
 export type ProfileUpdateData = FormData | Partial<User>;
 
+/**
+ * Authentication Service Class
+ * Implements the Singleton pattern to ensure only one instance exists
+ */
 class AuthService {
   private static instance: AuthService;
   private refreshTokenPromise: Promise<string> | null = null;
 
   private constructor() {
-    // Add axios interceptor for token refresh
+    // Configure axios interceptor for automatic token refresh
     axios.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
         
-        // If the error is 401 and we haven't tried to refresh the token yet
+        // Handle 401 errors with token refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           
           try {
-            // Use the existing refresh token promise if one is in progress
+            // Reuse existing refresh token promise if one is in progress
             if (!this.refreshTokenPromise) {
               this.refreshTokenPromise = this.refreshToken();
             }
@@ -105,6 +137,9 @@ class AuthService {
     );
   }
 
+  /**
+   * Get the singleton instance of AuthService
+   */
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
       AuthService.instance = new AuthService();
@@ -112,6 +147,11 @@ class AuthService {
     return AuthService.instance;
   }
 
+  /**
+   * Register a new user
+   * @param userData Registration data including username, email, and password
+   * @returns Promise with registration response
+   */
   async register(userData: RegisterData): Promise<Record<string, unknown>> {
     try {
       const response = await axios.post(
@@ -135,6 +175,11 @@ class AuthService {
     }
   }
 
+  /**
+   * Initiate password reset process
+   * @param email User's email address
+   * @returns Promise with reset response
+   */
   async forgotPassword(email: string) {
     try {
       const response = await axios.post(
@@ -150,7 +195,6 @@ class AuthService {
         const axiosError = error as AxiosError<ErrorResponse>;
         console.error('Password reset error:', axiosError.response?.data);
         
-        // Handle 401 errors specifically
         if (axiosError.response?.status === 401) {
           throw new Error('Server configuration error. Please contact support.');
         }
@@ -165,6 +209,11 @@ class AuthService {
     }
   }
 
+  /**
+   * Authenticate user and retrieve tokens
+   * @param credentials Login credentials (email and password)
+   * @returns Promise with authentication response including tokens and user data
+   */
   async login(credentials: LoginData): Promise<AuthResponse> {
     try {
       const tokenEndpoint = `${API_URL}/api/users/token/`;
@@ -178,7 +227,7 @@ class AuthService {
           'Accept': 'application/json'
         },
         withCredentials: true,
-        timeout: 5000 // 5 second timeout
+        timeout: 5000
       });
 
       const { access, refresh } = response.data;
@@ -186,11 +235,10 @@ class AuthService {
         throw new Error('Invalid token response from server');
       }
 
-      // Store tokens with consistent naming
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
 
-      // Try each possible profile endpoint
+      // Attempt to fetch user profile data from available endpoints
       let userData = null;
 
       for (const endpoint of USER_PROFILE_ENDPOINTS) {
@@ -212,6 +260,7 @@ class AuthService {
         }
       }
 
+      // Fall back to token response data or create minimal user profile
       if (!userData) {
         // If no profile endpoint worked, try to extract user data from token response
         if (response.data.user) {
@@ -237,7 +286,6 @@ class AuthService {
         refresh,
       };
     } catch (error) {
-      // Clear any existing tokens
       this.logout();
       
       // Handle network errors
@@ -284,6 +332,10 @@ class AuthService {
     this.refreshTokenPromise = null;
   }
 
+  /**
+   * Retrieve the current authenticated user's data
+   * @returns User data from local storage or null if not authenticated
+   */
   async getCurrentUser() {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -323,14 +375,27 @@ class AuthService {
     }
   }
 
+  /**
+   * Check if a user is currently logged in
+   * @returns boolean indicating authentication status
+   */
   isLoggedIn(): boolean {
     return !!localStorage.getItem('access_token');
   }
 
+  /**
+   * Get the current access token
+   * @returns Current access token or null if not authenticated
+   */
   getToken(): string | null {
     return localStorage.getItem('access_token');
   }
 
+  /**
+   * Refresh the access token using the refresh token
+   * @returns Promise with new access token
+   * @throws Error if token refresh fails
+   */
   async refreshToken(): Promise<string> {
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
@@ -364,6 +429,10 @@ class AuthService {
     }
   }
 
+  /**
+   * Test if the current access token is valid
+   * @returns Promise<boolean> indicating token validity
+   */
   async testTokenValidity(): Promise<boolean> {
     const token = localStorage.getItem('access_token');
     if (!token) return false;
@@ -412,6 +481,13 @@ class AuthService {
     return false;
   }
 
+  /**
+   * Reset user's password using reset token
+   * @param uidb64 Base64 encoded user ID
+   * @param token Password reset token
+   * @param newPassword New password to set
+   * @returns Promise with reset response
+   */
   async resetPassword(uidb64: string, token: string, newPassword: string) {
     try {
       const response = await axios.post(`${API_URL}/api/users/password-reset/confirm/`, {
@@ -440,6 +516,12 @@ class AuthService {
     }
   }
 
+  /**
+   * Verify OTP for user registration
+   * @param email User's email
+   * @param otp One-time password to verify
+   * @returns Promise with verification response
+   */
   async verifyOTP(email: string, otp: string): Promise<{ message: string; access?: string; refresh?: string }> {
     try {
       const response = await axios.post(
@@ -470,6 +552,11 @@ class AuthService {
     }
   }
 
+  /**
+   * Request a new OTP for registration
+   * @param email User's email
+   * @returns Promise with resend response
+   */
   async resendOTP(email: string): Promise<{ message: string }> {
     try {
       const response = await axios.post(
@@ -493,6 +580,11 @@ class AuthService {
     }
   }
 
+  /**
+   * Cancel a pending registration
+   * @param email User's email
+   * @returns Promise with cancellation response
+   */
   async cancelRegistration(email: string): Promise<{ message: string }> {
     try {
       const response = await axios.post(
@@ -516,6 +608,11 @@ class AuthService {
     }
   }
 
+  /**
+   * Update user profile information
+   * @param data Updated profile data or FormData for file uploads
+   * @returns Promise with updated user data
+   */
   async updateProfile(data: FormData): Promise<User> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -536,6 +633,11 @@ class AuthService {
     return response.data;
   }
 
+    /**
+   * Standardize error handling across the service
+   * @param error Error object to process
+   * @throws Standardized error with appropriate message
+   */
   handleError(error: unknown): never {
     if (error instanceof Error) {
       console.error('Error handling:', error.message);
