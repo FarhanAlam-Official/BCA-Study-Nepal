@@ -1,3 +1,23 @@
+/**
+ * Profile Page Component
+ * 
+ * A comprehensive user profile management interface that provides:
+ * - Profile information display and editing
+ * - Profile picture management with image compression
+ * - Social media links management
+ * - Skills and interests management with tag-based input
+ * - Profile completion tracking with visual feedback
+ * - Responsive layout with animated transitions
+ * 
+ * The component uses various hooks for state management:
+ * - useAuth: For authentication and user data
+ * - useState: For local state management
+ * - useEffect: For side effects like cleanup
+ * - useRef: For file input reference
+ * 
+ * @module Profile
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -49,7 +69,7 @@ const FloatingIcon: React.FC<FloatingIconProps> = ({
  * 
  * @param user - The user object containing profile information
  * @returns Object containing:
- * - color: The color to use for the completion indicator
+ * - color: The color to use for the completion indicator (green/yellow/red)
  * - percentage: The completion percentage (0-100)
  * - isComplete: Whether the profile is 100% complete
  */
@@ -130,9 +150,10 @@ const getUserInitials = (user: AuthUser | null) => {
 
 /**
  * Compresses an image file before upload
+ * Uses browser-image-compression library for optimal compression
  * 
  * @param file - The file to compress
- * @returns A compressed File object
+ * @returns A compressed File object or the original file if compression fails
  */
 const compressImage = async (file: File) => {
   const options = {
@@ -147,6 +168,7 @@ const compressImage = async (file: File) => {
       type: compressedFile.type
     });
   } catch (error) {
+    // Keep this console.error as it's essential for debugging compression issues
     console.error('Error compressing image:', error);
     return file;
   }
@@ -224,13 +246,14 @@ const ProfileCompletionBadge: React.FC<{ user: AuthUser }> = ({ user }) => {
  * 
  * Handles the display and management of user profile information.
  * Features include:
- * - Profile information display
- * - In-place editing of profile details
- * - Profile picture upload with preview
+ * - Profile information display and editing
+ * - Profile picture upload with preview and compression
  * - Social media links management
  * - Skills and interests management with tag-like input
  * - Responsive layout with animated transitions
- * - Profile completion tracking
+ * - Profile completion tracking with visual feedback
+ * - Error handling with user-friendly notifications
+ * - Authentication state management
  */
 const Profile = () => {
   /**
@@ -444,9 +467,8 @@ const Profile = () => {
   };
 
   /**
-   * Handles form submission
-   * Validates data, processes image, and sends update request
-   * Handles various error cases and shows appropriate notifications
+   * Handles form submission for profile updates
+   * Processes form data, handles file uploads, and manages error states
    * 
    * @param e - Form submission event
    */
@@ -461,10 +483,9 @@ const Profile = () => {
     try {
       await authService.testTokenValidity();
       
-      // Create FormData for file upload
       const formDataToSend = new FormData();
       
-      // Add all form fields except profile_picture
+      // Process all form fields except profile_picture and input states
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== 'profile_picture' && key !== 'currentSkill' && key !== 'currentInterest') {
           if (Array.isArray(value)) {
@@ -479,7 +500,7 @@ const Profile = () => {
         }
       });
 
-      // Add profile picture if it exists
+      // Handle profile picture upload
       if (formData.profile_picture instanceof File) {
         formDataToSend.append('profile_picture', formData.profile_picture);
       }
@@ -493,6 +514,7 @@ const Profile = () => {
       }
       
       setIsEditing(false);
+      
       // Prevent scroll jump by waiting for state updates
       setTimeout(() => {
         toast.success('Profile updated successfully!', {
@@ -506,16 +528,16 @@ const Profile = () => {
         });
       }, 100);
       
-      // Scroll to top smoothly
+      // Smooth scroll to top after update
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: unknown) {
+      // Essential error logging for debugging
       console.error('Profile update failed:', err);
       
       if (err && typeof err === 'object') {
-        // Check for auth-related errors
+        // Handle authentication errors
         if ('message' in err && typeof err.message === 'string' && 
             (err.message.includes('authentication') || err.message.includes('token'))) {
-          // This is an auth error
           toast.error('Authentication failed. Please log in again.', {
             position: "top-right",
             autoClose: 5000,
@@ -526,20 +548,15 @@ const Profile = () => {
             theme: "colored"
           });
           
-          // Redirect to login after a short delay
-          setTimeout(() => {
-            logout();
-          }, 2000);
+          setTimeout(() => logout(), 2000);
           return;
         }
         
         // Handle API error responses
-        if ('response' in err && 
-            err.response && typeof err.response === 'object' && 
-            'data' in err.response) {
+        if ('response' in err && err.response && typeof err.response === 'object' && 'data' in err.response) {
           const errorResponse = err.response as { data: string | ErrorResponseData; status?: number };
           
-          // Check for 401/403 status codes
+          // Handle authentication errors (401/403)
           if (errorResponse.status === 401 || errorResponse.status === 403) {
             toast.error('Authorization failed. Please log in again.', {
               position: "top-right",
@@ -551,13 +568,11 @@ const Profile = () => {
               theme: "colored"
             });
             
-            // Redirect to login after a short delay
-            setTimeout(() => {
-              logout();
-            }, 2000);
+            setTimeout(() => logout(), 2000);
             return;
           }
           
+          // Process error data for user display
           const errorData = errorResponse.data;
           let errorMessage = '';
           
