@@ -19,9 +19,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-// Toast notifications
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// Global notification system
+import { showSuccess, showError } from '../../utils/notifications';
 
 // Icon imports for social login and UI elements
 import { FaGoogle, FaGithub, FaLinkedinIn } from 'react-icons/fa';
@@ -189,7 +188,7 @@ const Auth = () => {
         // Check if user was redirected here after logout
         const fromLogout = location.state?.fromLogout;
         if (fromLogout && !logoutToastShown) {
-            toast.success('You have been logged out successfully');
+            showSuccess('You have been logged out successfully');
             setLogoutToastShown(true);
         }
     }, [resetMessages, location.state, logoutToastShown]);
@@ -197,22 +196,32 @@ const Auth = () => {
     // Effect to handle authentication state changes
     useEffect(() => {
         if (isAuthenticated) {
-            toast.success('Login successful!', {
-                onClose: () => navigate('/')
-            });
+            showSuccess('Login successful!');
+            navigate('/');
         }
     }, [isAuthenticated, navigate]);
 
     // Effect to handle auth errors
     useEffect(() => {
         if (authError) {
-            // Remove the field error states since we're showing a toast
+            // Remove the field error states since we're showing a notification
             setErrors({ 
                 email: '', 
                 password: '' 
             });
-            // Show a generic error message via toast
-            toast.error('Invalid credentials. Please check your email and password.');
+
+            // Show appropriate error message based on error type
+            if (authError === 'NO_INTERNET') {
+                showError('Unable to connect. Please check your internet connection and try again.');
+            } else if (authError === 'SERVER_DOWN') {
+                showError('Server is not responding. Please try again later.');
+            } else if (authError === 'SERVER_ERROR') {
+                showError('Server error. Please try again later.');
+            } else {
+                showError('Invalid email or password. Please try again.');
+            }
+            
+            setIsLoading(false);
         }
     }, [authError]);
 
@@ -291,14 +300,15 @@ const Auth = () => {
 
         // Check if there are any validation errors
         if (emailError || passwordError) {
-            toast.error('Please fix the validation errors before submitting.');
+            showError('Please fix the validation errors before submitting.');
             return;
         }
 
         setIsLoading(true);
         try {
             await login({ email, password });
-        } finally {
+        } catch {
+            // Error is handled in the useEffect above
             setIsLoading(false);
         }
     };
@@ -306,20 +316,6 @@ const Auth = () => {
     return (
         // Main container with gradient background
         <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-white relative overflow-hidden">
-            {/* Toast Container */}
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="colored"
-            />
-
             {/* Decorative Floating Icons Section */}
             <FloatingIcon
                 Icon={Shield}

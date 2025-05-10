@@ -18,9 +18,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, RefreshCw, X, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { toast } from 'react-toastify';
-import authService from '../../services/auth/auth.service';
 import { AxiosError } from 'axios';
+import authService from '../../services/auth/auth.service';
+import { showSuccess, showError, showInfo } from '../../utils/notifications';
 
 /**
  * Props interface for OTPVerification component
@@ -167,25 +167,25 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     
     const otpString = otp.join('');
     if (otpString.length !== 6) {
-      toast.error('Please enter the complete 6-digit verification code');
-      return;
+        showError('Please enter the complete 6-digit verification code');
+        return;
     }
 
     try {
-      setIsLoading(true);
-      await authService.verifyOTP(email, otpString);
-      await onVerificationSuccess();
+        setIsLoading(true);
+        await authService.verifyOTP(email, otpString);
+        await onVerificationSuccess();
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ErrorResponseData>;
-      const errorData = axiosError.response?.data;
-      const errorMessage = 
-        errorData?.message || 
-        errorData?.detail || 
-        (error instanceof Error ? error.message : 'Invalid verification code. Please try again.');
-      
-      toast.error(errorMessage);
+        const axiosError = error as AxiosError<ErrorResponseData>;
+        const errorData = axiosError.response?.data;
+        const errorMessage = 
+            errorData?.message || 
+            errorData?.detail || 
+            (error instanceof Error ? error.message : 'Invalid verification code. Please try again.');
+        
+        showError(errorMessage);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -197,18 +197,18 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     if (isLoadingProp || !canResend) return;
     
     try {
-      setIsLoading(true);
-      await onResendOTP();
-      setResendCountdown(30);
-      setCanResend(false);
-      toast.success('A new verification code has been sent to your email');
+        setIsLoading(true);
+        await onResendOTP();
+        setResendCountdown(30);
+        setCanResend(false);
+        showSuccess('A new verification code has been sent to your email');
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to resend verification code. Please try again.';
-      toast.error(errorMessage);
+        const errorMessage = error instanceof Error 
+            ? error.message 
+            : 'Failed to resend verification code. Please try again.';
+        showError(errorMessage);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
   
@@ -226,18 +226,18 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
    */
   const handleConfirmCancel = async () => {
     try {
-      setIsCancelling(true);
-      await authService.cancelRegistration(email);
-      toast.info('Registration cancelled successfully');
-      onCancel();
+        setIsCancelling(true);
+        await authService.cancelRegistration(email);
+        showInfo('Registration cancelled successfully');
+        onCancel();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to cancel registration';
-      toast.error(errorMessage);
+        const errorMessage = error instanceof Error 
+            ? error.message 
+            : 'Failed to cancel registration';
+        showError(errorMessage);
     } finally {
-      setIsCancelling(false);
-      setShowCancelConfirm(false);
+        setIsCancelling(false);
+        setShowCancelConfirm(false);
     }
   };
   

@@ -21,12 +21,13 @@ import { FaGoogle, FaGithub, FaLinkedinIn } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff, BookOpen, Brain, KeyRound, UserPlus, ShieldCheck, FileCheck } from 'lucide-react';
 import { motion, AnimatePresence, AnimationProps } from 'framer-motion';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../../hooks/useAuth';
 import { RegisterData } from '../../services/auth/auth.service';
 import authService from '../../services/auth/auth.service';
 import OTPVerification from './OTPVerification';
+import { showSuccess, showError, showInfo, showWarning } from '../../utils/notifications';
 
 /**
  * Constants for rate limiting and validation
@@ -240,14 +241,14 @@ const Register = () => {
   useEffect(() => {
     if (success) {
       clearForm();
-      toast.success('Registration successful! Please check your email to verify your account.');
+      showSuccess('Registration successful! Please check your email to verify your account.');
     }
   }, [success]);
 
-  // Show error toast when error occurs
+  // Show error notification when error occurs
   useEffect(() => {
     if (error) {
-      toast.error(error);
+      showError(error);
     }
   }, [error]);
 
@@ -288,6 +289,11 @@ const Register = () => {
     
     if (value.length < 3) {
       setUsernameError('Username must be at least 3 characters');
+      return false;
+    }
+
+    if (value.length > 20) {
+      setUsernameError('Username must not exceed 20 characters');
       return false;
     }
     
@@ -441,23 +447,15 @@ const Register = () => {
     if (!registrationData) return;
     
     try {
-      // Don't register again - the user is already registered during initial signup
-      // The OTP verification endpoint already activates the user account
-      
-      // Simply store the returned tokens from OTP verification
       setShowOTPVerification(false);
-      
-      // Show success message to the user
-      toast.success('Account created successfully! You can now log in.');
-      
-      // Clear form fields after successful registration
+      showSuccess('Account created successfully! You can now log in.');
       clearForm();
       
       // Reset success message to prevent it from showing again
       resetMessages();
       
     } catch {
-      toast.error('There was a problem completing your registration. Please try again.');
+      showError('There was a problem completing your registration. Please try again.');
     }
   };
 
@@ -469,7 +467,7 @@ const Register = () => {
     setShowOTPVerification(false);
     setRegistrationData(null);
     resetMessages();
-    toast.info('Registration cancelled. You can update your information and try again.');
+    showInfo('Registration cancelled. You can update your information and try again.');
   };
 
   /**
@@ -478,15 +476,15 @@ const Register = () => {
    */
   const handleResendOTP = async () => {
     if (!registrationData?.email) {
-      toast.error('No email address found. Please start the registration process again.');
+      showError('No email address found. Please start the registration process again.');
       return;
     }
     
     try {
       await authService.resendOTP(registrationData.email);
-      toast.info('Verification code has been resent to your email.');
+      showInfo('Verification code has been resent to your email.');
     } catch {
-      toast.error('Failed to resend verification code. Please try again.');
+      showError('Failed to resend verification code. Please try again.');
     }
   };
 
@@ -501,7 +499,7 @@ const Register = () => {
     // Rate limiting check
     const now = Date.now();
     if (now - lastSubmitTime < SUBMIT_COOLDOWN) {
-      toast.warning('Please wait a moment before trying again');
+      showWarning('Please wait a moment before trying again');
       return;
     }
 
@@ -512,7 +510,7 @@ const Register = () => {
     const isConfirmPasswordValid = validateConfirmPassword(confirmPassword, password);
 
     if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
-      toast.error('Please fix the validation errors before submitting');
+      showError('Please fix the validation errors before submitting');
       return;
     }
 
@@ -532,19 +530,11 @@ const Register = () => {
         last_name: lastName
       };
 
-      // First call to API to register the user
       await authService.register(userData);
-      
-      // Store registration data for potential future use
       setRegistrationData(userData);
-      
-      // Show OTP verification screen after successful registration
       setShowOTPVerification(true);
-      
-      // Reset success message from auth context to prevent duplicate toasts
       resetMessages();
-      
-      toast.info('Please check your email for the verification code to complete your registration');
+      showInfo('Please check your email for the verification code to complete your registration');
       
     } catch (error: unknown) {
       const err = error as { 
@@ -555,23 +545,21 @@ const Register = () => {
         } 
       };
 
-      // Extract specific error messages if available
       if (err.response?.data) {
         const errorData = err.response.data;
         
         if (errorData.username && errorData.username.length > 0) {
-          toast.error(errorData.username[0]);
+          showError(errorData.username[0]);
           return;
         }
         
         if (errorData.email && errorData.email.length > 0) {
-          toast.error(errorData.email[0]);
+          showError(errorData.email[0]);
           return;
         }
       }
       
-      // Generic error if no specific error is found
-      toast.error('Registration failed. Please try again.');
+      showError('Registration failed. Please try again.');
     }
   };
 
@@ -809,6 +797,7 @@ const Register = () => {
                         placeholder="Choose a username" 
                         value={username}
                         onChange={handleUsernameChange}
+                        maxLength={20}
                         aria-invalid={!!usernameError}
                         aria-describedby={usernameError ? "username-error" : undefined}
                         className={`w-full px-3 py-1.5 rounded-lg border ${
