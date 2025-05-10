@@ -94,9 +94,8 @@ class AuthService {
             // Retry the original request
             return axios(originalRequest);
           } catch (refreshError) {
-            // If refresh fails, clear tokens and redirect to login
+            // If refresh fails, clear tokens but don't redirect
             this.logout();
-            window.location.href = '/login';
             return Promise.reject(refreshError);
           }
         }
@@ -179,6 +178,7 @@ class AuthService {
           'Accept': 'application/json'
         },
         withCredentials: true,
+        timeout: 5000 // 5 second timeout
       });
 
       const { access, refresh } = response.data;
@@ -206,9 +206,8 @@ class AuthService {
             userData = profileResponse.data;
             break;
           }
-        } catch (err) {
+        } catch {
           // Continue trying other endpoints
-          void err; // Avoid unused variable warning
           continue;
         }
       }
@@ -237,15 +236,43 @@ class AuthService {
         access,
         refresh,
       };
-    } catch (err) {
+    } catch (error) {
       // Clear any existing tokens
       this.logout();
       
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        throw new Error('Invalid credentials');
+      // Handle network errors
+      if (axios.isAxiosError(error)) {
+        // Check if there's a response object
+        if (error.response) {
+          // Server responded with error status
+          if (error.response.status === 500) {
+            const serverError = new Error('SERVER_ERROR');
+            serverError.name = 'ServerError';
+            throw serverError;
+          }
+          // Authentication error (401)
+          if (error.response.status === 401) {
+            const authError = new Error('INVALID_CREDENTIALS');
+            authError.name = 'AuthError';
+            throw authError;
+          }
+        } else if (error.request) {
+          // Request was made but no response received - server is down
+          const serverError = new Error('SERVER_DOWN');
+          serverError.name = 'ServerDownError';
+          throw serverError;
+        } else {
+          // Something happened in setting up the request - no internet
+          const networkError = new Error('NO_INTERNET');
+          networkError.name = 'NoInternetError';
+          throw networkError;
+        }
       }
       
-      throw err;
+      // For any other errors
+      const authError = new Error('INVALID_CREDENTIALS');
+      authError.name = 'AuthError';
+      throw authError;
     }
   }
 

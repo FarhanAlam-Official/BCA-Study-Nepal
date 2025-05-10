@@ -100,20 +100,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          console.log('No token found, user is not authenticated');
           setUser(null);
           setIsLoading(false);
           return;
         }
-
-        console.log('Token found, validating and fetching user data');
         
         // Try to get user data
         try {
           const userData = await authService.getCurrentUser();
           
           if (userData) {
-            console.log('User data retrieved successfully');
             setUser(userData);
           } else {
             throw new Error('No user data in response');
@@ -123,27 +119,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           
           // Try refreshing the token
           try {
-            console.log('Attempting to refresh token');
             await authService.refreshToken();
             
             // Try again with the new token
             const userDataAfterRefresh = await authService.getCurrentUser();
             
             if (userDataAfterRefresh) {
-              console.log('User data retrieved after token refresh');
               setUser(userDataAfterRefresh);
             } else {
               throw new Error('Still no user data after token refresh');
             }
-          } catch (refreshErr) {
-            console.error('Failed to refresh token:', refreshErr);
+          } catch {
             // Clear authentication if refresh fails
             authService.logout();
             setUser(null);
           }
         }
-      } catch (err) {
-        console.error('Error checking auth status:', err);
+      } catch {
         // Handle general errors
         authService.logout();
         setUser(null);
@@ -185,66 +177,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         throw new Error('No user data received');
       }
-    } catch (err) {
+    } catch (error) {
       // Clear any existing auth data
       authService.logout();
       setUser(null);
 
-      // Handle different error formats
-      const errorResponse = err as { response?: ApiErrorResponse };
-      
-      if (errorResponse.response?.data) {
-        const errorData = errorResponse.response.data;
-        
-        // Handle string error
-        if (typeof errorData === 'string') {
-          setError(errorData);
-        } 
-        // Handle object with detail field
-        else if (errorData.detail) {
-          if (errorData.detail.toLowerCase().includes('no active account') || 
-              errorData.detail.toLowerCase().includes('not found')) {
-            setError('EMAIL_NOT_FOUND');
-          } else if (errorData.detail.toLowerCase().includes('password') || 
-                    errorData.detail.toLowerCase().includes('credentials')) {
-            setError('INVALID_PASSWORD');
-          } else {
-            setError(errorData.detail);
-          }
-        } 
-        // Handle non-field errors
-        else if (errorData.non_field_errors) {
-          const errorMsg = Array.isArray(errorData.non_field_errors) 
-            ? errorData.non_field_errors.join(', ')
-            : errorData.non_field_errors;
-          
-          if (errorMsg.toLowerCase().includes('email') || 
-              errorMsg.toLowerCase().includes('username')) {
-            setError('EMAIL_NOT_FOUND');
-          } else if (errorMsg.toLowerCase().includes('password')) {
-            setError('INVALID_PASSWORD');
-          } else {
+      // Check error type by name
+      if (error instanceof Error) {
+        switch (error.name) {
+          case 'NoInternetError':
+            setError('NO_INTERNET');
+            break;
+          case 'ServerDownError':
+            setError('SERVER_DOWN');
+            break;
+          case 'ServerError':
+            setError('SERVER_ERROR');
+            break;
+          case 'AuthError':
+          default:
             setError('INVALID_CREDENTIALS');
-          }
-        } 
-        // Handle field-specific errors
-        else {
-          if ('email' in errorData) {
-            setError('EMAIL_NOT_FOUND');
-          } else if ('password' in errorData) {
-            setError('INVALID_PASSWORD');
-          } else {
-            const errorMessage = Object.entries(errorData)
-              .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
-              .join('\n');
-            setError(errorMessage || 'INVALID_CREDENTIALS');
-          }
+            break;
         }
       } else {
-        setError('An error occurred during login');
+        setError('INVALID_CREDENTIALS');
       }
       
-      throw err;
+      throw error;
     } finally {
       setIsLoading(false);
     }
