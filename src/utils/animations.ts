@@ -1,3 +1,14 @@
+/**
+ * Animation Utilities
+ * A collection of Framer Motion animation variants for consistent animations across the application.
+ * These animations are designed to be reusable and customizable for different components.
+ */
+
+/**
+ * Creates a fade-in animation from a specified direction
+ * @param direction - The direction from which the element should fade in ('up', 'down', 'left', 'right')
+ * @returns Framer Motion animation variants for fade-in effect
+ */
 export const fadeIn = (direction: 'up' | 'down' | 'left' | 'right') => {
   return {
     hidden: {
@@ -18,6 +29,10 @@ export const fadeIn = (direction: 'up' | 'down' | 'left' | 'right') => {
   }
 }
 
+/**
+ * Animation variant for staggered children animations
+ * Used to create a cascading effect when multiple child elements appear
+ */
 export const staggerContainer = {
   hidden: {},
   show: {
@@ -27,6 +42,11 @@ export const staggerContainer = {
   }
 }
 
+/**
+ * Floating animation effect
+ * Creates a smooth up-and-down floating motion with spring physics
+ * Ideal for elements that need to appear light or floating
+ */
 export const floatingAnimation = {
   hidden: { y: 20, opacity: 0 },
   visible: {
@@ -40,6 +60,11 @@ export const floatingAnimation = {
   }
 };
 
+/**
+ * Container animation for parent elements
+ * Handles the reveal of multiple child elements with staggered timing
+ * Children will appear one after another with a slight delay
+ */
 export const containerAnimation = {
   hidden: { opacity: 0 },
   visible: {
@@ -51,6 +76,11 @@ export const containerAnimation = {
   }
 };
 
+/**
+ * Text reveal animation
+ * Specifically designed for text elements with spring physics
+ * Creates a smooth upward reveal with carefully tuned spring parameters
+ */
 export const textReveal = {
   hidden: {
     y: 20,
