@@ -1,11 +1,19 @@
 /**
  * Main Application Component
  * 
- * Handles the core application structure including:
- * - Routing configuration
- * - Layout components (Navbar, Footer)
- * - Global providers (Auth, Pomodoro)
- * - Lazy loading of components
+ * Core application structure that handles:
+ * - Routing configuration with HashRouter
+ * - Global layout components (Navbar, Footer)
+ * - Context providers (Auth, Pomodoro)
+ * - Component lazy loading for performance
+ * - Global notification system
+ * 
+ * Architecture:
+ * - Uses HashRouter for consistent routing across deployments
+ * - Implements code splitting via lazy loading
+ * - Provides centralized state management through context
+ * - Maintains consistent layout structure
+ * - Handles global notifications via ToastContainer
  */
 
 import React from 'react';
@@ -13,7 +21,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Direct imports for core components
+// Direct imports for core components that are needed immediately
 import Settings from './pages/Settings';
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -26,13 +34,14 @@ import Features from './components/home/Features';
 import UsefulLinks from './components/home/UsefulLinks';
 import LoadingPage from './components/common/LoadingPage';
 
-// Context Providers
+// Context Providers for global state management
 import { PomodoroProvider } from './context/PomodoroContext';
 import { AuthProvider } from './context/AuthContext';
 
 /**
- * Lazy loaded components
- * These components are loaded only when needed to improve initial load time
+ * Lazy loaded components for better initial load performance
+ * Components are loaded on-demand when their routes are accessed
+ * Each import is wrapped in lazy() for code splitting
  */
 const Notes = lazy(() => import('./pages/notes'));
 const CollegePage = lazy(() => import('./pages/colleges'));
@@ -54,7 +63,8 @@ const SubjectNotes = lazy(() => import('./components/notes/SubjectNotes'));
 
 /**
  * HomePage Component
- * Renders the main landing page with Hero, Features, and UsefulLinks sections
+ * Landing page component that combines Hero, Features, and UsefulLinks
+ * Kept as a separate component for better organization and maintainability
  */
 const HomePage: React.FC = () => {
   return (
@@ -68,11 +78,17 @@ const HomePage: React.FC = () => {
 
 /**
  * AppContent Component
- * Main application wrapper that includes:
- * - Pomodoro context provider
- * - Layout structure
+ * Main application wrapper that provides:
+ * - Pomodoro context for time management features
+ * - Consistent layout structure
  * - Route definitions
- * - Global notifications
+ * - Global notification system
+ * 
+ * Layout Structure:
+ * - Navbar (fixed at top)
+ * - Main content area (flexible height)
+ * - Footer (fixed at bottom)
+ * - Toast notifications (overlay)
  */
 const AppContent: React.FC = () => {
   return (
@@ -82,23 +98,23 @@ const AppContent: React.FC = () => {
         <main className="flex-grow">
           <Suspense fallback={<LoadingPage />}>
             <Routes>
-              {/* Public Routes */}
+              {/* Public Routes - Accessible without authentication */}
               <Route path="/" element={<HomePage />} />
               
-              {/* College Routes */}
+              {/* College Routes - College exploration and details */}
               <Route path="/colleges" element={<CollegePage />} />
               <Route path="/colleges/:id" element={<CollegeDetail />} />
               
-              {/* Information Pages */}
+              {/* Information Pages - Static content */}
               <Route path="/career" element={<Career />} />
               <Route path="/contact" element={<Contact />} />
               
-              {/* Tool Routes */}
+              {/* Tool Routes - Interactive features */}
               <Route path="/tools/gpa-calculator" element={<GPACalculator />} />
               <Route path="/tools/pomodoro" element={<Pomodoro />} />
               <Route path="/tools/todo" element={<Todo />} />
               
-              {/* Study Material Routes */}
+              {/* Study Material Routes - Academic resources */}
               <Route path="/notes" element={<Notes />} />
               <Route path="/notes/:id" element={<Notes />} />
               <Route path="/notes/subject/:subjectId/:subjectName" element={<SubjectNotes />} />
@@ -107,11 +123,11 @@ const AppContent: React.FC = () => {
               <Route path="/question-papers/:subjectId/:subjectName/papers" element={<QuestionPapersPapers />} />
               <Route path="/resource-radar" element={<ResourceRadar />} />
               
-              {/* Syllabus Routes */}
+              {/* Syllabus Routes - Course structure and content */}
               <Route path="/syllabus" element={<SyllabusList />} />
               <Route path="/syllabus/subject/:subjectId/:subjectName" element={<SubjectSyllabusList />} />
               
-              {/* Authentication Routes */}
+              {/* Authentication Routes - User management */}
               <Route path="/auth" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
@@ -123,7 +139,7 @@ const AppContent: React.FC = () => {
         </main>
         <Footer />
         
-        {/* Global Toast Container */}
+        {/* Global Toast Container for notifications */}
         <ToastContainer
           containerId="global-notifications"
           position="top-right"
@@ -145,9 +161,10 @@ const AppContent: React.FC = () => {
 
 /**
  * Root App Component
- * Wraps the entire application with necessary providers:
+ * Top-level component that provides:
  * - Router for navigation
- * - Auth provider for authentication state
+ * - Authentication context
+ * - Global error boundary (implicit)
  */
 const App: React.FC = () => {
   return (

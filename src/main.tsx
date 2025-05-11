@@ -1,3 +1,14 @@
+/**
+ * Application Entry Point
+ * 
+ * This file handles:
+ * - React application initialization
+ * - Route checking setup
+ * - Image optimization
+ * - Loading indicator management
+ * - Development mode configuration
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -5,20 +16,32 @@ import './index.css';
 import imageOptimization from './utils/imageOptimization';
 import { initRouteChecker } from './utils/routeChecker';
 
-// Initialize route checking to fix any URL issues
+/**
+ * Initialize route checking to handle URL format issues
+ * This ensures consistent routing behavior across the application
+ */
 initRouteChecker();
 
-// Use a more performant approach by getting the root element once
+/**
+ * Get root element once for better performance
+ * This avoids unnecessary DOM queries
+ */
 const rootElement = document.getElementById('root');
 
-// Apply lazy loading to all images when DOM is fully loaded
+/**
+ * Setup image optimization when DOM is fully loaded
+ * Applies lazy loading to all images for better performance
+ */
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     imageOptimization.lazyLoadAllImages();
   });
 }
 
-// Function to remove the initial loading indicator
+/**
+ * Removes the initial loading indicator
+ * Called after React has mounted to ensure smooth transition
+ */
 const removeLoadingIndicator = () => {
   const loadingIndicator = document.getElementById('root-loading-indicator');
   if (loadingIndicator) {
@@ -26,12 +49,15 @@ const removeLoadingIndicator = () => {
   }
 };
 
-// Ensure the element exists before rendering
+// Ensure root element exists before rendering
 if (rootElement) {
   const root = createRoot(rootElement);
   
-  // Remove StrictMode in production to avoid double-rendering
-  // and keep it only in development for better debugging
+  /**
+   * Conditional StrictMode usage
+   * - Enabled in development for better debugging
+   * - Disabled in production to avoid double-rendering
+   */
   if (import.meta.env.DEV) {
     root.render(
       <StrictMode>
@@ -45,5 +71,6 @@ if (rootElement) {
   }
   
   // Remove loading indicator after React has mounted
+  // Small delay ensures smooth transition
   setTimeout(removeLoadingIndicator, 100);
 }
