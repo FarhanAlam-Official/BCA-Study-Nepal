@@ -16,48 +16,19 @@ import './index.css';
 import imageOptimization from './utils/imageOptimization';
 import { initRouteChecker } from './utils/routeChecker';
 
-/**
- * Initialize route checking to handle URL format issues
- * This ensures consistent routing behavior across the application
- */
+// Initialize route checking early
 initRouteChecker();
 
-/**
- * Get root element once for better performance
- * This avoids unnecessary DOM queries
- */
+// Get root element once for better performance
 const rootElement = document.getElementById('root');
 
-/**
- * Setup image optimization when DOM is fully loaded
- * Applies lazy loading to all images for better performance
- */
-if (typeof window !== 'undefined') {
-  window.addEventListener('DOMContentLoaded', () => {
-    imageOptimization.lazyLoadAllImages();
-  });
-}
+// Function to initialize the application
+const initializeApp = () => {
+  if (!rootElement) return;
 
-/**
- * Removes the initial loading indicator
- * Called after React has mounted to ensure smooth transition
- */
-const removeLoadingIndicator = () => {
-  const loadingIndicator = document.getElementById('root-loading-indicator');
-  if (loadingIndicator) {
-    loadingIndicator.remove();
-  }
-};
-
-// Ensure root element exists before rendering
-if (rootElement) {
   const root = createRoot(rootElement);
   
-  /**
-   * Conditional StrictMode usage
-   * - Enabled in development for better debugging
-   * - Disabled in production to avoid double-rendering
-   */
+  // Render the app with or without StrictMode based on environment
   if (import.meta.env.DEV) {
     root.render(
       <StrictMode>
@@ -65,12 +36,18 @@ if (rootElement) {
       </StrictMode>
     );
   } else {
-    root.render(
-      <App />
-    );
+    root.render(<App />);
   }
-  
-  // Remove loading indicator after React has mounted
-  // Small delay ensures smooth transition
-  setTimeout(removeLoadingIndicator, 100);
+
+  // Apply image optimizations after initial render
+  requestIdleCallback(() => {
+    imageOptimization.lazyLoadAllImages();
+  });
+};
+
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
 }
