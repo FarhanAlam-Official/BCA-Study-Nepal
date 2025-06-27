@@ -112,7 +112,7 @@ export default function AnimatedPageHeader({
   return (
     <motion.div 
       style={{ opacity: headerOpacity, y: headerY }}
-      className="relative h-screen mb-16 flex items-center justify-center overflow-hidden sticky top-0 z-0 bg-gradient-to-b from-indigo-50 via-purple-50 to-white"
+      className="h-screen mb-16 flex items-center justify-center overflow-hidden sticky top-0 z-0 bg-gradient-to-b from-indigo-50 via-purple-50 to-white"
     >
       {/* Floating Background Elements */}
       <motion.div
