@@ -1,40 +1,99 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Code, GraduationCap, Briefcase } from 'lucide-react';
+import HeroContent from './HeroContent';
+
 export default function Hero() {
+  const icons = [
+    <Code size="100%" />,
+    <GraduationCap size="100%" />,
+    <Briefcase size="100%" />
+  ];
+
   return (
-    <div className="relative bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-          <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 lg:mt-16 lg:px-8 xl:mt-20">
-            <div className="sm:text-center lg:text-left">
-              <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span className="block">Your Gateway to</span>
-                <span className="block text-indigo-600">BCA Excellence</span>
-              </h1>
-              <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Access comprehensive study materials, explore colleges, and discover career opportunities - all in one place.
-              </p>
-              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                <div className="rounded-md shadow">
-                  <Link to="/notes" className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                    Get Started
-                  </Link>
-                </div>
-                <div className="mt-3 sm:mt-0 sm:ml-3">
-                  <Link to="/colleges" className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10">
-                    View Colleges
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </main>
+    <div className="relative overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-purple-50 to-white" />
+      
+      {/* Floating animated icons */}
+      <motion.div
+        animate={{ 
+          y: [0, -50, 20, -30, 0],
+          x: [0, 30, -20, 40, 0],
+          rotate: [0, 10, -8, 12, 0]
+        }}
+        transition={{ 
+          duration: 20,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+        className="absolute right-[25%] top-[15%]"
+      >
+        <div className="h-28 w-28 text-indigo-600/20">
+          {React.cloneElement(icons[0] as React.ReactElement, { size: "100%" })}
         </div>
-      </div>
-      <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-        <img
-          className="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full z-20 relative"
-          src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
-          alt="Students studying"
-        />
+      </motion.div>
+
+      <motion.div
+        animate={{ 
+          y: [0, 40, -30, 20, 0],
+          x: [0, -40, 30, -20, 0],
+          rotate: [0, -12, 8, -15, 0]
+        }}
+        transition={{ 
+          duration: 18,
+          repeat: Infinity,
+          ease: "linear",
+          delay: 0.5
+        }}
+        className="absolute left-[30%] top-[45%]"
+      >
+        <div className="h-[112px] w-[112px] text-purple-600/15">
+          {React.cloneElement(icons[1] as React.ReactElement, { size: "100%" })}
+        </div>
+      </motion.div>
+
+      <motion.div
+        animate={{ 
+          y: [0, -30, 40, -20, 0],
+          x: [0, -25, 35, -30, 0],
+          rotate: [0, 15, -12, 8, 0]
+        }}
+        transition={{ 
+          duration: 15,
+          repeat: Infinity,
+          ease: "linear",
+          delay: 1
+        }}
+        className="absolute right-[40%] bottom-[35%]"
+      >
+        <div className="h-[90px] w-[90px] text-indigo-600/20">
+          {React.cloneElement(icons[2] as React.ReactElement, { size: "100%" })}
+        </div>
+      </motion.div>
+
+      <motion.div
+        animate={{ 
+          y: [0, 35, -25, 30, 0],
+          x: [0, 25, -35, 20, 0],
+          rotate: [0, -8, 12, -15, 0]
+        }}
+        transition={{ 
+          duration: 22,
+          repeat: Infinity,
+          ease: "linear",
+          delay: 1.5
+        }}
+        className="absolute left-[15%] bottom-[20%]"
+      >
+        <div className="h-[80px] w-[80px] text-purple-600/10">
+          {React.cloneElement(icons[0] as React.ReactElement, { size: "100%" })}
+        </div>
+      </motion.div>
+
+      {/* Hero content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+        <HeroContent />
       </div>
     </div>
   );
