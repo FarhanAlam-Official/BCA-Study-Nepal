@@ -13,9 +13,19 @@ dist
 dist-ssr
 *.local
 
-#Ignoring the folders containing the data files
+# Django specific
+backend/staticfiles/
 backend/media/
 backend/notes/
+backend/credentials/
+backend/config/
+backend/backup.json
+*.sqlite3
+
+# Development and temporary files
+src/temp/
+src/future-plans/
+.cssrc.json
 
 # Editor directories and files
 .vscode/*
