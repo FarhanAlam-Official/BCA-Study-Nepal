@@ -2,12 +2,20 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, GraduationCap, ArrowRight, Sparkles } from 'lucide-react';
 
+/**
+ * Animation variants for fade-in-up effect
+ * Used for individual elements to animate from bottom with fade
+ */
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
 
+/**
+ * Animation variant for staggered children
+ * Creates a cascading effect for child elements
+ */
 const stagger = {
   animate: {
     transition: {
@@ -16,29 +24,79 @@ const stagger = {
   }
 };
 
+/**
+ * Feature card configuration
+ * @type {Array<{
+ *   icon: React.FC,
+ *   title: string,
+ *   desc: string,
+ *   gradient: string
+ * }>}
+ */
+const featureCards = [
+  { 
+    icon: BookOpen, 
+    title: 'Study Materials', 
+    desc: 'Access comprehensive notes and resources for every semester',
+    gradient: 'from-blue-500 to-indigo-500'
+  },
+  { 
+    icon: GraduationCap, 
+    title: 'Top Colleges', 
+    desc: 'Explore and compare the best BCA colleges across India',
+    gradient: 'from-indigo-500 to-purple-500'
+  },
+  { 
+    icon: Sparkles, 
+    title: 'Career Growth', 
+    desc: 'Discover exciting opportunities and career paths',
+    gradient: 'from-purple-500 to-pink-500'
+  }
+];
+
+/**
+ * HeroContent Component
+ * 
+ * The main content section of the hero area, featuring animated headings,
+ * call-to-action buttons, and feature cards.
+ * 
+ * Visual Elements:
+ * - Animated sparkle icon with glow effect
+ * - Gradient text headings
+ * - Interactive CTA buttons
+ * - Animated feature cards with hover effects
+ * 
+ * Animation Features:
+ * - Staggered fade-in animations
+ * - Hover animations on buttons and cards
+ * - Smooth transitions and transforms
+ * - Gradient animations
+ * 
+ * @component
+ */
 const HeroContent = () => {
   return (
     <motion.div 
-      className="text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-12 sm:py-16 lg:py-20"
+      className="text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-2 sm:py-4 lg:py-8"
       initial="initial"
       animate="animate"
       variants={stagger}
     >
-      {/* Sparkle icon with enhanced glow effect */}
+      {/* Sparkle icon with glow effect */}
       <motion.div 
         variants={fadeInUp}
-        className="flex justify-center mb-8"
+        className="flex justify-center mb-1"
       >
         <div className="relative">
-          <Sparkles className="h-14 w-14 text-indigo-600 animate-pulse" />
+          <Sparkles className="h-10 w-10 text-indigo-600 animate-pulse" />
           <div className="absolute inset-0 bg-indigo-400/30 blur-3xl rounded-full scale-150" />
         </div>
       </motion.div>
 
-      {/* Main heading with enhanced gradient */}
+      {/* Main heading with gradient effect */}
       <motion.h1 
         variants={fadeInUp}
-        className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight space-y-2"
+        className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight space-y-0"
       >
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient">
           Your Gateway to
@@ -47,19 +105,20 @@ const HeroContent = () => {
         <span className="text-gray-900 drop-shadow-sm">BCA Excellence</span>
       </motion.h1>
 
-      {/* Enhanced subheading */}
+      {/* Descriptive subheading */}
       <motion.p 
         variants={fadeInUp}
-        className="mt-8 max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed"
+        className="mt-3 max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed"
       >
         Access comprehensive study materials, explore colleges, and discover career opportunities - all in one place.
       </motion.p>
 
-      {/* Enhanced CTA buttons */}
+      {/* Call-to-action buttons */}
       <motion.div 
         variants={fadeInUp}
-        className="mt-12 flex flex-col sm:flex-row gap-5 justify-center"
+        className="mt-10 flex flex-col sm:flex-row gap-5 justify-center"
       >
+        {/* Primary CTA with sliding arrow */}
         <Link
           to="/notes"
           className="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-white transition-all duration-300 ease-out hover:scale-105 shadow-lg hover:shadow-indigo-500/30"
@@ -70,6 +129,7 @@ const HeroContent = () => {
           <span className="text-lg font-semibold group-hover:pr-4 transition-all">Get Started</span>
         </Link>
         
+        {/* Secondary CTA with hover effect */}
         <Link
           to="/colleges"
           className="group inline-flex items-center justify-center rounded-xl border-2 border-indigo-600 bg-transparent px-8 py-4 text-indigo-600 transition-all duration-300 hover:bg-indigo-50 hover:scale-105 shadow-lg hover:shadow-indigo-500/10"
@@ -79,38 +139,22 @@ const HeroContent = () => {
         </Link>
       </motion.div>
 
-      {/* Enhanced feature cards */}
+      {/* Feature cards grid */}
       <motion.div 
         variants={fadeInUp}
-        className="mt-24 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 px-4"
+        className="mt-48 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 px-4"
       >
-        {[
-          { 
-            icon: BookOpen, 
-            title: 'Study Materials', 
-            desc: 'Access comprehensive notes and resources for every semester',
-            gradient: 'from-blue-500 to-indigo-500'
-          },
-          { 
-            icon: GraduationCap, 
-            title: 'Top Colleges', 
-            desc: 'Explore and compare the best BCA colleges across India',
-            gradient: 'from-indigo-500 to-purple-500'
-          },
-          { 
-            icon: Sparkles, 
-            title: 'Career Growth', 
-            desc: 'Discover exciting opportunities and career paths',
-            gradient: 'from-purple-500 to-pink-500'
-          }
-        ].map((feature, index) => (
+        {featureCards.map((feature, index) => (
           <motion.div
             key={index}
             variants={fadeInUp}
             whileHover={{ y: -8, transition: { duration: 0.3 } }}
             className="relative group rounded-xl bg-white p-8 shadow-xl transition-all duration-300 hover:shadow-2xl border border-gray-100"
           >
+            {/* Gradient overlay on hover */}
             <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity rounded-xl`} />
+            
+            {/* Card content */}
             <div className="relative">
               <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-3 w-fit">
                 <feature.icon className="h-8 w-8 text-indigo-600" />

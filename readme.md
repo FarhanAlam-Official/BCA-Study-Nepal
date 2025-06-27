@@ -1,107 +1,191 @@
-<h1 align="center">🌟 BCA Study Nepal 🌟</h1>
+<h1 align="center">🎓 BCA Study Nepal</h1>
 
-<hr>
+<div align="center">
+  
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-5.1-green.svg)](https://www.djangoproject.com/)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
 
-<h2>📑 Table of Contents</h2>
-<ol>
-    <li><a href="#introduction">Introduction</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#technologies-used">Technologies Used</a></li>
-    <li><a href="#installation-guide">Installation Guide</a></li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#contact">Contact</a></li>
-</ol>
+</div>
 
-<hr>
-
-<h2 id="introduction">📖 Introduction</h2>
-<p>
-    <strong>BCA Study Nepal</strong> is a student-centric platform designed to help students of Pokhara University. It provides free access to essential resources such as notes, syllabi, career options, exam centers, and a list of colleges offering BCA programs affiliated with Pokhara University. This project aims to create an easy and informative website to aid students in their academic journey.
+<p align="center">
+    A comprehensive study platform for BCA students of Pokhara University, providing access to notes, syllabi, and resources.
 </p>
 
 <hr>
 
-<h2 id="features">✨ Features</h2>
-<ul>
-    <li><strong>Responsive Design:</strong> Optimized for mobile, tablet, and desktop devices.</li>
-    <li><strong>Student-Centric Features:</strong> Provides access to important study materials, career resources, and college information.</li>
-    <li><strong>Interactive Search:</strong> Search for notes, syllabi, colleges, and career paths.</li>
-    <li><strong>Fast and Lightweight:</strong> Built with modern tools for optimal performance.</li>
-    <li><strong>Customizable Backend:</strong> Backend technology is yet to be finalized, but future integration will allow for dynamic data management.</li>
-</ul>
+## 📑 Table of Contents
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Setup](#environment-setup)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 <hr>
 
-<h2 id="technologies-used">💻 Technologies Used</h2>
-<ul>
-    <li><strong>Frontend:</strong> React, Vite, TypeScript</li>
-    <li><strong>Backend:</strong> TBD (To be decided)</li>
-    <li><strong>Version Control:</strong> Git, GitHub</li>
-    <li><strong>Deployment:</strong> GitHub Pages, Netlify (Frontend)</li>
-</ul>
+## 🌟 Overview
 
-<hr>
+**BCA Study Nepal** is a modern, full-stack web application designed to support BCA students at Pokhara University. The platform offers:
 
-<h2 id="installation-guide">📥 Installation Guide</h2>
-<h3>Steps to Set Up:</h3>
-<ol>
-    <li>Clone the repository:
-        <pre><code>git clone https://github.com/FarhanAlam-Official/BCA-Study-Nepal.git</code></pre>
-    </li>
-    <li>Navigate to the project directory:
-        <pre><code>cd BCA-Study-Nepal</code></pre>
-    </li>
-    <li>Install dependencies:
-        <pre><code>npm install</code></pre>
-    </li>
-    <li>Start the development server:
-        <pre><code>npm run dev</code></pre>
-    </li>
-</ol>
+- 📚 Comprehensive study materials and notes
+- 📝 Past question papers and solutions
+- 🎓 College information and comparisons
+- 👥 User authentication with Google OAuth
+- 📱 Responsive design for all devices
+- 🔍 Advanced search and filtering capabilities
 
-<hr>
+## 🚀 Key Features
 
-<h2 id="usage">🔧 Usage</h2>
-<h3>Running Locally:</h3>
-<ol>
-    <li>Ensure all dependencies are installed with <code>npm install</code>.</li>
-    <li>Start the development server using <code>npm run dev</code>.</li>
-    <li>Access the website at <code>http://localhost:3000</code> in your browser.</li>
-</ol>
+### For Students
+- **Study Resources**
+  - Semester-wise notes and materials
+  - Past question papers with solutions
+  - Syllabus and course information
+  
+### For Colleges
+- **College Profiles**
+  - Detailed college information
+  - Admission procedures
+  - Fee structures
+  
+### Technical Features
+- **Authentication & Security**
+  - Google OAuth integration
+  - JWT-based authentication
+  - Rate limiting and security measures
+  
+- **Performance**
+  - Elasticsearch integration for fast search
+  - Redis caching (planned)
+  - Optimized database queries
 
-<hr>
+## 💻 Tech Stack
 
-<h2 id="license">📜 License</h2>
-<p>This project is licensed under the <strong>MIT License</strong>. See the LICENSE file for details.</p>
+### Backend
+- **Framework:** Django 5.1, Django REST Framework
+- **Database:** MySQL
+- **Search:** Elasticsearch
+- **Authentication:** JWT, Google OAuth
+- **Email:** SMTP with Gmail
+- **Documentation:** drf-yasg (Swagger/OpenAPI)
 
-<hr>
+### Frontend
+- **Framework:** React 18 with TypeScript
+- **State Management:** Redux Toolkit
+- **Styling:** Tailwind CSS
+- **UI Components:** Material-UI
+- **Forms:** React Hook Form
+- **API Client:** Axios
 
-<h2 id="contributing">🤝 Contributing</h2>
-<p>Contributions are welcome! To contribute:</p>
-<ol>
-    <li>Fork the repository on GitHub.</li>
-    <li>Create a new branch for your feature or bug fix:
-        <pre><code>git checkout -b feature-branch</code></pre>
-    </li>
-    <li>Make your changes and commit them:
-        <pre><code>git commit -m "Your commit message"</code></pre>
-    </li>
-    <li>Push to your branch:
-        <pre><code>git push origin feature-branch</code></pre>
-    </li>
-    <li>Open a pull request on the repository.</li>
-</ol>
+## 📁 Project Structure
 
-<hr>
+\`\`\`
+BCA Study Nepal/
+├── backend/
+│   ├── api/
+│   │   ├── apps/
+│   │   │   ├── colleges/
+│   │   │   ├── notes/
+│   │   │   ├── resources/
+│   │   │   ├── subjects/
+│   │   │   └── users/
+│   │   ├── core/
+│   │   └── utils/
+│   └── config/
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   ├── features/
+    │   ├── hooks/
+    │   ├── services/
+    │   └── utils/
+    └── public/
+\`\`\`
 
-<h2 id="contact">📬 Contact</h2>
+## 🚀 Getting Started
 
-<p>For questions, suggestions, or collaboration inquiries:</p>
-<ul>
-    <li><strong>GitHub :</strong> <a href="https://github.com/FarhanAlam-Official" target="_blank">Farhan Alam</a></li>
-    <li><strong>Email :</strong> <a href="mailto:istaqalam930@gmail.com">istaqalam930@gmail.com</a></li>
-</ul>
+### Prerequisites
+- Python 3.9+
+- Node.js 16+
+- MySQL 8.0+
+- Git
 
-<p align="center">Made with ❤️ by <a href="https://github.com/FarhanAlam-Official">Farhan Alam and team</a></p>
+### Installation
+
+1. **Clone the Repository**
+\`\`\`bash
+git clone https://github.com/FarhanAlam-Official/BCA-Study-Nepal.git
+cd BCA-Study-Nepal
+\`\`\`
+
+2. **Backend Setup**
+\`\`\`bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+\`\`\`
+
+3. **Frontend Setup**
+\`\`\`bash
+cd frontend
+npm install
+npm run dev
+\`\`\`
+
+### Environment Setup
+
+Create a \`.env\` file in the backend directory:
+
+\`\`\`env
+DEBUG=True
+SECRET_KEY=your-secret-key
+DATABASE_URL=mysql://user:password@localhost:3306/bca_study_nepal
+GOOGLE_OAUTH2_CLIENT_ID=your-client-id
+GOOGLE_OAUTH2_CLIENT_SECRET=your-client-secret
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+\`\`\`
+
+## 📚 API Documentation
+
+API documentation is available at:
+- Swagger UI: \`http://localhost:8000/api/swagger/\`
+- ReDoc: \`http://localhost:8000/api/redoc/\`
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (\`git checkout -b feature/AmazingFeature\`)
+3. Commit your changes (\`git commit -m 'Add some AmazingFeature'\`)
+4. Push to the branch (\`git push origin feature/AmazingFeature\`)
+5. Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📬 Contact
+
+- **Project Lead:** [Farhan Alam](https://github.com/FarhanAlam-Official)
+- **Email:** [istaqalam930@gmail.com](mailto:thefarhanalam01@gmail.com)
+- **Project Link:** [https://github.com/FarhanAlam-Official/BCA-Study-Nepal](https://github.com/FarhanAlam-Official/BCA-Study-Nepal)
+
+<div align="center">
+  <sub>Built with ❤️ by Farhan Alam</sub>
+</div>

@@ -1,38 +1,20 @@
-import { useState, useEffect } from 'react';
-import { authService } from '../services/api';
+/**
+ * Custom hook for accessing authentication context throughout the application.
+ * This hook provides access to authentication state and methods from the AuthContext.
+ */
 
-export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+import { useContext } from 'react';
+import AuthContext, { AuthContextType } from '../context/AuthContext';
 
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      setIsAuthenticated(true);
-      // Fetch user profile
-    }
-    setLoading(false);
-  }, []);
-
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await authService.login(username, password);
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      setIsAuthenticated(true);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setIsAuthenticated(false);
-    setUser(null);
-  };
-
-  return { isAuthenticated, user, loading, login, logout };
-};
+/**
+ * Hook to access authentication context
+ * @returns {AuthContextType} The authentication context containing user state and auth methods
+ * @throws {Error} If used outside of AuthProvider context
+ */
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}; 

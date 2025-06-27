@@ -6,67 +6,90 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log.*
+log/
+logs/
+*.logs
 
 # Dependencies
-node_modules
-dist
-dist-ssr
-*.local
+node_modules/
+.pnp
+.pnp.js
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
 
-# Django specific
-backend/staticfiles/
+# Build outputs
+dist/
+dist-ssr/
+*.local
+/build/
+/out/
+.next/
+.nuxt/
+.output/
+
+# Project specific
 backend/media/
 backend/notes/
-backend/credentials/
-backend/config/
-backend/backup.json
-*.sqlite3
+test.pdf
+backend/staticfiles/
+-files
 
-# Development and temporary files
-src/temp/
-src/future-plans/
-.cssrc.json
+# Credentials and sensitive data
+credentials/
+*.json
+*.key
+*.pem
+*.cert
+*.crt
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Build directories
-/build/
-/dist/
-/out/
+*.swp
+*.swo
+*~
 
 # Cache directories
 .cache/
 .temp/
 .tmp/
+.npm/
+.eslintcache
+.stylelintcache
+.prettiercache
 
 # Coverage directory used by testing tools
 /coverage/
+*.lcov
+.nyc_output/
 
-# Optional: Package manager locks (uncomment if you want to ignore)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
-# Optional: OS generated files
-Thumbs.db
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 ehthumbs.db
+Thumbs.db
 Desktop.ini
+$RECYCLE.BIN/
 
 # Python specific
 __pycache__/
@@ -89,6 +112,218 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env/
+.venv/
+pythonenv*/
+.python-version
+
+# Jupyter Notebook
+.ipynb_checkpoints
+.qodo
+*.ipynb
+.ipynb
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# IDE specific files
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# System Files
+.directory
+*~
+*.swp
+*.swo
+*#
+
+# Environment
+.env
+.env.*
+venv/
+env/
+
+# Database
+*.sqlite3
+*.sqlite
+*.db
+backend/db.sqlite3
+
+# Config files (except base and examples)
+backend/config/*.py
+backend/config/settings/*.py
+!backend/config/base.py
+!backend/config/*.example
+backend/config/local_settings.py
+backend/config/production.py
+backend/config/development.py
+backend/config/staging.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Media and Static files
+media/
+static/
+!static/.gitkeep
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Credentials
+backend/credentials/
+*.pickle
+*.key
+*.pem
+
+# Future plans
+future-plans
+temp/
+
+# Django specific
+backend/staticfiles/
+backend/static/
+backend/media/
+backend/notes/
+*.sqlite3
+*.sqlite
+*.db
+db.sqlite3
+
+# Credentials and sensitive data
+backend/credentials/
+backend/config/*.py
+!backend/config/base.py
+!backend/config/*.example
+backend/config/local_settings.py
+backend/config/production.py
+backend/config/development.py
+backend/config/staging.py
+*.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.key
+*.pem
+*.cert
+*.crt
+*.pickle
+*.token
+gmail_token.*
+
+# Development and temporary files
+src/temp/
+src/future-plans/
+.cssrc.json
+*.bak
+*.swp
+*.swo
+*~
+.directory
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor directories
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Cache directories
+.cache/
+.temp/
+.tmp/
+.npm/
+.eslintcache
+.stylelintcache
+.prettiercache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python specific
+*.pyc
+*$py.class
+*.so
+.Python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.python-version
 
 # Virtual Environment
 venv/
@@ -100,3 +335,10 @@ pythonenv*/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
+
+# Backup files
+backend/backup.json
+*.backup
+*_backup
+*_bak

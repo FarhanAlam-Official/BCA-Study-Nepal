@@ -1,130 +1,156 @@
 import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Subject } from '../../../services/types/questionpapers.types';
-import { Book, ChevronRight, GraduationCap } from 'lucide-react';
-import { questionPaperService } from '../../../services/api/questionPaperService';
+import { Subject } from '../../../types/question-papers/question-papers.types';
+import { Book } from 'lucide-react';
+import { questionPaperService } from '../../../api/question-papers/question-papers.api';
+import { useNavigate } from 'react-router-dom';
+import { showError } from '../../../utils/notifications';
+import SubjectCard from '../ui/SubjectCard';
 import LoadingSpinner from '../../common/LoadingSpinner';
-import ErrorDisplay from '../../common/ErrorDisplay';
 
 interface SubjectListProps {
   programId: number;
   semester: number;
   isVisible: boolean;
-  onBack: () => void;
 }
 
-const SubjectList: React.FC<SubjectListProps> = ({ programId, semester, isVisible, onBack }) => {
+/**
+ * SubjectList Component
+ * Displays a grid of subject cards for a specific program and semester.
+ * Handles loading states, errors, and navigation to subject details.
+ */
+const SubjectList: React.FC<SubjectListProps> = ({
+  programId,
+  semester,
+  isVisible,
+}) => {
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const navigate = useNavigate();
 
+  /**
+   * Fetches subjects for the selected program and semester
+   */
   const fetchSubjects = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await questionPaperService.getByProgram(programId);
-      const semesterSubjects = response.semesters
-        .find(sem => sem.semester === semester)?.subjects || [];
-      setSubjects(semesterSubjects);
       setError(null);
-    } catch (err) {
-      console.error('Failed to load subjects:', err);
-      setError('Failed to load subjects');
+      const response = await questionPaperService.getByProgram(programId);
+      
+      // Find the semester data and extract subjects
+      const semesterData = response.semesters.find(sem => sem.semester === semester);
+      if (semesterData && Array.isArray(semesterData.subjects)) {
+        setSubjects(semesterData.subjects);
+      } else {
+        setSubjects([]);
+      }
+    } catch {
+      const errorMessage = 'Failed to load subjects. Please try again later.';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   }, [programId, semester]);
 
+  // Load subjects when component mounts or when program/semester changes
   React.useEffect(() => {
-    if (programId) {
+    if (isVisible && programId && semester) {
       fetchSubjects();
     }
-  }, [programId, fetchSubjects]);
+  }, [programId, semester, isVisible, fetchSubjects]);
 
+  // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { staggerChildren: 0.1 }
-    },
-    exit: { opacity: 0, x: -20 }
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        duration: 0.3
+      }
+    }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-    hover: { scale: 1.02, transition: { duration: 0.2 } }
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
   };
 
-  if (!isVisible) return null;
-  if (isLoading) return <LoadingSpinner />;
-  if (error) return <ErrorDisplay message={error} onRetry={fetchSubjects} />;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100/50 shadow-lg">
+        <div className="max-w-sm mx-auto space-y-4">
+          <div className="p-3 bg-red-50 rounded-full w-fit mx-auto">
+            <Book className="w-6 h-6 text-red-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900">
+            {error}
+          </h3>
+          <button
+            onClick={fetchSubjects}
+            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors shadow-md hover:shadow-xl"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!subjects.length) {
+    return (
+      <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100/50 shadow-lg">
+        <div className="max-w-sm mx-auto space-y-4">
+          <div className="p-3 bg-indigo-50 rounded-full w-fit mx-auto">
+            <Book className="w-6 h-6 text-indigo-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900">
+            No Subjects Available
+          </h3>
+          <p className="text-gray-500 text-lg">
+            There are no subjects available for this semester yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
       initial="hidden"
       animate="visible"
-      exit="exit"
       variants={containerVariants}
-      className="space-y-6"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
     >
-      <motion.div 
-        className="flex items-center gap-4"
-        variants={itemVariants}
-      >
-        <button
-          onClick={onBack}
-          className="p-2 rounded-lg hover:bg-gray-100/80 transition-all duration-200 active:scale-95"
+      {subjects.map((subject) => (
+        <motion.div
+          key={subject.id}
+          variants={itemVariants}
+          className="h-full"
         >
-          <ChevronRight className="w-5 h-5 transform rotate-180" />
-        </button>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-50 rounded-lg">
-            <GraduationCap className="w-6 h-6 text-indigo-600" />
-          </div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Semester {semester} Subjects
-          </h2>
-        </div>
-      </motion.div>
-
-      <motion.div 
-        className="grid gap-4"
-        variants={containerVariants}
-      >
-        {subjects.length === 0 ? (
-          <motion.p 
-            variants={itemVariants}
-            className="text-center text-gray-500 py-8"
-          >
-            No subjects found for this semester.
-          </motion.p>
-        ) : (
-          subjects.map((subject: Subject) => (
-            <motion.div
-              key={subject.id}
-              variants={itemVariants}
-              whileHover="hover"
-              className="p-4 bg-white rounded-xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all duration-200"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-indigo-50 rounded-lg flex-shrink-0">
-                  <Book className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 mb-1">{subject.name}</h4>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500">Code: {subject.code}</span>
-                    <span className="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      {subject.credit_hours} Credits
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))
-        )}
-      </motion.div>
+          <SubjectCard
+            subject={subject}
+            onClick={() => navigate(`/question-papers/${subject.id}/${encodeURIComponent(subject.name)}/papers`)}
+          />
+        </motion.div>
+      ))}
     </motion.div>
   );
 };

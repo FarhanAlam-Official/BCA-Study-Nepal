@@ -4,14 +4,260 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BCA Study Nepal - Resources for BCA students in Nepal" />
     <title>BCA Study Nepal</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-    <link rel="manifest" href="images/site.webmanifest">    
+    
+    <!-- Preload critical assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Preload critical JavaScript -->
+    <link rel="modulepreload" href="/src/main.tsx" />
+    <link rel="modulepreload" href="/src/App.tsx" />
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicons/favicon-16x16.png">
+    <link rel="manifest" href="images/site.webmanifest">
+    
+    <style>
+      /* Critical CSS for initial load */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f8f7ff;
+      }
+      
+      #root-skeleton {
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+      }
+      
+      #root-skeleton.fade-out {
+        opacity: 0;
+      }
+
+      .skeleton-header {
+        height: 72px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+      }
+
+      .skeleton-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .skeleton-logo-icon {
+        width: 32px;
+        height: 32px;
+        background: #6b63ff;
+        border-radius: 8px;
+      }
+
+      .skeleton-logo-text {
+        width: 60px;
+        height: 24px;
+        background: #e5e7eb;
+        border-radius: 4px;
+      }
+
+      .skeleton-nav {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-left: 48px;
+      }
+
+      .skeleton-nav-item {
+        width: 80px;
+        height: 20px;
+        background: #e5e7eb;
+        border-radius: 4px;
+      }
+
+      .skeleton-search {
+        margin-left: auto;
+        width: 240px;
+        height: 40px;
+        background: #f8f7ff;
+        border-radius: 20px;
+      }
+
+      .skeleton-user {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: 24px;
+      }
+
+      .skeleton-user-text {
+        width: 100px;
+        height: 20px;
+        background: #e5e7eb;
+        border-radius: 4px;
+      }
+
+      .skeleton-user-avatar {
+        width: 40px;
+        height: 40px;
+        background: #e5e7eb;
+        border-radius: 50%;
+      }
+
+      .skeleton-main {
+        margin-top: 72px;
+        padding: 120px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        min-height: calc(100vh - 72px);
+      }
+
+      .skeleton-hero-title {
+        width: 80%;
+        max-width: 800px;
+        height: 120px;
+        margin: 48px auto 0;
+        position: relative;
+      }
+
+      .skeleton-hero-line1 {
+        width: 60%;
+        height: 48px;
+        background: #7b72ff;
+        border-radius: 8px;
+        margin: 0 auto 16px;
+      }
+
+      .skeleton-hero-line2 {
+        width: 80%;
+        height: 48px;
+        background: #3d4245;
+        border-radius: 8px;
+        margin: 0 auto;
+      }
+
+      .skeleton-hero-subtitle {
+        width: 70%;
+        max-width: 600px;
+        height: 24px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        margin: 48px auto;
+      }
+
+      .skeleton-buttons {
+        display: flex;
+        gap: 16px;
+        margin-top: 48px;
+      }
+
+      .skeleton-button {
+        width: 140px;
+        height: 48px;
+        background: #7b72ff;
+        border-radius: 8px;
+      }
+
+      .skeleton-button.outline {
+        background: transparent;
+        border: 2px solid #7b72ff;
+      }
+
+      .skeleton-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: .7;
+        }
+      }
+
+      /* Hide scrollbar during load */
+      html.loading {
+        overflow: hidden;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Skeleton loading UI -->
+      <div id="root-skeleton">
+        <header class="skeleton-header">
+          <div class="skeleton-logo">
+            <div class="skeleton-logo-icon skeleton-pulse"></div>
+            <div class="skeleton-logo-text skeleton-pulse"></div>
+          </div>
+          <nav class="skeleton-nav">
+            <div class="skeleton-nav-item skeleton-pulse"></div>
+            <div class="skeleton-nav-item skeleton-pulse"></div>
+            <div class="skeleton-nav-item skeleton-pulse"></div>
+            <div class="skeleton-nav-item skeleton-pulse"></div>
+            <div class="skeleton-nav-item skeleton-pulse"></div>
+            <div class="skeleton-nav-item skeleton-pulse"></div>
+          </nav>
+          <div class="skeleton-search skeleton-pulse"></div>
+          <div class="skeleton-user">
+            <div class="skeleton-user-text skeleton-pulse"></div>
+            <div class="skeleton-user-avatar skeleton-pulse"></div>
+          </div>
+        </header>
+        
+        <main class="skeleton-main">
+          <div class="skeleton-hero-title">
+            <div class="skeleton-hero-line1 skeleton-pulse"></div>
+            <div class="skeleton-hero-line2 skeleton-pulse"></div>
+          </div>
+          <div class="skeleton-hero-subtitle skeleton-pulse"></div>
+          <div class="skeleton-buttons">
+            <div class="skeleton-button skeleton-pulse"></div>
+            <div class="skeleton-button outline skeleton-pulse"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script>
+      // Add loading class to prevent scroll during initial load
+      document.documentElement.classList.add('loading');
+      
+      // Remove skeleton and loading class when content is ready
+      window.addEventListener('load', () => {
+        const skeleton = document.getElementById('root-skeleton');
+        if (skeleton) {
+          skeleton.classList.add('fade-out');
+          // Remove loading class immediately to enable scrolling
+          document.documentElement.classList.remove('loading');
+          setTimeout(() => {
+            skeleton.remove();
+          }, 300);
+        } else {
+          // Ensure loading class is removed even if skeleton is not found
+          document.documentElement.classList.remove('loading');
+        }
+      });
+
+      // Fallback to ensure loading class is removed
+      setTimeout(() => {
+        document.documentElement.classList.remove('loading');
+      }, 2000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

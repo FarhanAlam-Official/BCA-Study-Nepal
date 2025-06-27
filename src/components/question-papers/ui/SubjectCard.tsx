@@ -1,98 +1,128 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Download, Eye } from 'lucide-react';
-import { Subject, QuestionPaper } from '../../../services/types/questionpapers.types';
+import { Book, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Subject } from '../../../types/question-papers/question-papers.types';
 
+/**
+ * Props for the SubjectCard component
+ */
 interface SubjectCardProps {
   subject: Subject;
-  questionPapers: QuestionPaper[];
-  onDownload?: (paper: QuestionPaper) => void;
+  onClick?: (subject: Subject) => void;
 }
 
+/**
+ * SubjectCard Component
+ * Displays a card with subject information including name, code, credit hours,
+ * and question paper statistics. Features hover animations and interactive elements.
+ */
 const SubjectCard: React.FC<SubjectCardProps> = ({ 
   subject, 
-  questionPapers,
-  onDownload 
+  onClick
 }) => {
-  const subjectPapers = questionPapers.filter(paper => paper.subject.id === subject.id);
+  /**
+   * Handles click events on the card
+   */
+  const handleClick = () => {
+    if (onClick) {
+      onClick(subject);
+    }
+  };
+
+  /**
+   * Handles keyboard events for accessibility
+   */
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      if (onClick) {
+        onClick(subject);
+      }
+    }
+  };
+
+  // Calculate verified papers count
+  const verifiedPapers = subject.question_papers.filter(p => p.status === 'VERIFIED').length;
+  const totalPapers = subject.question_papers.length;
 
   return (
     <motion.div
-      whileHover={{ scale: 1.01 }}
-      className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-indigo-200 transition-all duration-200"
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-100/50 
+                hover:border-indigo-300/80 shadow-lg hover:shadow-xl hover:shadow-indigo-500/10
+                transition-all duration-300 cursor-pointer overflow-hidden p-6 h-[220px] flex flex-col"
+      role="button"
+      tabIndex={0}
+      aria-label={`View question papers for ${subject.name}`}
     >
-      {/* Subject Header */}
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900">{subject.name}</h3>
-            <p className="text-sm text-gray-500">Code: {subject.code}</p>
-          </div>
-          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">
-            {subject.credit_hours} Credit Hours
-          </span>
-        </div>
-      </div>
+      {/* Card Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-purple-50/50 
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      {/* Decorative Blur Elements */}
+      <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-indigo-100/30 
+                    rounded-full blur-2xl group-hover:bg-indigo-200/40 transition-colors duration-300" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 -ml-16 -mb-16 bg-purple-100/30 
+                    rounded-full blur-2xl group-hover:bg-purple-200/40 transition-colors duration-300" />
 
-      {/* Question Papers List */}
-      <div className="divide-y divide-gray-100">
-        {subjectPapers.map((paper) => (
-          <div 
-            key={paper.id} 
-            className="p-4 hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-gray-400" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">
-                    Year {paper.year}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Added {new Date(paper.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+      {/* Card Content */}
+      <div className="relative z-10 flex flex-col flex-1">
+        {/* Header Section */}
+        <div>
+          {/* First Line: Title and Code */}
+          <div className="flex items-start justify-between gap-4 mb-1">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="p-2 bg-indigo-50/80 rounded-lg group-hover:bg-indigo-100/80 transition-colors shrink-0">
+                <Book className="w-5 h-5 text-indigo-600" />
               </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Eye className="w-4 h-4" />
-                  <span>{paper.view_count}</span>
-                </div>
-                {paper.status === 'VERIFIED' && paper.drive_file_url && (
-                  <button
-                    onClick={() => onDownload?.(paper)}
-                    className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-600 transition-colors"
-                    title="Download"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span className="sr-only">Download</span>
-                  </button>
-                )}
-              </div>
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight">
+                {subject.name}
+              </h3>
             </div>
-
-            {/* Status Badge */}
-            <div className="mt-2">
-              <span className={`
-                inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                ${paper.status === 'VERIFIED' ? 'bg-green-50 text-green-700' : 
-                  paper.status === 'PENDING' ? 'bg-yellow-50 text-yellow-700' :
-                  'bg-red-50 text-red-700'}
-              `}>
-                {paper.status}
-              </span>
+            <div className="px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100/70 text-indigo-700 
+                          group-hover:bg-indigo-100 transition-colors duration-300 shrink-0">
+              {subject.code}
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Empty State */}
-      {subjectPapers.length === 0 && (
-        <div className="p-4 text-center text-gray-500 text-sm">
-          No question papers available yet
+          {/* Second Line: Verified Badge */}
+          {verifiedPapers > 0 && (
+            <div className="flex justify-end -mt-1 mb-2">
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100/70 text-green-700 
+                            group-hover:bg-green-100 transition-colors duration-300">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{verifiedPapers} Verified</span>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Description */}
+        <div className="flex-1">
+          <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors mt-2 line-clamp-3">
+            Click to access all available question papers for this subject.
+          </p>
+        </div>
+
+        {/* Action Button */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
+          <div className="px-3 py-1 rounded-full text-sm font-medium bg-indigo-100/70 text-indigo-700 
+                       group-hover:bg-indigo-100 transition-colors duration-300 min-w-[80px] text-center">
+            {totalPapers} Papers
+          </div>
+          <button className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/50 
+                         group-hover:bg-indigo-100/50 transition-all">
+            <span className="text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 transition-colors">
+              View Papers
+            </span>
+            <ArrowRight className="w-4 h-4 text-indigo-600 transform group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </div>
+      </div>
     </motion.div>
   );
 };

@@ -1,7 +1,25 @@
+/**
+ * Global Styles and Utilities
+ * 
+ * This file contains:
+ * - Tailwind CSS imports
+ * - Custom animations
+ * - Global utility classes
+ * - Background patterns
+ */
+
+/* Tailwind CSS Framework Imports 
+ * These directives are processed by PostCSS
+ * @see postcss.config.js and tailwind.config.js for configuration
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Gradient Animation
+ * Creates a smooth moving gradient effect
+ * Used for text and background gradients
+ */
 @keyframes gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -13,9 +31,48 @@
   animation: gradient 8s linear infinite;
 }
 
+/* Background Grid Pattern
+ * Creates a subtle grid overlay
+ * Uses indigo color with low opacity for visual interest
+ */
 .bg-grid-pattern {
   background-image: 
     linear-gradient(to right, rgba(99, 102, 241, 0.1) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
   background-size: 4rem 4rem;
+}
+
+/* Blob Animation
+ * Creates an organic moving shape effect
+ * Used for background decorative elements
+ */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* Animation Utility Classes */
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+/* Animation Delay Utilities
+ * Used to create staggered animation effects
+ */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
