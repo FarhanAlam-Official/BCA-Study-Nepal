@@ -26,6 +26,7 @@ const navigation = {
   support: [
     { name: 'Colleges', href: '/colleges' },
     { name: 'Career', href: '/career' },
+    { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
   ],
   tools: [

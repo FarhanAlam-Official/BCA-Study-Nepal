@@ -305,6 +305,7 @@ export default function Navbar() {
             <div className="hidden lg:flex lg:items-center lg:gap-4">
               {navigation.map((item) => (
                 <NavLink key={item.name} item={item} />
+                <NavLink key={item.name} item={item} />
               ))}
             </div>
           </div>
@@ -541,3 +542,4 @@ export default function Navbar() {
     </motion.nav>
   );
 }
+

@@ -114,6 +114,8 @@ export default function SearchBar() {
       setResults([]);
     } finally {
       setIsSearching(false);
+    } finally {
+      setIsSearching(false);
     }
   };
 
