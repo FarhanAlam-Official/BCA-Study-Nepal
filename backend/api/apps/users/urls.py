@@ -22,11 +22,9 @@ from .views import (
 public_urlpatterns = [
     path('password-reset/', PasswordResetView.as_view(), name='password_reset'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('google/auth/', GoogleAuthView.as_view(), name='google_auth'),
-    path('google/callback/', GoogleAuthCallbackView.as_view(), name='google_auth_callback'),
-    path('google/check-connection/', CheckGmailConnectionView.as_view(), name='check_gmail_connection'),
     path('gmail/auth/', InitializeGmailOAuthView.as_view(), name='gmail_auth'),
     path('gmail/callback/', GmailOAuthCallbackView.as_view(), name='gmail_callback'),
+    path('gmail/check-connection/', CheckGmailConnectionView.as_view(), name='check_gmail_connection'),
     path('register/', RegisterView.as_view(), name='register'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('resend-otp/', ResendOTPView.as_view(), name='resend_otp'),

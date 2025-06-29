@@ -147,22 +147,118 @@ class InitializeGmailOAuthView(View):
     """Initialize Gmail OAuth flow."""
     def get(self, request):
         try:
-            # Your existing InitializeGmailOAuthView code
-            pass
+            # Create OAuth2 flow configuration
+            flow = Flow.from_client_config(
+                {
+                    "web": {
+                        "client_id": settings.GOOGLE_OAUTH2_CLIENT_ID,
+                        "client_secret": settings.GOOGLE_OAUTH2_CLIENT_SECRET,
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "redirect_uris": [settings.GOOGLE_OAUTH2_REDIRECT_URI]
+                    }
+                },
+                scopes=settings.GOOGLE_OAUTH2_SCOPES
+            )
+            
+            # Set the redirect URI
+            flow.redirect_uri = settings.GOOGLE_OAUTH2_REDIRECT_URI
+            
+            # Generate authorization URL and state
+            authorization_url, state = flow.authorization_url(
+                access_type='offline',
+                include_granted_scopes='true',
+                prompt='consent'  # Force consent screen to ensure refresh token
+            )
+            
+            # Store state in session
+            request.session['gmail_oauth_state'] = state
+            
+            # Return the authorization URL
+            return JsonResponse({
+                "auth_url": authorization_url,
+                "state": state
+            })
+            
         except Exception as e:
             logger.error(f"Error in InitializeGmailOAuthView: {str(e)}")
-            return JsonResponse({"error": "Failed to initialize Gmail OAuth"}, status=500)
+            return JsonResponse({"error": f"Failed to initialize Gmail OAuth: {str(e)}"}, status=500)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GmailOAuthCallbackView(View):
     """Handle Gmail OAuth callback and token storage."""
     def get(self, request):
         try:
-            # Your existing GmailOAuthCallbackView code
-            pass
+            # Get state from session
+            state = request.session.get('gmail_oauth_state')
+            if not state:
+                logger.error("No state found in session")
+                return redirect(f"{settings.FRONTEND_URL}/#/settings?oauth=error&reason=invalid_state")
+
+            # Create OAuth2 flow configuration
+            flow = Flow.from_client_config(
+                {
+                    "web": {
+                        "client_id": settings.GOOGLE_OAUTH2_CLIENT_ID,
+                        "client_secret": settings.GOOGLE_OAUTH2_CLIENT_SECRET,
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "redirect_uris": [settings.GOOGLE_OAUTH2_REDIRECT_URI]
+                    }
+                },
+                scopes=settings.GOOGLE_OAUTH2_SCOPES,
+                state=state
+            )
+            
+            flow.redirect_uri = settings.GOOGLE_OAUTH2_REDIRECT_URI
+
+            # Allow insecure transport in development
+            if settings.DEBUG:
+                os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+            # Get the authorization response URL
+            authorization_response = request.build_absolute_uri()
+            if authorization_response.startswith('https://'):
+                authorization_response = 'http://' + authorization_response[8:]
+
+            # Exchange the authorization code for credentials
+            flow.fetch_token(authorization_response=authorization_response)
+            credentials = flow.credentials
+
+            # Save credentials in both pickle and JSON formats
+            token_path = os.path.join(settings.CREDENTIALS_DIR, 'gmail_token.pickle')
+            json_token_path = settings.GMAIL_TOKEN_PATH
+
+            # Ensure the credentials directory exists
+            os.makedirs(os.path.dirname(token_path), exist_ok=True)
+            os.makedirs(os.path.dirname(json_token_path), exist_ok=True)
+
+            # Save in pickle format
+            with open(token_path, 'wb') as token:
+                pickle.dump(credentials, token)
+            
+            # Save in JSON format
+            creds_data = {
+                'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes
+            }
+            with open(json_token_path, 'w') as token:
+                json.dump(creds_data, token)
+
+            # Clear the oauth state from session
+            request.session.pop('gmail_oauth_state', None)
+            request.session.modified = True
+
+            logger.info("Successfully saved Gmail OAuth2 token")
+            return redirect(f"{settings.FRONTEND_URL}/#/settings?oauth=success")
+            
         except Exception as e:
             logger.error(f"Error in GmailOAuthCallbackView: {str(e)}")
-            return JsonResponse({"error": "Failed to complete Gmail OAuth"}, status=500)
+            return redirect(f"{settings.FRONTEND_URL}/#/settings?oauth=error&reason={str(e)}")
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CheckGmailConnectionView(APIView):
