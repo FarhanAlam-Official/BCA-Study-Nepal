@@ -1,6 +1,6 @@
 import { Resource, ResourceFavorite } from '../../types/resource-radar/resource-radar.types';
 import { ResourceCard } from './ResourceCard';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
 import { resourceRadarApi } from '../../api/resource-radar/resource-radar.api';
 import { Lightbulb } from 'lucide-react';
@@ -43,6 +43,11 @@ export const ResourceGrid = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentSearch, setCurrentSearch] = useState(search);
+  const [hasMore, setHasMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const ITEMS_PER_PAGE = 12;
 
   // Update currentSearch when search prop changes
   useEffect(() => {
@@ -52,9 +57,14 @@ export const ResourceGrid = ({
   /**
    * Fetches resources based on current filters and settings
    */
-  const fetchResources = useCallback(async () => {
+  const fetchResources = useCallback(async (page = 1) => {
     try {
-      setIsLoading(true);
+      if (page === 1) {
+        setIsLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
       let data: Resource[] | PaginatedResponse<Resource>;
       
       if (showBookmarked) {
@@ -85,6 +95,7 @@ export const ResourceGrid = ({
         }
 
         data = filteredResources;
+        setHasMore(false);
       } else {
         // Fetch regular resources with applied filters
         const searchTerm = currentSearch ? currentSearch.trim() : undefined;
@@ -93,8 +104,14 @@ export const ResourceGrid = ({
           category: category || undefined,
           tag: tags.length > 0 ? tags.join(',') : undefined,
           search: searchTerm,
-          ordering: sortOrder === 'newest' ? '-created_at' : '-view_count'
+          ordering: sortOrder === 'newest' ? '-created_at' : '-view_count',
+          page: page.toString(),
+          page_size: ITEMS_PER_PAGE
         });
+
+        if (!Array.isArray(data)) {
+          setHasMore(!!data.next);
+        }
       }
 
       // Apply featured filter if needed
@@ -103,24 +120,50 @@ export const ResourceGrid = ({
         finalResources = finalResources.filter((resource: Resource) => resource.featured);
       }
 
-      setResources(finalResources);
+      if (page === 1) {
+        setResources(finalResources);
+      } else {
+        setResources(prev => [...prev, ...finalResources]);
+      }
       setError(null);
     } catch (error) {
       const err = error as Error;
       const errorMessage = err.message || 'Failed to load resources';
       console.error('Error fetching resources:', error);
+      if (page === 1) {
+        setResources([]);
+      }
       setError(errorMessage);
-      setResources([]);
       showError(errorMessage);
     } finally {
-      setIsLoading(false);
+      if (page === 1) {
+        setIsLoading(false);
+      } else {
+        setIsLoadingMore(false);
+      }
     }
   }, [category, tags, currentSearch, showBookmarked, showFeatured, sortOrder]);
 
   // Fetch resources whenever filters change
   useEffect(() => {
-    fetchResources();
+    setCurrentPage(1);
+    setIsExpanded(false);
+    fetchResources(1);
   }, [fetchResources]);
+
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchResources(nextPage);
+    setIsExpanded(true);
+  };
+
+  const handleShowLess = () => {
+    setResources(prev => prev.slice(0, ITEMS_PER_PAGE));
+    setIsExpanded(false);
+    setCurrentPage(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   /**
    * Handles changes in resource favorite status
@@ -131,7 +174,7 @@ export const ResourceGrid = ({
         // Remove unfavorited resource immediately in favorites view
         setResources(prev => prev.filter(r => r.id !== resourceId));
         // Refetch to ensure data consistency
-        await fetchResources();
+        await fetchResources(1);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update favorites view';
@@ -158,12 +201,9 @@ export const ResourceGrid = ({
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
+        {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
+          <div
             key={i}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: i * 0.1 }}
             className="bg-gray-100 rounded-lg h-64 animate-pulse shadow-sm"
           />
         ))}
@@ -175,9 +215,8 @@ export const ResourceGrid = ({
   if (resources.length === 0) {
     return (
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         className="text-center py-20 bg-gray-50 rounded-lg shadow-sm"
       >
         <Lightbulb className="mx-auto h-12 w-12 text-indigo-600 mb-4" />
@@ -197,19 +236,17 @@ export const ResourceGrid = ({
 
   // Resources grid UI
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-    >
-      <AnimatePresence mode="popLayout">
-        {resources.map((resource, index) => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {resources.map((resource) => (
           <motion.div
             key={resource.id}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.4, delay: index * 0.15 }}
+            transition={{ 
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1] // Smooth easing function
+            }}
           >
             <ResourceCard 
               resource={resource} 
@@ -217,7 +254,80 @@ export const ResourceGrid = ({
             />
           </motion.div>
         ))}
-      </AnimatePresence>
-    </motion.div>
+      </div>
+
+      <div className="flex justify-center gap-4 pt-4">
+        {isExpanded && resources.length > ITEMS_PER_PAGE && (
+          <button
+            onClick={handleShowLess}
+            className="group relative px-6 py-2.5 text-sm font-medium text-indigo-50 bg-gradient-to-r from-indigo-500 via-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:via-indigo-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 shadow-[0_2px_8px_-2px_rgba(79,70,229,0.3)] hover:shadow-[0_4px_12px_-4px_rgba(79,70,229,0.4)] transition-all duration-200 flex items-center gap-2 overflow-hidden isolate"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(79,70,229,0.3)_0%,rgba(79,70,229,0)_40%,rgba(79,70,229,0)_60%,rgba(79,70,229,0.3)_100%)] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+            <span className="relative">Show Less</span>
+            <svg 
+              className="relative w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M5 15l7-7 7 7"
+              />
+            </svg>
+          </button>
+        )}
+
+        {(!isExpanded || hasMore) && (
+          <button
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            className="group relative px-6 py-2.5 text-sm font-medium text-indigo-50 bg-gradient-to-r from-indigo-500 via-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:via-indigo-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 shadow-[0_2px_8px_-2px_rgba(79,70,229,0.3)] hover:shadow-[0_4px_12px_-4px_rgba(79,70,229,0.4)] transition-all duration-200 flex items-center gap-2 overflow-hidden isolate disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-[0_2px_8px_-2px_rgba(79,70,229,0.3)]"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(79,70,229,0.3)_0%,rgba(79,70,229,0)_40%,rgba(79,70,229,0)_60%,rgba(79,70,229,0.3)_100%)] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+            {isLoadingMore ? (
+              <>
+                <svg className="relative animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle 
+                    className="opacity-25" 
+                    cx="12" 
+                    cy="12" 
+                    r="10" 
+                    stroke="currentColor" 
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path 
+                    className="opacity-75" 
+                    fill="currentColor" 
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <span className="relative">Loading...</span>
+              </>
+            ) : (
+              <>
+                <span className="relative">Show More</span>
+                <svg 
+                  className="relative w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
   );
 };
