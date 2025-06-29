@@ -40,8 +40,8 @@ interface OAuthStatus {
 const API_CONFIG = {
   BASE_URL: 'http://localhost:8000',
   ENDPOINTS: {
-    GMAIL_CHECK: '/api/users/google/check-connection/',
-    GMAIL_AUTH: '/api/users/google/auth/',
+    GMAIL_CHECK: '/api/users/gmail/check-connection/',
+    GMAIL_AUTH: '/api/users/gmail/auth/',
   }
 };
 
@@ -117,7 +117,8 @@ const Settings = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to initiate Gmail authentication');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to initiate Gmail authentication');
       }
       
       const data = await response.json();
@@ -164,14 +165,16 @@ const Settings = () => {
       });
       setIsGmailConnected(true);
       localStorage.setItem('gmailConnected', 'true');
+      // Refresh the connection status
+      checkGmailConnection();
     } else if (oauth === 'error') {
       setOAuthStatus({
         status: 'error',
-        message: `Gmail authentication failed: ${reason || 'Unknown error'}`
+        message: `Gmail authentication failed: ${decodeURIComponent(reason || 'Unknown error')}`
       });
       handleConnectionError();
     }
-  }, [searchParams, handleConnectionError]);
+  }, [searchParams, handleConnectionError, checkGmailConnection]);
 
   return (
     <div className="container mx-auto px-4 py-8">

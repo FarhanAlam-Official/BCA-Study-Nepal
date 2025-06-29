@@ -75,7 +75,10 @@ export interface ResourceFilters {
   /** Search query string */
   search?: string;
   /** Sort order field with optional '-' prefix for descending */
+  featured?: boolean;
   ordering?: string;
+  page?: string;
+  page_size?: number;
 }
 
 /**
